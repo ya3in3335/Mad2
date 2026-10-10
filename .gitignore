@@ -39,3 +39,4 @@ __pycache__/
 .venv/
 # Installer outputs
 artifacts/
+artifacts-out/

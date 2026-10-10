@@ -121,6 +121,7 @@ fun PosScreen(onScan: () -> Unit, vm: PosViewModel = hiltViewModel()) {
     var closing by remember { mutableStateOf(false) }
     val total = cart.sumOf { it.total }
     val context = LocalContext.current
+    val activity = androidx.activity.compose.LocalActivity.current as FragmentActivity
 
     if (!shiftOpen) { OpenShiftPanel(vm); return }
 
@@ -174,7 +175,7 @@ fun PosScreen(onScan: () -> Unit, vm: PosViewModel = hiltViewModel()) {
     if (paying) PaymentDialog(total, onDismiss = { paying = false }) { payments -> paying = false; vm.pay(payments, context) }
     if (closing) CloseShiftDialog(onDismiss = { closing = false }) { counted ->
         closing = false
-        requireBiometric(context as FragmentActivity, context.getString(R.string.pos_closeShift)) { vm.closeShift(counted) }
+        requireBiometric(activity, context.getString(R.string.pos_closeShift)) { vm.closeShift(counted) }
     }
     lastSale?.let { SaleCompleteDialog(it) { vm.lastSale.value = null } }
 }

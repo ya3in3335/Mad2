@@ -39,7 +39,7 @@ class ApiClient @Inject constructor(private val store: SecureStore, private val 
     suspend inline fun <reified B, reified T> post(path: String, body: B, auth: Boolean = true): T =
         send("POST", path, json.encodeToString(serializer<B>(), body), serializer<T>(), auth)
     suspend inline fun <reified B> postNoContent(path: String, body: B, auth: Boolean = true) {
-        send("POST", path, json.encodeToString(serializer<B>(), body), null, auth)
+        send<Unit>("POST", path, json.encodeToString(serializer<B>(), body), null, auth)
     }
 
     suspend fun <T> send(method: String, path: String, body: String?, ser: KSerializer<T>?, auth: Boolean): T = withContext(Dispatchers.IO) {

@@ -366,7 +366,7 @@ fun LicenseScreen(vm: ScreensViewModel = hiltViewModel()) {
     val state by vm.license.state.collectAsState()
     val summary = vm.license.summary
     val scope = rememberCoroutineScope()
-    val activity = LocalContext.current as FragmentActivity
+    val activity = androidx.activity.compose.LocalActivity.current as FragmentActivity
     var confirmRelease by remember { mutableStateOf(false) }
     Column(Modifier.fillMaxSize().padding(16.dp)) {
         BrandEmblem(Modifier.size(64.dp))

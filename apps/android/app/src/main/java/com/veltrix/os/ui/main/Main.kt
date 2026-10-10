@@ -51,7 +51,7 @@ val primaryDestinations = listOf(
 @Composable
 fun MainScreen(vm: MainViewModel = hiltViewModel()) {
     val nav = rememberNavController()
-    val activity = LocalContext.current as androidx.activity.ComponentActivity
+    val activity = androidx.activity.compose.LocalActivity.current!!
     val wide = calculateWindowSizeClass(activity).widthSizeClass != WindowWidthSizeClass.Compact
     val backStack by nav.currentBackStackEntryAsState()
     val current = backStack?.destination?.route
