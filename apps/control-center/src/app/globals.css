@@ -1,0 +1,94 @@
+@import "tailwindcss";
+@import "./tokens.css";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Brand tokens (src/app/tokens.css, generated from packages/design-tokens/tokens.json) exposed as Tailwind colours. */
+@theme inline {
+  --color-bg: var(--vx-background);
+  --color-surface: var(--vx-surface);
+  --color-raised: var(--vx-surfaceRaised);
+  --color-line: var(--vx-border);
+  --color-fg: var(--vx-textPrimary);
+  --color-muted: var(--vx-textSecondary);
+  --color-primary: var(--vx-primary);
+  --color-button: var(--vx-primaryButton);
+  --color-accent: var(--vx-accent);
+  --color-violet: var(--vx-violet);
+  --color-success: var(--vx-success);
+  --color-warning: var(--vx-warning);
+  --color-danger: var(--vx-danger);
+  --color-focus: var(--vx-focus);
+  --radius-sm: var(--vx-radius-sm);
+  --radius-md: var(--vx-radius-md);
+  --radius-lg: var(--vx-radius-lg);
+  --radius-xl: var(--vx-radius-xl);
+  --font-sans: Inter, "Segoe UI", Roboto, system-ui, sans-serif;
+  --font-arabic: "Noto Sans Arabic", "Segoe UI", Tahoma, sans-serif;
+}
+
+html {
+  color-scheme: light;
+}
+html.dark {
+  color-scheme: dark;
+}
+body {
+  background: var(--vx-background);
+  color: var(--vx-textPrimary);
+  font-family: var(--font-sans);
+}
+html[lang="ar"] body {
+  font-family: var(--font-arabic);
+}
+
+:focus-visible {
+  outline: 2px solid var(--vx-focus);
+  outline-offset: 2px;
+}
+
+@layer components {
+  .vx-input {
+    @apply w-full rounded-md border border-line bg-surface px-3 py-2 text-sm text-fg placeholder:text-muted/70 focus:border-focus focus:outline-none;
+  }
+  .vx-label {
+    @apply mb-1 block text-xs font-medium text-muted;
+  }
+  .vx-btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-3.5 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .vx-btn-primary {
+    @apply bg-button text-white hover:bg-primary;
+  }
+  .vx-btn-secondary {
+    @apply border border-line bg-surface text-fg hover:bg-raised;
+  }
+  .vx-btn-danger {
+    @apply bg-danger text-white hover:opacity-90;
+  }
+  .vx-btn-ghost {
+    @apply text-muted hover:bg-raised hover:text-fg;
+  }
+  .vx-card {
+    @apply rounded-lg border border-line bg-surface;
+  }
+  .vx-table {
+    @apply w-full text-sm;
+  }
+  .vx-table th {
+    @apply border-b border-line px-3 py-2 text-start text-xs font-semibold uppercase tracking-wide text-muted;
+  }
+  .vx-table td {
+    @apply border-b border-line/60 px-3 py-2.5 align-middle;
+  }
+  .vx-table tbody tr:hover {
+    @apply bg-raised/50;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

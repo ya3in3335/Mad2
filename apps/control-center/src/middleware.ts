@@ -98,7 +98,7 @@ export async function middleware(req: NextRequest) {
 export const config = {
   matcher: [
     {
-      source: "/((?!_next/static|_next/image|favicon.ico|icon.svg|veltrix-symbol.svg|robots.txt).*)",
+      source: "/((?!_next/static|_next/image|favicon.ico|icon.svg|veltrix-symbol.svg|brand/|robots.txt).*)",
     },
   ],
 };
