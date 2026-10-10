@@ -1,0 +1,89 @@
+<UserControl x:Class="Veltrix.Desktop.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel MaxWidth="900" HorizontalAlignment="Left">
+            <HeaderedContentControl Header="{DynamicResource nav.settings}" Style="{StaticResource PageHeader}"/>
+            <UniformGrid Columns="2">
+                <!-- Appearance -->
+                <Border Style="{StaticResource Card}" Margin="0,0,12,12">
+                    <StackPanel>
+                        <TextBlock Text="{DynamicResource set.language}" Style="{StaticResource Text.Section}"/>
+                        <ComboBox ItemsSource="{Binding LanguageOptions}" DisplayMemberPath="Name" SelectedValuePath="Code" SelectedValue="{Binding Language}"/>
+                        <TextBlock Text="{DynamicResource set.theme}" Style="{StaticResource Text.Label}" Margin="0,16,0,6"/>
+                        <StackPanel Orientation="Horizontal">
+                            <RadioButton Content="{DynamicResource set.themeDark}" IsChecked="{Binding IsDarkTheme}" GroupName="theme"/>
+                            <RadioButton Content="{DynamicResource set.themeLight}" IsChecked="{Binding IsDarkTheme, Converter={StaticResource Not}}" GroupName="theme"/>
+                        </StackPanel>
+                        <CheckBox Content="{DynamicResource set.reducedMotion}" IsChecked="{Binding ReducedMotion}" Margin="0,16,0,0"/>
+                    </StackPanel>
+                </Border>
+                <!-- Server -->
+                <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+                    <StackPanel>
+                        <TextBlock Text="{DynamicResource onb.server}" Style="{StaticResource Text.Section}"/>
+                        <TextBox Text="{Binding ServerUrl, UpdateSourceTrigger=PropertyChanged}" FlowDirection="LeftToRight"/>
+                        <Button Content="{DynamicResource action.save}" Command="{Binding SaveServerCommand}" HorizontalAlignment="Left" Margin="0,10,0,0"/>
+                        <TextBlock Text="{DynamicResource set.printer}" Style="{StaticResource Text.Label}" Margin="0,16,0,6"/>
+                        <StackPanel Orientation="Horizontal">
+                            <RadioButton Content="58 mm" GroupName="paper" IsChecked="{Binding ReceiptPaperMm, Converter={StaticResource Equals}, ConverterParameter=58}"/>
+                            <RadioButton Content="80 mm" GroupName="paper" IsChecked="{Binding ReceiptPaperMm, Converter={StaticResource Equals}, ConverterParameter=80}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+                <!-- Sync -->
+                <Border Style="{StaticResource Card}" Margin="0,0,12,12">
+                    <StackPanel>
+                        <TextBlock Text="{DynamicResource action.sync}" Style="{StaticResource Text.Section}"/>
+                        <TextBlock><Run Text="{DynamicResource sync.lastSync}"/>: <Run Text="{Binding LastSync, Mode=OneWay}"/></TextBlock>
+                        <TextBlock Margin="0,4,0,0"><Run Text="{DynamicResource dk.set.pending}"/>: <Run Text="{Binding Pending, Mode=OneWay}"/></TextBlock>
+                        <Button Content="{DynamicResource action.sync}" Command="{Binding SyncNowCommand}" Style="{StaticResource Button.Primary}" HorizontalAlignment="Left" Margin="0,10,0,0"/>
+                        <ItemsControl ItemsSource="{Binding Issues}" Margin="0,10,0,0">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="0,4">
+                                        <TextBlock FontWeight="SemiBold"><Run Text="{Binding Type, Mode=OneWay}"/> · <Run Text="{Binding Status, Mode=OneWay}"/> · <Run Text="{Binding Attempts, Mode=OneWay}"/>×</TextBlock>
+                                        <TextBlock Text="{Binding Error}" Style="{StaticResource Text.Caption}"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+                <!-- License -->
+                <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+                    <StackPanel>
+                        <TextBlock Text="{DynamicResource nav.licensing}" Style="{StaticResource Text.Section}"/>
+                        <TextBlock Text="{Binding LicenseStatus}" TextWrapping="Wrap"/>
+                        <TextBlock Margin="0,6,0,0"><Run Text="{DynamicResource lic.plan}"/>: <Run Text="{Binding LicensePlan, Mode=OneWay}"/></TextBlock>
+                        <TextBlock><Run Text="{DynamicResource lic.expires}"/>: <Run Text="{Binding LicenseExpires, Mode=OneWay}"/></TextBlock>
+                        <TextBlock><Run Text="{DynamicResource lic.offlineUntil}"/>: <Run Text="{Binding OfflineUntil, Mode=OneWay}"/></TextBlock>
+                        <TextBlock><Run Text="{DynamicResource lic.seats}"/>: <Run Text="{Binding Seats, Mode=OneWay}"/></TextBlock>
+                        <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                            <Button Content="{DynamicResource dk.check}" Command="{Binding RenewLicenseCommand}" Margin="0,0,8,0"/>
+                            <Button Content="{DynamicResource lic.release}" Command="{Binding ReleaseDeviceCommand}" Style="{StaticResource Button.Danger}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+                <!-- Diagnostics -->
+                <Border Style="{StaticResource Card}" Margin="0,0,12,12">
+                    <StackPanel>
+                        <TextBlock Text="{DynamicResource set.diagnostics}" Style="{StaticResource Text.Section}"/>
+                        <TextBlock Text="{DynamicResource dk.set.diagnosticsHint}" Style="{StaticResource Text.Caption}"/>
+                        <Button Content="{DynamicResource action.export}" Command="{Binding ExportDiagnosticsCommand}" HorizontalAlignment="Left" Margin="0,10,0,0"/>
+                    </StackPanel>
+                </Border>
+                <!-- About -->
+                <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+                    <StackPanel>
+                        <TextBlock Text="VELTRIX OS" Style="{StaticResource Text.Section}"/>
+                        <TextBlock><Run Text="{DynamicResource app.version}"/>: <Run Text="{Binding Version, Mode=OneWay}"/></TextBlock>
+                        <TextBlock Style="{StaticResource Text.Caption}" FlowDirection="LeftToRight" Margin="0,6,0,0">Installation: <Run Text="{Binding InstallationId, Mode=OneWay}"/></TextBlock>
+                        <TextBlock Style="{StaticResource Text.Caption}" FlowDirection="LeftToRight">Device: <Run Text="{Binding DeviceId, Mode=OneWay}"/></TextBlock>
+                        <Button Content="{DynamicResource action.signOut}" Command="{Binding SignOutCommand}" HorizontalAlignment="Left" Margin="0,12,0,0"/>
+                    </StackPanel>
+                </Border>
+            </UniformGrid>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

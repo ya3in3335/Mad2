@@ -1,0 +1,118 @@
+<UserControl x:Class="Veltrix.Desktop.Views.ShellView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="232"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Navigation rail -->
+        <Border Background="{DynamicResource Brush.surface}" BorderBrush="{DynamicResource Brush.border}" BorderThickness="0,0,1,0">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="18,20,12,20">
+                    <Viewbox Width="30" Height="30">
+                        <Canvas Width="512" Height="512">
+                            <Path Data="{StaticResource Logo.LeftBlade}" Fill="{StaticResource Brush.BladeLeft}"/>
+                            <Path Data="{StaticResource Logo.RightBlade}" Fill="{StaticResource Brush.BladeRight}"/>
+                            <Ellipse Canvas.Left="286" Canvas.Top="370" Width="28" Height="28" Fill="#00D9FF"/>
+                        </Canvas>
+                    </Viewbox>
+                    <StackPanel Margin="10,0,0,0" VerticalAlignment="Center">
+                        <TextBlock Text="VELTRIX OS" FontWeight="SemiBold" FontSize="15"/>
+                        <TextBlock Text="{Binding TenantName}" Style="{StaticResource Text.Caption}" TextTrimming="CharacterEllipsis" MaxWidth="150"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel DockPanel.Dock="Bottom" Margin="12">
+                    <TextBlock Text="{Binding UserName}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" Margin="6,0"/>
+                    <TextBlock Style="{StaticResource Text.Caption}" Margin="6,2,6,8">
+                        <Run Text="{DynamicResource app.version}"/> <Run Text="{Binding Version, Mode=OneWay}"/>
+                    </TextBlock>
+                    <Button Content="{DynamicResource action.signOut}" Command="{Binding SignOutCommand}" HorizontalAlignment="Stretch"/>
+                </StackPanel>
+
+                <ListBox ItemsSource="{Binding NavItems}" SelectedItem="{Binding Selected}" Margin="10,0" KeyboardNavigation.TabNavigation="Once"
+                         AutomationProperties.Name="Navigation">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <Path Data="{Binding Icon, Converter={StaticResource ResourceKey}}" Width="20" Height="20" Stretch="Uniform"
+                                      Stroke="{DynamicResource Brush.accent}" StrokeThickness="1.8" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                                <TextBlock Text="{Binding Title}" Margin="12,0,0,0" VerticalAlignment="Center" FontSize="14"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </DockPanel>
+        </Border>
+
+        <DockPanel Grid.Column="1">
+            <!-- Status bar -->
+            <Border DockPanel.Dock="Top" Padding="24,10" BorderBrush="{DynamicResource Brush.border}" BorderThickness="0,0,0,1">
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                        <TextBlock Text="{Binding SyncStatus}" Style="{StaticResource Text.Caption}" VerticalAlignment="Center" Margin="0,0,12,0" MaxWidth="320"
+                                   TextTrimming="CharacterEllipsis"/>
+                        <Button Command="{Binding SyncNowCommand}" Style="{StaticResource Button.Ghost}" ToolTip="{DynamicResource action.sync}"
+                                AutomationProperties.Name="{DynamicResource action.sync}">
+                            <Path x:Name="SyncIcon" Data="{StaticResource Icon.Sync}" Width="18" Height="18" Stretch="Uniform" Stroke="{DynamicResource Brush.accent}"
+                                  StrokeThickness="2" RenderTransformOrigin="0.5,0.5">
+                                <Path.RenderTransform><RotateTransform x:Name="SyncRotation"/></Path.RenderTransform>
+                            </Path>
+                        </Button>
+                        <Border CornerRadius="10" Padding="10,3" Margin="12,0,0,0" VerticalAlignment="Center" Background="{DynamicResource Brush.surfaceRaised}">
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse Width="8" Height="8" VerticalAlignment="Center">
+                                    <Ellipse.Style>
+                                        <Style TargetType="Ellipse">
+                                            <Setter Property="Fill" Value="{DynamicResource Brush.warning}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsOnline}" Value="True">
+                                                    <Setter Property="Fill" Value="{DynamicResource Brush.success}"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Ellipse.Style>
+                                </Ellipse>
+                                <TextBlock Margin="6,0,0,0" FontSize="12">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Text" Value="{DynamicResource app.offline}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsOnline}" Value="True">
+                                                    <Setter Property="Text" Value="{DynamicResource app.online}"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                <TextBlock Margin="8,0,0,0" FontSize="12" Foreground="{DynamicResource Brush.warning}"
+                                           Text="{Binding PendingOperations, StringFormat={}{0} ⇅}"
+                                           Visibility="{Binding PendingOperations, Converter={StaticResource NotNullToVis}}"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                    <TextBlock Text="{Binding CurrentPage.TitleKey, Converter={StaticResource ResourceKey}}" Style="{StaticResource Text.Caption}" FontSize="13"
+                               VerticalAlignment="Center"/>
+                </DockPanel>
+            </Border>
+
+            <!-- License banner (renew soon, read-only, grace expired) -->
+            <Border DockPanel.Dock="Top" Margin="24,12,24,0" Visibility="{Binding LicenseBanner, Converter={StaticResource NotNullToVis}}">
+                <Border.Style>
+                    <Style TargetType="Border" BasedOn="{StaticResource Banner}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding LicenseBannerIsError}" Value="True">
+                                <Setter Property="BorderBrush" Value="{DynamicResource Brush.danger}"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <TextBlock Text="{Binding LicenseBanner}" TextWrapping="Wrap"/>
+            </Border>
+
+            <ContentControl x:Name="PageHost" Content="{Binding CurrentPage}" Margin="24,16,24,20" Focusable="False"/>
+        </DockPanel>
+    </Grid>
+</UserControl>

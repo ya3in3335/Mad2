@@ -1,0 +1,77 @@
+<UserControl x:Class="Veltrix.Desktop.Views.ProductsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:Veltrix.Desktop.Controls">
+    <DockPanel>
+        <HeaderedContentControl DockPanel.Dock="Top" Header="{DynamicResource nav.products}" Style="{StaticResource PageHeader}">
+            <StackPanel Orientation="Horizontal">
+                <TextBox Text="{Binding Search, UpdateSourceTrigger=PropertyChanged}" Width="260" ToolTip="{DynamicResource action.search}"
+                         AutomationProperties.Name="{DynamicResource action.search}">
+                    <TextBox.InputBindings><KeyBinding Key="Return" Command="{Binding SearchNowCommand}"/></TextBox.InputBindings>
+                </TextBox>
+                <Button Content="{DynamicResource action.search}" Command="{Binding SearchNowCommand}" Margin="8,0,0,0"/>
+                <Button Content="{DynamicResource action.new}" Command="{Binding NewCommand}" Style="{StaticResource Button.Primary}" Margin="8,0,0,0"
+                        Visibility="{Binding CanManage, Converter={StaticResource BoolToVis}}"/>
+            </StackPanel>
+        </HeaderedContentControl>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="340"/>
+            </Grid.ColumnDefinitions>
+            <Grid>
+                <DockPanel Visibility="{Binding IsReady, Converter={StaticResource BoolToVis}}">
+                    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
+                        <Button Content="‹" Command="{Binding PreviousPageCommand}" IsEnabled="{Binding HasPrevious}" MinWidth="40"/>
+                        <TextBlock Text="{Binding PageLabel}" VerticalAlignment="Center" Margin="12,0" Style="{StaticResource Text.Caption}"/>
+                        <Button Content="›" Command="{Binding NextPageCommand}" IsEnabled="{Binding HasNext}" MinWidth="40"/>
+                    </StackPanel>
+                    <DataGrid ItemsSource="{Binding Items}" SelectedItem="{Binding Selected}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="{DynamicResource cat.sku}" Binding="{Binding Sku}" Width="120"/>
+                            <DataGridTextColumn Header="{DynamicResource cat.name}" Binding="{Binding Name}" Width="*"/>
+                            <DataGridTextColumn Header="{DynamicResource cat.salePrice}" Binding="{Binding SalePrice, StringFormat=N2}" Width="110" ElementStyle="{StaticResource Cell.Number}"/>
+                            <DataGridTextColumn Header="{DynamicResource pos.tax}" Binding="{Binding TaxRatePercent, StringFormat={}{0:0.##} %}" Width="70" ElementStyle="{StaticResource Cell.Number}"/>
+                            <DataGridTextColumn Header="{DynamicResource lic.status}" Binding="{Binding Status}" Width="90"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+                <c:PageState/>
+            </Grid>
+
+            <Border Grid.Column="2" Style="{StaticResource Card}" Visibility="{Binding Editor, Converter={StaticResource NotNullToVis}}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" DataContext="{Binding Editor}">
+                    <StackPanel>
+                        <TextBlock Text="{DynamicResource action.edit}" Style="{StaticResource Text.Section}"/>
+                        <TextBlock Text="{DynamicResource cat.sku}" Style="{StaticResource Text.Label}"/>
+                        <TextBox Text="{Binding Sku}" FlowDirection="LeftToRight"/>
+                        <TextBlock Text="{DynamicResource cat.name}" Style="{StaticResource Text.Label}"/>
+                        <TextBox Text="{Binding Name}"/>
+                        <TextBlock Text="{DynamicResource dk.products.nameAr}" Style="{StaticResource Text.Label}"/>
+                        <TextBox Text="{Binding NameAr}" FlowDirection="RightToLeft"/>
+                        <TextBlock Text="{DynamicResource cat.category}" Style="{StaticResource Text.Label}"/>
+                        <ComboBox ItemsSource="{Binding DataContext.Categories, RelativeSource={RelativeSource AncestorType=UserControl}}" DisplayMemberPath="Name"
+                                  SelectedValuePath="Id" SelectedValue="{Binding CategoryId}"/>
+                        <TextBlock Text="{DynamicResource pos.tax}" Style="{StaticResource Text.Label}"/>
+                        <ComboBox ItemsSource="{Binding DataContext.TaxCategories, RelativeSource={RelativeSource AncestorType=UserControl}}" DisplayMemberPath="Name"
+                                  SelectedValuePath="Id" SelectedValue="{Binding TaxCategoryId}"/>
+                        <TextBlock Text="{DynamicResource cat.salePrice}" Style="{StaticResource Text.Label}"/>
+                        <TextBox Text="{Binding SalePrice}" FlowDirection="LeftToRight"/>
+                        <TextBlock Text="{DynamicResource cat.costPrice}" Style="{StaticResource Text.Label}"/>
+                        <TextBox Text="{Binding PurchasePrice}" FlowDirection="LeftToRight"/>
+                        <TextBlock Text="{DynamicResource cat.barcode}" Style="{StaticResource Text.Label}"/>
+                        <TextBox Text="{Binding Barcodes}" AcceptsReturn="True" MinHeight="60" TextWrapping="Wrap" FlowDirection="LeftToRight" VerticalContentAlignment="Top"/>
+                        <TextBlock Text="{DynamicResource inv.lowStock}" Style="{StaticResource Text.Label}"/>
+                        <TextBox Text="{Binding LowStockThreshold}" FlowDirection="LeftToRight"/>
+                        <CheckBox Content="{DynamicResource dk.products.trackStock}" IsChecked="{Binding TrackStock}" Margin="0,10,0,0"/>
+                        <CheckBox Content="{DynamicResource dk.active}" IsChecked="{Binding IsActive}" Margin="0,6,0,0"/>
+                        <Button Content="{DynamicResource action.save}" Style="{StaticResource Button.Primary}" Margin="0,16,0,0"
+                                Command="{Binding DataContext.SaveCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                Visibility="{Binding DataContext.CanManage, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVis}}"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </DockPanel>
+</UserControl>

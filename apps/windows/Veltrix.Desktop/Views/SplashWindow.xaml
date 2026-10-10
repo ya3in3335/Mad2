@@ -1,0 +1,80 @@
+<Window x:Class="Veltrix.Desktop.Views.SplashWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="VELTRIX OS" Width="640" Height="560" WindowStyle="None" ResizeMode="NoResize" AllowsTransparency="True"
+        WindowStartupLocation="CenterScreen" Background="Transparent" ShowInTaskbar="True" Icon="/Assets/veltrix.ico"
+        FontFamily="{StaticResource Font.Ui}" Focusable="True">
+    <!-- Startup sequence per branding/motion/MOTION_SPEC.md (vector paths + storyboards, no video). -->
+    <Border x:Name="Root" CornerRadius="16" Background="#07111F" BorderBrush="#1E3557" BorderThickness="1" ClipToBounds="True">
+        <Grid>
+            <Canvas x:Name="Particles" IsHitTestVisible="False" ClipToBounds="True"/>
+            <Viewbox Margin="40,28,40,64" Stretch="Uniform">
+                <Canvas Width="512" Height="700">
+                    <Canvas.Resources>
+                        <LinearGradientBrush x:Key="LeftGrad" StartPoint="84,104" EndPoint="260,432" MappingMode="Absolute">
+                            <GradientStop Color="#3478FF" Offset="0"/>
+                            <GradientStop Color="#00D9FF" Offset="1"/>
+                        </LinearGradientBrush>
+                        <LinearGradientBrush x:Key="RightGrad" StartPoint="428,104" EndPoint="300,336" MappingMode="Absolute">
+                            <GradientStop Color="#765BFF" Offset="0"/>
+                            <GradientStop Color="#3478FF" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Canvas.Resources>
+                    <Path x:Name="LeftBlade" Data="M 84 104 L 184 104 L 282 356 L 240 432 Z" Fill="{StaticResource LeftGrad}">
+                        <Path.RenderTransform><TranslateTransform/></Path.RenderTransform>
+                    </Path>
+                    <Path x:Name="RightBlade" Data="M 428 104 L 346 104 L 282 268 L 322 336 Z" Fill="{StaticResource RightGrad}">
+                        <Path.RenderTransform><TranslateTransform/></Path.RenderTransform>
+                    </Path>
+                    <Path x:Name="Trace" Data="M 156 156 L 226 316" Stroke="#F5F8FF" StrokeThickness="6" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                          StrokeDashCap="Round" StrokeDashArray="30 100" StrokeDashOffset="0" Opacity="0.85"/>
+                    <Ellipse x:Name="Node1" Canvas.Left="147" Canvas.Top="147" Width="18" Height="18" Fill="#F5F8FF" RenderTransformOrigin="0.5,0.5">
+                        <Ellipse.RenderTransform><ScaleTransform/></Ellipse.RenderTransform>
+                    </Ellipse>
+                    <Ellipse x:Name="Node2" Canvas.Left="217" Canvas.Top="307" Width="18" Height="18" Fill="#F5F8FF" RenderTransformOrigin="0.5,0.5">
+                        <Ellipse.RenderTransform><ScaleTransform/></Ellipse.RenderTransform>
+                    </Ellipse>
+                    <Ellipse x:Name="Core" Canvas.Left="286" Canvas.Top="370" Width="28" Height="28" Fill="#00D9FF" RenderTransformOrigin="0.5,0.5">
+                        <Ellipse.RenderTransform><ScaleTransform/></Ellipse.RenderTransform>
+                        <Ellipse.Effect><DropShadowEffect x:Name="CoreGlow" Color="#00D9FF" ShadowDepth="0" BlurRadius="0" Opacity="0.9"/></Ellipse.Effect>
+                    </Ellipse>
+
+                    <!-- Wordmark: geometric capitals (never re-typed in a font) -->
+                    <Canvas x:Name="Wordmark" Canvas.Left="29.2" Canvas.Top="560">
+                        <Canvas.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform ScaleX="0.6" ScaleY="0.6"/>
+                                <TranslateTransform/>
+                            </TransformGroup>
+                        </Canvas.RenderTransform>
+                        <Canvas.Resources>
+                            <Style TargetType="Path">
+                                <Setter Property="Stroke" Value="#F5F8FF"/>
+                                <Setter Property="StrokeThickness" Value="13"/>
+                                <Setter Property="StrokeStartLineCap" Value="Square"/>
+                                <Setter Property="StrokeEndLineCap" Value="Square"/>
+                                <Setter Property="StrokeLineJoin" Value="Miter"/>
+                                <Setter Property="StrokeMiterLimit" Value="2"/>
+                            </Style>
+                        </Canvas.Resources>
+                        <Path Canvas.Left="0" Data="M7 7 L37 93 L67 7"/>
+                        <Path Canvas.Left="96" Data="M53 7 H7 V93 H53 M7 50 H45"/>
+                        <Path Canvas.Left="178" Data="M7 7 V93 H49"/>
+                        <Path Canvas.Left="256" Data="M0 7 H66 M33 7 V93"/>
+                        <Path Canvas.Left="344" Data="M7 100 V7 H38 A22 22 0 0 1 38 57 H7 M34 57 L57 93"/>
+                        <Path Canvas.Left="430" Data="M7 7 V93"/>
+                        <Path Canvas.Left="466" Data="M7 7 L63 93 M63 7 L7 93"/>
+                        <Path Canvas.Left="592" Data="M40 7 A33 43 0 1 1 39.9 7 Z" Stroke="#00D9FF"/>
+                        <Path Canvas.Left="694" Data="M55 7 H24 A17 18 0 0 0 24 50 H38 A17 18 0 0 1 38 93 H7" Stroke="#00D9FF"/>
+                    </Canvas>
+                    <TextBlock x:Name="Tagline" Canvas.Top="650" Width="512" TextAlignment="Center" FontSize="22" Foreground="#A3B3CB"
+                               Text="{DynamicResource app.slogan}"/>
+                </Canvas>
+            </Viewbox>
+            <ProgressBar x:Name="Progress" VerticalAlignment="Bottom" Margin="120,0,120,36" IsIndeterminate="True" Visibility="Collapsed"
+                         Foreground="#00D9FF" Background="Transparent" Height="2"/>
+            <TextBlock x:Name="SkipHint" Text="{DynamicResource dk.splash.skip}" Foreground="#A3B3CB" Opacity="0.6" FontSize="11"
+                       HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,16,10"/>
+        </Grid>
+    </Border>
+</Window>

@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <!-- Lets the WPF app compile on Linux/macOS build agents (it can only RUN on Windows). -->
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <AssemblyName>VeltrixOS</AssemblyName>
+    <RootNamespace>Veltrix.Desktop</RootNamespace>
+    <ApplicationIcon>Assets\veltrix.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Product>VELTRIX OS</Product>
+    <Description>VELTRIX OS for Windows</Description>
+    <!-- Release version: dotnet publish -p:VeltrixVersion=1.2.3 -->
+    <VeltrixVersion Condition="'$(VeltrixVersion)' == ''">0.1.0</VeltrixVersion>
+    <Version>$(VeltrixVersion)</Version>
+    <SatelliteResourceLanguages>en;fr;ar</SatelliteResourceLanguages>
+    <!-- Optional: base64 SubjectPublicKeyInfo of the vendor license-signing key, pinned at build time
+         (-p:VeltrixVendorPublicKey=MFkw...). When empty the key is trusted on first activation and stored encrypted. -->
+    <VeltrixVendorPublicKey Condition="'$(VeltrixVendorPublicKey)' == ''"></VeltrixVendorPublicKey>
+  </PropertyGroup>
+  <ItemGroup>
+    <AssemblyMetadata Include="VeltrixVendorPublicKey" Value="$(VeltrixVendorPublicKey)" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Veltrix.Desktop.Core\Veltrix.Desktop.Core.csproj" />
+    <ProjectReference Include="..\Veltrix.Desktop.Presentation\Veltrix.Desktop.Presentation.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\symbol-256.png" />
+    <Resource Include="Assets\veltrix.ico" />
+    <Resource Include="Assets\veltrix-tray.ico" />
+  </ItemGroup>
+</Project>

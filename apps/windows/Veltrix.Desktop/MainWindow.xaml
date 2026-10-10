@@ -1,0 +1,7 @@
+<Window x:Class="Veltrix.Desktop.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="VELTRIX OS" Width="1280" Height="800" MinWidth="1024" MinHeight="680"
+        WindowStartupLocation="CenterScreen" Icon="/Assets/veltrix.ico" Style="{StaticResource AppWindow}">
+    <ContentControl x:Name="Host" Content="{Binding Current}" Focusable="False"/>
+</Window>

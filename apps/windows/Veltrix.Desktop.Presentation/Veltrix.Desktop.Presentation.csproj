@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>Veltrix.Desktop.Presentation</RootNamespace>
+    <Description>UI-framework-neutral view models for the VELTRIX OS Windows client (unit-testable on any OS).</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Veltrix.Desktop.Core\Veltrix.Desktop.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Veltrix.Desktop.Tests" />
+  </ItemGroup>
+</Project>

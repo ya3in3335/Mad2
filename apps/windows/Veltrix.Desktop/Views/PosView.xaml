@@ -1,0 +1,200 @@
+<UserControl x:Class="Veltrix.Desktop.Views.PosView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:Veltrix.Desktop.Controls">
+    <Grid>
+        <DockPanel Visibility="{Binding IsReady, Converter={StaticResource BoolToVis}}">
+            <HeaderedContentControl DockPanel.Dock="Top" Header="{DynamicResource nav.pos}" Style="{StaticResource PageHeader}">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="{DynamicResource dk.pos.register}" VerticalAlignment="Center" Margin="0,0,8,0" Style="{StaticResource Text.Caption}"/>
+                    <ComboBox ItemsSource="{Binding Registers}" SelectedItem="{Binding SelectedRegister}" DisplayMemberPath="Name" MinWidth="180"/>
+                </StackPanel>
+            </HeaderedContentControl>
+
+            <!-- Shift bar -->
+            <Border DockPanel.Dock="Top" Style="{StaticResource Card}" Padding="12" Margin="0,0,0,12">
+                <Grid>
+                    <StackPanel Orientation="Horizontal" Visibility="{Binding HasShift, Converter={StaticResource InvBoolToVis}}">
+                        <TextBlock Text="{DynamicResource dk.pos.noShift}" VerticalAlignment="Center" Margin="0,0,16,0"/>
+                        <TextBlock Text="{DynamicResource pos.openingFloat}" VerticalAlignment="Center" Style="{StaticResource Text.Caption}" Margin="0,0,8,0"/>
+                        <TextBox Text="{Binding OpeningFloat, UpdateSourceTrigger=PropertyChanged}" Width="120" FlowDirection="LeftToRight"/>
+                        <Button Content="{DynamicResource pos.openShift}" Command="{Binding OpenShiftCommand}" Style="{StaticResource Button.Primary}" Margin="8,0,0,0"/>
+                    </StackPanel>
+                    <DockPanel Visibility="{Binding HasShift, Converter={StaticResource BoolToVis}}">
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                            <TextBlock Text="{DynamicResource pos.countedCash}" VerticalAlignment="Center" Style="{StaticResource Text.Caption}" Margin="0,0,8,0"/>
+                            <TextBox Text="{Binding CountedCash, UpdateSourceTrigger=PropertyChanged}" Width="120" FlowDirection="LeftToRight"/>
+                            <Button Content="{DynamicResource pos.closeShift}" Command="{Binding CloseShiftCommand}" Margin="8,0,0,0"/>
+                            <Button Content="{DynamicResource pos.reprint}" Command="{Binding PrintLastReceiptCommand}" Margin="8,0,0,0"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Ellipse Width="8" Height="8" Fill="{DynamicResource Brush.success}" VerticalAlignment="Center"/>
+                            <TextBlock Margin="8,0,0,0" VerticalAlignment="Center">
+                                <Run Text="{DynamicResource dk.pos.shiftOpen}"/> <Run Text="{Binding Shift.OpenedAt, Mode=OneWay, StringFormat=t}"/>
+                            </TextBlock>
+                            <TextBlock Text="{DynamicResource dk.state.offlineData}" Foreground="{DynamicResource Brush.warning}" Margin="12,0,0,0" VerticalAlignment="Center"
+                                       Visibility="{Binding Shift.Offline, Converter={StaticResource BoolToVis}, FallbackValue=Collapsed}"/>
+                        </StackPanel>
+                    </DockPanel>
+                </Grid>
+            </Border>
+            <Border DockPanel.Dock="Top" Style="{StaticResource Banner}" Margin="0,0,0,12" BorderBrush="{DynamicResource Brush.danger}"
+                    Visibility="{Binding LicenseAllowsSelling, Converter={StaticResource InvBoolToVis}}">
+                <TextBlock Text="{DynamicResource lic.expired}" TextWrapping="Wrap"/>
+            </Border>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="16"/>
+                    <ColumnDefinition Width="360"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Lookup + cart -->
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Top">
+                        <TextBox x:Name="ScanBox" Text="{Binding ScanText, UpdateSourceTrigger=PropertyChanged}" FontSize="18" MinHeight="44"
+                                 IsEnabled="{Binding CanSell}" AutomationProperties.Name="{DynamicResource pos.scanHint}" ToolTip="{DynamicResource pos.scanHint}">
+                            <TextBox.InputBindings>
+                                <KeyBinding Key="Return" Command="{Binding ScanCommand}"/>
+                            </TextBox.InputBindings>
+                        </TextBox>
+                        <TextBlock Text="{DynamicResource pos.scanHint}" Style="{StaticResource Text.Caption}" Margin="2,4,0,0"/>
+                        <TextBlock Text="{Binding ScanError}" Style="{StaticResource Text.Error}" Visibility="{Binding ScanError, Converter={StaticResource NotNullToVis}}"/>
+                        <ListBox ItemsSource="{Binding SearchResults}" MaxHeight="200" Margin="0,8,0,0" x:Name="Results"
+                                 Visibility="{Binding SearchResults.Count, Converter={StaticResource NotNullToVis}}" MouseDoubleClick="OnResultChosen" KeyDown="OnResultKey">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <DockPanel>
+                                        <TextBlock DockPanel.Dock="Right" Text="{Binding SalePrice, StringFormat=N2}"/>
+                                        <TextBlock Text="{Binding Sku}" Style="{StaticResource Text.Caption}" Width="110" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis"/>
+                                    </DockPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </StackPanel>
+
+                    <Border Style="{StaticResource Card}" Padding="0" Margin="0,12,0,0">
+                        <Grid>
+                            <DataGrid ItemsSource="{Binding Lines}" SelectedItem="{Binding SelectedLine}" BorderThickness="0" Background="Transparent">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="{DynamicResource cat.name}" Binding="{Binding Name}" Width="*"/>
+                                    <DataGridTemplateColumn Header="{DynamicResource pos.qty}" Width="140">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <Button Content="−" Style="{StaticResource Button.Ghost}" MinHeight="24" Padding="8,0"
+                                                            Command="{Binding DataContext.DecrementCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" CommandParameter="{Binding}"/>
+                                                    <TextBlock Text="{Binding Quantity, StringFormat={}{0:0.###}}" MinWidth="36" TextAlignment="Center" VerticalAlignment="Center"/>
+                                                    <Button Content="+" Style="{StaticResource Button.Ghost}" MinHeight="24" Padding="8,0"
+                                                            Command="{Binding DataContext.IncrementCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" CommandParameter="{Binding}"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTextColumn Header="{DynamicResource pos.price}" Binding="{Binding UnitPrice, StringFormat=N2}" Width="110" ElementStyle="{StaticResource Cell.Number}"/>
+                                    <DataGridTextColumn Header="{DynamicResource pos.discount}" Binding="{Binding Discount, StringFormat=N2}" Width="100" ElementStyle="{StaticResource Cell.Number}"/>
+                                    <DataGridTextColumn Header="{DynamicResource pos.total}" Binding="{Binding Total, StringFormat=N2}" Width="120" ElementStyle="{StaticResource Cell.Number}"/>
+                                    <DataGridTemplateColumn Width="44">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Button Content="✕" Style="{StaticResource Button.Ghost}" MinHeight="24" Foreground="{DynamicResource Brush.danger}"
+                                                        ToolTip="{DynamicResource action.delete}"
+                                                        Command="{Binding DataContext.RemoveLineCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" CommandParameter="{Binding}"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                            <TextBlock Text="{DynamicResource dk.pos.emptyCart}" Style="{StaticResource Text.Caption}" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       Visibility="{Binding Lines.Count, Converter={StaticResource EqualsZeroToVis}}"/>
+                        </Grid>
+                    </Border>
+                </DockPanel>
+
+                <!-- Totals and payment -->
+                <DockPanel Grid.Column="2">
+                    <Border DockPanel.Dock="Top" Style="{StaticResource Card}">
+                        <StackPanel>
+                            <DockPanel><TextBlock DockPanel.Dock="Right" Text="{Binding Subtotal, StringFormat=N2}"/><TextBlock Text="{DynamicResource pos.subtotal}"/></DockPanel>
+                            <DockPanel Margin="0,6,0,0"><TextBlock DockPanel.Dock="Right" Text="{Binding Discount, StringFormat=-{0:N2}}"/><TextBlock Text="{DynamicResource pos.discount}"/></DockPanel>
+                            <DockPanel Margin="0,6,0,0"><TextBlock DockPanel.Dock="Right" Text="{Binding Tax, StringFormat=N2}"/><TextBlock Text="{DynamicResource pos.tax}"/></DockPanel>
+                            <Rectangle Height="1" Fill="{DynamicResource Brush.border}" Margin="0,10"/>
+                            <DockPanel>
+                                <TextBlock DockPanel.Dock="Right" Style="{StaticResource Text.Kpi}" FontSize="30">
+                                    <Run Text="{Binding Total, Mode=OneWay, StringFormat=N2}"/> <Run Text="{Binding Currency, Mode=OneWay}" FontSize="14"/>
+                                </TextBlock>
+                                <TextBlock Text="{DynamicResource pos.total}" VerticalAlignment="Center" FontSize="16"/>
+                            </DockPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,10,0,0" Visibility="{Binding CanDiscount, Converter={StaticResource BoolToVis}}">
+                                <TextBlock Text="{DynamicResource dk.pos.cartDiscount}" Style="{StaticResource Text.Caption}" VerticalAlignment="Center" Width="130"/>
+                                <TextBox Text="{Binding CartDiscountText, UpdateSourceTrigger=PropertyChanged, Delay=300}" Width="110" FlowDirection="LeftToRight"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <StackPanel DockPanel.Dock="Bottom">
+                        <TextBlock Text="{DynamicResource pos.cardNotice}" Style="{StaticResource Text.Caption}" Margin="0,8,0,0"/>
+                    </StackPanel>
+
+                    <Grid Margin="0,12,0,0">
+                        <StackPanel VerticalAlignment="Bottom" Visibility="{Binding IsPaying, Converter={StaticResource InvBoolToVis}}">
+                            <Button Content="{DynamicResource dk.pos.newSale}" Command="{Binding ClearCartCommand}" Margin="0,0,0,8"/>
+                            <Button Content="{DynamicResource pos.pay}" Command="{Binding BeginPaymentCommand}" Style="{StaticResource Button.Pay}"
+                                    IsEnabled="{Binding CanSell}"/>
+                        </StackPanel>
+                        <Border Style="{StaticResource Card}" Visibility="{Binding IsPaying, Converter={StaticResource BoolToVis}}">
+                            <StackPanel>
+                                <DockPanel>
+                                    <TextBlock DockPanel.Dock="Right" Text="{Binding AmountDue, StringFormat=N2}" FontWeight="SemiBold" FontSize="18"/>
+                                    <TextBlock Text="{DynamicResource dk.pos.amountDue}" VerticalAlignment="Center"/>
+                                </DockPanel>
+                                <TextBlock Text="{DynamicResource pos.cash}" Style="{StaticResource Text.Label}"/>
+                                <DockPanel>
+                                    <Button DockPanel.Dock="Right" Content="{DynamicResource dk.pos.exact}" Command="{Binding ExactCashCommand}" Margin="8,0,0,0"/>
+                                    <TextBox x:Name="CashBox" Text="{Binding CashTendered, UpdateSourceTrigger=PropertyChanged}" FontSize="18" FlowDirection="LeftToRight">
+                                        <TextBox.InputBindings>
+                                            <KeyBinding Key="Return" Command="{Binding CompleteSaleCommand}"/>
+                                        </TextBox.InputBindings>
+                                    </TextBox>
+                                </DockPanel>
+                                <TextBlock Text="{DynamicResource pos.card}" Style="{StaticResource Text.Label}"/>
+                                <DockPanel>
+                                    <Button DockPanel.Dock="Right" Content="{DynamicResource dk.pos.full}" Command="{Binding FullCardCommand}" Margin="8,0,0,0"/>
+                                    <TextBox Text="{Binding CardAmount, UpdateSourceTrigger=PropertyChanged}" FontSize="18" FlowDirection="LeftToRight"/>
+                                </DockPanel>
+                                <DockPanel Margin="0,12,0,0">
+                                    <TextBlock DockPanel.Dock="Right" Text="{Binding Change, StringFormat=N2}" FontSize="18" Foreground="{DynamicResource Brush.success}"/>
+                                    <TextBlock Text="{DynamicResource pos.change}" VerticalAlignment="Center"/>
+                                </DockPanel>
+                                <DockPanel Margin="0,4,0,0" Visibility="{Binding PaymentValid, Converter={StaticResource InvBoolToVis}}">
+                                    <TextBlock DockPanel.Dock="Right" Text="{Binding Shortfall, StringFormat=N2}" Foreground="{DynamicResource Brush.warning}"/>
+                                    <TextBlock Text="{DynamicResource dk.pos.remaining}" Style="{StaticResource Text.Caption}"/>
+                                </DockPanel>
+                                <Button Content="{DynamicResource action.confirm}" Command="{Binding CompleteSaleCommand}" Style="{StaticResource Button.Pay}" Margin="0,14,0,0"
+                                        IsEnabled="{Binding PaymentValid}"/>
+                                <Button Content="{DynamicResource action.cancel}" Command="{Binding CancelPaymentCommand}" Style="{StaticResource Button.Ghost}" Margin="0,6,0,0"/>
+                                <ProgressBar IsIndeterminate="True" Margin="0,8,0,0" Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}"/>
+                            </StackPanel>
+                        </Border>
+                        <!-- Successful payment: check-mark path draw + success pulse once -->
+                        <Border x:Name="SuccessOverlay" Style="{StaticResource Card}" Opacity="0" IsHitTestVisible="False" VerticalAlignment="Center"
+                                BorderBrush="{DynamicResource Brush.success}">
+                            <StackPanel HorizontalAlignment="Center">
+                                <Path x:Name="SuccessCheck" Data="{StaticResource Icon.Check}" Stroke="{DynamicResource Brush.success}" StrokeThickness="2.5" Width="56" Height="56"
+                                      Stretch="Uniform" StrokeDashArray="12 12" StrokeDashOffset="12" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                                <TextBlock Text="{Binding LastSaleNumber}" HorizontalAlignment="Center" Margin="0,8,0,0" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </DockPanel>
+            </Grid>
+        </DockPanel>
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVis}}">
+            <TextBlock Text="{DynamicResource dk.pos.noRegister}" Style="{StaticResource Text.Section}" HorizontalAlignment="Center"/>
+            <Button Content="{DynamicResource action.refresh}" Command="{Binding RefreshCommand}" HorizontalAlignment="Center"/>
+        </StackPanel>
+        <c:PageState Visibility="{Binding IsEmpty, Converter={StaticResource InvBoolToVis}}"/>
+    </Grid>
+</UserControl>

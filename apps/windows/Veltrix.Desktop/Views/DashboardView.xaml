@@ -1,0 +1,107 @@
+<UserControl x:Class="Veltrix.Desktop.Views.DashboardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:Veltrix.Desktop.Controls">
+    <Grid>
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Visibility="{Binding IsReady, Converter={StaticResource BoolToVis}}">
+            <StackPanel>
+                <HeaderedContentControl Header="{DynamicResource nav.dashboard}" Style="{StaticResource PageHeader}"/>
+                <!-- KPI cards -->
+                <ItemsControl ItemsSource="{Binding Kpis}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate><UniformGrid Columns="4"/></ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Style="{StaticResource Card}" Margin="0,0,12,12">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Title}" Style="{StaticResource Text.Caption}" FontSize="13"/>
+                                    <TextBlock Text="{Binding Display}" Style="{StaticResource Text.Kpi}" Margin="0,6,0,0"/>
+                                    <TextBlock Text="{Binding Hint}" Style="{StaticResource Text.Caption}" Margin="0,4,0,0"
+                                               Visibility="{Binding Hint, Converter={StaticResource NotNullToVis}}"/>
+                                    <Rectangle Height="3" RadiusX="1.5" RadiusY="1.5" Margin="0,10,0,0" HorizontalAlignment="Left" Width="36">
+                                        <Rectangle.Style>
+                                            <Style TargetType="Rectangle">
+                                                <Setter Property="Fill" Value="{DynamicResource Brush.accent}"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Warning}" Value="True">
+                                                        <Setter Property="Fill" Value="{DynamicResource Brush.warning}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Rectangle.Style>
+                                    </Rectangle>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <Grid Margin="0,4,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="12"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <!-- 30-day sales bars -->
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Text="{DynamicResource dk.dash.last30}" Style="{StaticResource Text.Section}"/>
+                            <ItemsControl ItemsSource="{Binding Last30Days}" Height="180" Margin="0,8,0,0">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate><UniformGrid Rows="1"/></ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border VerticalAlignment="Bottom" Margin="2,0" CornerRadius="3,3,0,0" ToolTip="{Binding Label}"
+                                                Height="{Binding Ratio, Converter={StaticResource RatioToLength}, ConverterParameter=170}"
+                                                Background="{StaticResource Brush.BladeLeft}"/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+                    <!-- Top products -->
+                    <Border Grid.Column="2" Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Text="{DynamicResource rep.topProducts}" Style="{StaticResource Text.Section}"/>
+                            <ItemsControl ItemsSource="{Binding TopProducts}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Margin="0,4">
+                                            <DockPanel>
+                                                <TextBlock DockPanel.Dock="Right" Text="{Binding Value, StringFormat=N2}" Style="{StaticResource Text.Caption}"/>
+                                                <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis"/>
+                                            </DockPanel>
+                                            <Border Height="4" CornerRadius="2" HorizontalAlignment="Left" Margin="0,4,0,0" Background="{StaticResource Brush.BladeRight}"
+                                                    Width="{Binding Ratio, Converter={StaticResource RatioToLength}, ConverterParameter=220}"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <Border Style="{StaticResource Card}" Margin="0,12,0,0">
+                    <StackPanel>
+                        <TextBlock Text="{DynamicResource dk.dash.byBranch}" Style="{StaticResource Text.Section}"/>
+                        <ItemsControl ItemsSource="{Binding SalesByBranch}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <DockPanel Margin="0,4">
+                                        <TextBlock DockPanel.Dock="Right" Text="{Binding Value, StringFormat=N2}" Width="140" TextAlignment="Right"/>
+                                        <TextBlock Text="{Binding Name}" Width="180" TextTrimming="CharacterEllipsis"/>
+                                        <Border Height="8" CornerRadius="4" HorizontalAlignment="Left" Background="{StaticResource Brush.BladeLeft}"
+                                                Width="{Binding Ratio, Converter={StaticResource RatioToLength}, ConverterParameter=420}"/>
+                                    </DockPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+        <c:PageState/>
+    </Grid>
+</UserControl>
