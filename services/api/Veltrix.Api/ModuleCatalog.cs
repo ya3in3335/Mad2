@@ -23,5 +23,7 @@ public static class ModuleCatalog
         new Veltrix.Modules.Synchronization.SynchronizationModule(),
         new Veltrix.Modules.Subscriptions.SubscriptionsModule(),
         new Veltrix.Modules.Platform.PlatformModule(),
+        new Veltrix.Modules.Operations.OperationsModule(),
+        new Veltrix.Modules.Telegram.TelegramModule(),
     ];
 }

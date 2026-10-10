@@ -27,6 +27,9 @@
   <Folder Name="/modules/platform/">
     <Project Path="modules/platform/Veltrix.Modules.Platform/Veltrix.Modules.Platform.csproj" />
   </Folder>
+  <Folder Name="/modules/operations/">
+    <Project Path="modules/operations/Veltrix.Modules.Operations/Veltrix.Modules.Operations.csproj" />
+  </Folder>
   <Folder Name="/modules/pos/">
     <Project Path="modules/pos/Veltrix.Modules.Pos/Veltrix.Modules.Pos.csproj" />
   </Folder>
@@ -47,6 +50,9 @@
   </Folder>
   <Folder Name="/modules/synchronization/">
     <Project Path="modules/synchronization/Veltrix.Modules.Synchronization/Veltrix.Modules.Synchronization.csproj" />
+  </Folder>
+  <Folder Name="/modules/telegram/">
+    <Project Path="modules/telegram/Veltrix.Modules.Telegram/Veltrix.Modules.Telegram.csproj" />
   </Folder>
   <Folder Name="/modules/tenants/">
     <Project Path="modules/tenants/Veltrix.Modules.Tenants/Veltrix.Modules.Tenants.csproj" />

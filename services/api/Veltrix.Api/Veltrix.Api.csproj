@@ -33,6 +33,8 @@
     <ProjectReference Include="../../../modules/synchronization/Veltrix.Modules.Synchronization/Veltrix.Modules.Synchronization.csproj" />
     <ProjectReference Include="../../../modules/subscriptions/Veltrix.Modules.Subscriptions/Veltrix.Modules.Subscriptions.csproj" />
     <ProjectReference Include="../../../modules/platform/Veltrix.Modules.Platform/Veltrix.Modules.Platform.csproj" />
+    <ProjectReference Include="../../../modules/operations/Veltrix.Modules.Operations/Veltrix.Modules.Operations.csproj" />
+    <ProjectReference Include="../../../modules/telegram/Veltrix.Modules.Telegram/Veltrix.Modules.Telegram.csproj" />
     <ProjectReference Include="../../background-workers/Veltrix.Workers/Veltrix.Workers.csproj" />
   </ItemGroup>
   <ItemGroup>

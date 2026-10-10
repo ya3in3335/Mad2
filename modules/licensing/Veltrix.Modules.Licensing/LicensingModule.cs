@@ -64,6 +64,12 @@ public sealed class LicensingModule : IModule
         admin.MapPost("/{id:guid}/revoke", (Guid id, LicenseStatusRequest req, LicenseAdminService svc, CancellationToken ct) => svc.SetStatusAsync(id, LicenseStatus.Revoked, req.Reason, ct)).RequireStepUp();
         admin.MapPost("/{id:guid}/transfer", (Guid id, TransferLicenseRequest req, LicenseAdminService svc, CancellationToken ct) => svc.TransferAsync(id, req, ct)).RequireStepUp();
         admin.MapGet("/{id:guid}/events", (Guid id, LicenseAdminService svc, CancellationToken ct) => svc.EventsAsync(id, ct));
+        admin.MapPost("/demo", (Veltrix.Contracts.Operations.IssueDemoLicenseRequest req, LicenseAdminService svc, CancellationToken ct) =>
+            svc.IssueDemoAsync(req.TenantId, req.Days, req.MaxDevices, req.Notes, ct));
+        admin.MapPost("/{id:guid}/seats", (Guid id, Veltrix.Contracts.Operations.ChangeLicenseSeatsRequest req, LicenseAdminService svc, CancellationToken ct) =>
+            svc.ChangeSeatsAsync(id, req.MaxDevices, req.Reason, ct));
+        admin.MapGet("/activation-failures", ([AsParameters] PageQuery q, Guid? tenantId, Guid? licenseId, LicenseAdminService svc, CancellationToken ct) =>
+            svc.ActivationFailuresAsync(q, tenantId, licenseId, ct));
 
         var devices = app.MapGroup("/api/v1/platform/devices").WithTags("Platform").RequirePermission(Permissions.PlatformLicenses);
         devices.MapGet("/", ([AsParameters] PageQuery q, Guid? tenantId, Guid? licenseId, LicenseAdminService svc, CancellationToken ct) =>

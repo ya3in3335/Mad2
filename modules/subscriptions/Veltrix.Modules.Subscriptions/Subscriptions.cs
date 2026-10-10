@@ -149,8 +149,16 @@ public sealed class ManualPaymentProvider : IPaymentProvider
 }
 
 public sealed class SubscriptionService(DbContext db, ITenantContext ctx, IClock clock, IAuditWriter audit, LicenseAdminService licenses,
-    ITenantStatusProvider status, IConfiguration config)
+    ITenantStatusProvider status, IConfiguration config, IAlertPublisher alerts)
 {
+    private async Task AlertPaymentAwaitingAsync(BillingInvoice inv, CancellationToken ct)
+    {
+        var tenant = await db.Set<Company>().Where(c => c.Id == inv.TenantId).Select(c => c.Name).SingleOrDefaultAsync(ct);
+        await alerts.PublishAsync(new AlertMessage(AlertTypes.PaymentAwaiting, "Manual payment awaiting confirmation",
+            $"{tenant}: invoice {inv.Number} of {inv.Total:0.00} {inv.Currency} is awaiting manual payment confirmation (due {inv.DueDate:yyyy-MM-dd}).",
+            AlertSeverity.Info, $"invoice-awaiting:{inv.Id}", inv.TenantId, TimeSpan.FromDays(60)), ct);
+    }
+
     // ---------- Plans ----------
     public async Task<IReadOnlyList<PlanDto>> PlansAsync(bool publicOnly, CancellationToken ct) =>
         (await db.Set<SubscriptionPlan>().Where(p => !publicOnly || p.IsPublic && p.IsActive).OrderBy(p => p.MonthlyPrice).ToListAsync(ct)).Select(ToDto).ToList();
@@ -195,11 +203,13 @@ public sealed class SubscriptionService(DbContext db, ITenantContext ctx, IClock
         };
         db.Add(sub);
         History(sub, "created", $"{plan.Code} {cycle} seats={seats} trial={trial}");
-        if (!trial) db.Add(NewInvoice(sub, now, end, price, 0, $"{plan.Name} — {cycle}", renewal: false));
+        var firstInvoice = trial ? null : NewInvoice(sub, now, end, price, 0, $"{plan.Name} — {cycle}", renewal: false);
+        if (firstInvoice is not null) db.Add(firstInvoice);
         audit.Write("platform.subscription_created", nameof(Subscription), sub.Id.ToString(), new { req.TenantId, plan.Code, cycle, trial });
         await db.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
         status.Invalidate(req.TenantId);
+        if (firstInvoice is not null && firstInvoice.Total > 0) await AlertPaymentAwaitingAsync(firstInvoice, ct);
         return await GetAsync(sub.Id, ct);
     }
 
@@ -217,6 +227,7 @@ public sealed class SubscriptionService(DbContext db, ITenantContext ctx, IClock
         db.Add(inv);
         audit.Write("platform.invoice_issued", nameof(BillingInvoice), inv.Id.ToString(), new { inv.Total });
         await db.SaveChangesAsync(ct);
+        if (inv.Total > 0) await AlertPaymentAwaitingAsync(inv, ct);
         return await InvoiceAsync(inv.Id, ct);
     }
 

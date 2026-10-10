@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Description>Owner alert outbox and Telegram bot (outbound alerts with rate limiting/backoff, read-only webhook commands).</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
+    <ProjectReference Include="../../shared-kernel/Veltrix.SharedKernel/Veltrix.SharedKernel.csproj" />
+    <ProjectReference Include="../../operations/Veltrix.Modules.Operations/Veltrix.Modules.Operations.csproj" />
+    <ProjectReference Include="../../../packages/contracts/Veltrix.Contracts/Veltrix.Contracts.csproj" />
+  </ItemGroup>
+</Project>

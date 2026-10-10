@@ -20,4 +20,6 @@ public static class SettingKeys
     public const string Locale = "company.locale";
     public const string LargeDiscountThresholdPct = "intelligence.largeDiscountPct";
     public const string MaxDiscountWithoutPermissionPct = "pos.maxDiscountPct";
+    /// <summary>Tenant consent (JSON bool) for the vendor to request sanitized remote diagnostic reports from its devices.</summary>
+    public const string DiagnosticsConsent = "diagnostics.remoteConsent";
 }

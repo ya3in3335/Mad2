@@ -218,6 +218,100 @@ public sealed class CleanupJob : IJob
     }
 }
 
+/// <summary>Retention for monitoring data: resolved incidents/events and finished diagnostic requests older than Diagnostics:RetentionDays
+/// (default 90), and delivered Telegram outbox rows older than the same period.</summary>
+public sealed class DiagnosticsRetentionJob : IJob
+{
+    public string Name => "diagnostics-retention";
+    public TimeSpan Interval => TimeSpan.FromHours(24);
+
+    public async Task RunAsync(IServiceProvider sp, CancellationToken ct)
+    {
+        var options = sp.GetRequiredService<Veltrix.Modules.Operations.OperationsOptions>();
+        await sp.GetRequiredService<Veltrix.Modules.Operations.DiagnosticsService>().PurgeAsync(options.RetentionDays, ct);
+        await sp.GetRequiredService<Veltrix.Modules.Telegram.TelegramAdminService>().PurgeAsync(options.RetentionDays, ct);
+    }
+}
+
+/// <summary>Daily owner alerts for subscriptions expiring within 7 days and subscriptions that expired (deduplicated per period).</summary>
+public sealed class SubscriptionAlertJob : IJob
+{
+    public string Name => "subscription-alerts";
+    public TimeSpan Interval => TimeSpan.FromHours(24);
+
+    public async Task RunAsync(IServiceProvider sp, CancellationToken ct)
+    {
+        var db = sp.GetRequiredService<DbContext>();
+        var alerts = sp.GetRequiredService<IAlertPublisher>();
+        var now = sp.GetRequiredService<IClock>().UtcNow;
+        var subs = await db.Set<Subscription>().IgnoreQueryFilters().AsNoTracking()
+            .Where(s => ((s.Status == SubscriptionStatus.Active || s.Status == SubscriptionStatus.Trialing) && s.CurrentPeriodEnd > now && s.CurrentPeriodEnd <= now.AddDays(7))
+                        || (s.Status == SubscriptionStatus.Expired && s.CurrentPeriodEnd > now.AddDays(-30)))
+            .ToListAsync(ct);
+        var ids = subs.Select(s => s.TenantId).Distinct().ToList();
+        var names = await db.Set<Company>().Where(c => ids.Contains(c.Id)).ToDictionaryAsync(c => c.Id, c => c.Name, ct);
+        foreach (var s in subs)
+        {
+            var name = names.GetValueOrDefault(s.TenantId) ?? "A tenant";
+            if (s.Status == SubscriptionStatus.Expired)
+                await alerts.PublishAsync(new AlertMessage(AlertTypes.SubscriptionExpired, "Subscription expired",
+                    $"{name}: {s.PlanCode} subscription expired on {s.CurrentPeriodEnd:yyyy-MM-dd}. The tenant is read-only until renewal.",
+                    AlertSeverity.Warning, $"sub-expired:{s.Id}:{s.CurrentPeriodEnd:yyyyMMdd}", s.TenantId, TimeSpan.FromDays(60)), ct);
+            else
+            {
+                var days = (int)Math.Ceiling((s.CurrentPeriodEnd - now).TotalDays);
+                await alerts.PublishAsync(new AlertMessage(AlertTypes.SubscriptionExpiring, "Subscription expiring soon",
+                    $"{name}: {s.PlanCode} {(s.Status == SubscriptionStatus.Trialing ? "trial" : "subscription")} ends on {s.CurrentPeriodEnd:yyyy-MM-dd} ({days} day(s)).",
+                    days <= 1 ? AlertSeverity.Warning : AlertSeverity.Info, $"sub-expiring:{s.Id}:{s.CurrentPeriodEnd:yyyyMMdd}", s.TenantId, TimeSpan.FromDays(30)), ct);
+            }
+        }
+    }
+}
+
+/// <summary>Backend health check every few minutes. Degraded/down states raise an owner alert; if the database itself is unreachable the alert
+/// bypasses the (database) outbox and is sent directly, at most once per hour.</summary>
+public sealed class HealthMonitorJob : IJob
+{
+    private static DateTimeOffset _lastDirectAlert = DateTimeOffset.MinValue;
+    public string Name => "health-monitor";
+    public TimeSpan Interval => TimeSpan.FromMinutes(5);
+
+    public async Task RunAsync(IServiceProvider sp, CancellationToken ct)
+    {
+        var clock = sp.GetRequiredService<IClock>();
+        Veltrix.Contracts.Platform.SystemHealthDto health;
+        try
+        {
+            health = await sp.GetRequiredService<PlatformService>().HealthAsync(Veltrix.Modules.Operations.OwnerDashboardService.ServerVersion, ct);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            await DirectAsync(sp, clock, "[CRITICAL] Backend outage\nHealth check failed: the database is unreachable.", ct);
+            throw;
+        }
+        if (!health.DatabaseReachable)
+        {
+            await DirectAsync(sp, clock, "[CRITICAL] Backend outage\nHealth check failed: the database is unreachable.", ct);
+            return;
+        }
+        if (health.Status == "healthy") return;
+        var reasons = new List<string>();
+        if (health.PendingMigrations.Count > 0) reasons.Add($"{health.PendingMigrations.Count} pending migration(s)");
+        reasons.AddRange(health.Workers.Where(w => w.Stale || w.LastStatus == "failed").Select(w => $"job {w.Name} {(w.Stale ? "stale" : "failed")}"));
+        if (health.LastBackup?.Status == "failed") reasons.Add("last backup failed");
+        await sp.GetRequiredService<IAlertPublisher>().PublishAsync(new AlertMessage(AlertTypes.BackendOutage, $"Backend {health.Status}",
+            "Health check: " + (reasons.Count == 0 ? health.Status : string.Join(", ", reasons)), AlertSeverity.Critical, "health:" + health.Status + ":" + string.Join('|', reasons)), ct);
+    }
+
+    private static async Task DirectAsync(IServiceProvider sp, IClock clock, string text, CancellationToken ct)
+    {
+        if (clock.UtcNow - _lastDirectAlert < TimeSpan.FromHours(1)) return;
+        _lastDirectAlert = clock.UtcNow;
+        await Veltrix.Modules.Telegram.TelegramDispatcher.SendDirectAsync(sp.GetRequiredService<Veltrix.Modules.Telegram.TelegramClient>(),
+            sp.GetRequiredService<Veltrix.Modules.Telegram.TelegramRateLimiter>(), sp.GetRequiredService<Veltrix.Modules.Telegram.TelegramOptions>(), clock, text, ct);
+    }
+}
+
 public static class WorkerRegistration
 {
     public static void AddVeltrixWorkers(this IServiceCollection services, IConfiguration config)
@@ -230,6 +324,9 @@ public static class WorkerRegistration
         services.AddSingleton<IJob, ScheduledReportJob>();
         services.AddSingleton<IJob, BackupJob>();
         services.AddSingleton<IJob, CleanupJob>();
+        services.AddSingleton<IJob, DiagnosticsRetentionJob>();
+        services.AddSingleton<IJob, SubscriptionAlertJob>();
+        services.AddSingleton<IJob, HealthMonitorJob>();
         services.AddSingleton<JobScheduler>();
         if (config.GetValue("Workers:Enabled", true)) services.AddHostedService(sp => sp.GetRequiredService<JobScheduler>());
     }

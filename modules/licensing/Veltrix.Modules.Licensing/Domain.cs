@@ -66,6 +66,13 @@ public sealed class Device : TenantEntity
     public DateTimeOffset? RevokedAt { get; set; }
     public string? RevokedReason { get; set; }
     public Guid? ReplacedByDeviceId { get; set; }
+
+    // ---- Telemetry reported by the client heartbeat (never key material) ----
+    public string? OsVersion { get; set; }
+    public DateTimeOffset? LastHeartbeatAt { get; set; }
+    public DateTimeOffset? LastSyncAt { get; set; }
+    public int? PendingSyncOperations { get; set; }
+    public int? FailedSyncOperations { get; set; }
 }
 
 /// <summary>Single-use server nonce for challenge-response device authentication (prevents replay).</summary>
@@ -123,6 +130,8 @@ internal sealed class DeviceConfig : IEntityTypeConfiguration<Device>
         b.Property(x => x.FingerprintHash).HasMaxLength(128);
         b.Property(x => x.Status).HasConversion<string>().HasMaxLength(20);
         b.Property(x => x.RevokedReason).HasMaxLength(500);
+        b.Property(x => x.OsVersion).HasMaxLength(60);
+        b.HasIndex(x => x.LastHeartbeatAt);
         b.HasOne<License>().WithMany().HasForeignKey(x => x.LicenseId).OnDelete(DeleteBehavior.Restrict);
     }
 }

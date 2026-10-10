@@ -11,7 +11,7 @@ using Veltrix.SharedKernel;
 
 namespace Veltrix.Modules.Platform;
 
-public sealed class PlatformService(DbContext db, ITenantContext ctx, IClock clock, IAuditWriter audit, AuthService auth)
+public sealed class PlatformService(DbContext db, ITenantContext ctx, IClock clock, IAuditWriter audit, AuthService auth, IAlertPublisher alerts)
 {
     public async Task<PlatformDashboardDto> DashboardAsync(CancellationToken ct)
     {
@@ -115,6 +115,14 @@ public sealed class PlatformService(DbContext db, ITenantContext ctx, IClock clo
         c.Messages.Add(new SupportMessage { CaseId = c.Id, AuthorId = ctx.RequireUser(), FromVendor = ctx.IsPlatformAdmin, Body = req.Body });
         db.Add(c);
         await db.SaveChangesAsync(ct);
+        if (!ctx.IsPlatformAdmin)
+        {
+            var tenant = c.TenantId is { } t ? await db.Set<Company>().Where(x => x.Id == t).Select(x => x.Name).SingleOrDefaultAsync(ct) : null;
+            await alerts.PublishAsync(new AlertMessage(AlertTypes.SupportTicket, "New support ticket",
+                $"{tenant ?? "A tenant"} opened a {c.Priority} priority ticket: {c.Subject}",
+                c.Priority is SupportPriority.Urgent ? AlertSeverity.Critical : c.Priority is SupportPriority.High ? AlertSeverity.Warning : AlertSeverity.Info,
+                $"support-case:{c.Id}", c.TenantId), ct);
+        }
         return ToDto(c, null);
     }
 
@@ -211,6 +219,10 @@ public sealed class PlatformService(DbContext db, ITenantContext ctx, IClock clo
         r.DownloadUrl = req.DownloadUrl; r.Sha256 = req.Sha256?.ToLowerInvariant(); r.IsActive = req.IsActive;
         audit.Write("platform.release_saved", nameof(AppRelease), r.Id.ToString(), new { r.Platform, r.Version });
         await db.SaveChangesAsync(ct);
+        if (r.IsActive)
+            await alerts.PublishAsync(new AlertMessage(AlertTypes.ReleasePublished, "Release published",
+                $"{r.Platform} {r.Version} ({r.Channel}) is available; minimum supported {r.MinSupportedVersion}.", AlertSeverity.Info,
+                $"release:{r.Platform}:{r.Channel}:{r.Version}", null, TimeSpan.FromDays(365)), ct);
         return ToDto(r);
     }
 

@@ -85,6 +85,14 @@ builder.Services.AddRateLimiter(o =>
             PermitLimit = builder.Configuration.GetValue("RateLimits:AuthPerMinute", 20),
             Window = TimeSpan.FromMinutes(1),
         }));
+    // Client telemetry (heartbeats, error reports, diagnostic uploads): per user/device, independent of the general budget.
+    o.AddPolicy(Veltrix.Modules.Operations.OperationsModule.TelemetryRateLimitPolicy, http => RateLimitPartition.GetFixedWindowLimiter(
+        (http.User.FindFirst("sub")?.Value ?? http.Connection.RemoteIpAddress?.ToString() ?? "anon") + ":" + http.User.FindFirst("did")?.Value,
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = builder.Configuration.GetValue("RateLimits:TelemetryPerMinute", 60),
+            Window = TimeSpan.FromMinutes(1),
+        }));
     o.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(http => RateLimitPartition.GetTokenBucketLimiter(
         http.User.FindFirst("sub")?.Value ?? http.Connection.RemoteIpAddress?.ToString() ?? "anon",
         _ => new TokenBucketRateLimiterOptions

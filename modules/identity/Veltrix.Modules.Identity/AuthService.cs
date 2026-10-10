@@ -26,7 +26,9 @@ public sealed class AuthService(
     IDataProtectionProvider dataProtection,
     IPasswordResetNotifier resetNotifier,
     IDeviceAuthorization deviceAuthorization,
-    ILogger<AuthService> logger)
+    ILogger<AuthService> logger,
+    IAlertPublisher alerts,
+    IDiagnosticsRecorder diagnostics)
 {
     private readonly AuthOptions _o = options.Value;
     private IDataProtector MfaProtector => dataProtection.CreateProtector("veltrix.identity.mfa.v1");
@@ -62,6 +64,15 @@ public sealed class AuthService(
             }
             audit.Write("auth.login_failed", nameof(User), user.Id.ToString());
             await db.SaveChangesAsync(ct);
+            if (user.LockoutUntil is { } lockedUntil && lockedUntil > now)
+            {
+                // Repeated failed sign-ins: recorded as a server diagnostic event and raised to the owner (no email/password in the text).
+                await diagnostics.RecordAsync(new ServerDiagnosticEvent(DiagnosticCategories.AuthFailures, DiagnosticSeverities.Warning, "account_lockout",
+                    "Account locked after repeated failed sign-ins", user.TenantId), ct);
+                await alerts.PublishAsync(new AlertMessage(AlertTypes.SecurityAlert, "Account locked out",
+                    $"A {(user.IsPlatformAdmin ? "platform administrator" : "tenant user")} account (id {user.Id}) was locked after repeated failed sign-ins.",
+                    user.IsPlatformAdmin ? AlertSeverity.Critical : AlertSeverity.Warning, $"lockout:{user.Id}", user.TenantId), ct);
+            }
             throw new UnauthorizedException("auth.invalid_credentials", "Invalid email or password.");
         }
 
@@ -117,6 +128,9 @@ public sealed class AuthService(
                 audit.Write("auth.refresh_reuse_detected", nameof(User), token.UserId.ToString());
                 await db.SaveChangesAsync(ct);
                 logger.LogWarning("Refresh token reuse detected for user {UserId}", token.UserId);
+                await alerts.PublishAsync(new AlertMessage(AlertTypes.SecurityAlert, "Refresh token reuse detected",
+                    $"Possible session theft: a rotated refresh token was reused for user id {token.UserId}. The session family was revoked.",
+                    AlertSeverity.Critical, $"refresh-reuse:{token.FamilyId}"), ct);
             }
             throw new UnauthorizedException("auth.invalid_refresh", "Session expired. Please sign in again.");
         }

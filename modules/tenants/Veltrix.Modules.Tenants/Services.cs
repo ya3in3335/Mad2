@@ -142,7 +142,7 @@ public sealed class SettingsService(DbContext db, ITenantContext ctx, IAuditWrit
     [
         SettingKeys.AllowNegativeStock, SettingKeys.CashRoundingIncrement, SettingKeys.ReceiptHeader, SettingKeys.ReceiptFooter,
         SettingKeys.ReceiptWidthChars, SettingKeys.PricesIncludeTax, SettingKeys.DefaultCurrency, SettingKeys.Locale,
-        SettingKeys.LargeDiscountThresholdPct, SettingKeys.MaxDiscountWithoutPermissionPct,
+        SettingKeys.LargeDiscountThresholdPct, SettingKeys.MaxDiscountWithoutPermissionPct, SettingKeys.DiagnosticsConsent,
     ];
 
     public async Task<T> GetAsync<T>(string key, T defaultValue, CancellationToken ct = default)

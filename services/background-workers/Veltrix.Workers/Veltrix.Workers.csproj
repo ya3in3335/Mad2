@@ -8,6 +8,8 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
     <ProjectReference Include="../../../modules/platform/Veltrix.Modules.Platform/Veltrix.Modules.Platform.csproj" />
     <ProjectReference Include="../../../modules/reporting/Veltrix.Modules.Reporting/Veltrix.Modules.Reporting.csproj" />
+    <ProjectReference Include="../../../modules/operations/Veltrix.Modules.Operations/Veltrix.Modules.Operations.csproj" />
+    <ProjectReference Include="../../../modules/telegram/Veltrix.Modules.Telegram/Veltrix.Modules.Telegram.csproj" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Veltrix.Api.IntegrationTests" />

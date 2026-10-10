@@ -25,7 +25,7 @@ public sealed class BackupOptions
 }
 
 /// <summary>Encrypted PostgreSQL backups: pg_dump (custom format) → AES-256-GCM chunked file (.vbk) → SHA-256 → optional restore test.</summary>
-public sealed class BackupService(DbContext db, BackupOptions options, IClock clock, ILogger<BackupService> logger)
+public sealed class BackupService(DbContext db, BackupOptions options, IClock clock, ILogger<BackupService> logger, IAlertPublisher alerts, IDiagnosticsRecorder diagnostics)
 {
     private static readonly byte[] Magic = "VLXBK1"u8.ToArray();
     private const int ChunkSize = 1024 * 1024;
@@ -63,6 +63,10 @@ public sealed class BackupService(DbContext db, BackupOptions options, IClock cl
             record.CompletedAt = clock.UtcNow;
             await db.SaveChangesAsync(ct);
             logger.LogError(ex, "Backup failed");
+            await diagnostics.RecordAsync(new ServerDiagnosticEvent(DiagnosticCategories.Backup, DiagnosticSeverities.Critical, "backup_failed", record.Error ?? "Backup failed"), ct);
+            await alerts.PublishAsync(new AlertMessage(AlertTypes.BackupFailed, "Backup failed",
+                $"The database backup started at {record.StartedAt:yyyy-MM-dd HH:mm}Z failed: {record.Error}", AlertSeverity.Critical,
+                $"backup-failed:{record.Id}"), ct);
         }
         finally
         {
@@ -241,6 +245,11 @@ public sealed class BackupJob : IJob
         if (last is not null && sp.GetRequiredService<IClock>().UtcNow - last.StartedAt < TimeSpan.FromHours(options.IntervalHours)) return;
         var record = await sp.GetRequiredService<BackupService>().RunAsync(ct);
         if (record.Status == "failed") throw new InvalidOperationException("Backup failed: " + record.Error);
-        if (options.VerifyRestore && !record.Verified) throw new InvalidOperationException("Backup created but restore verification failed: " + record.VerificationDetails);
+        if (options.VerifyRestore && !record.Verified)
+        {
+            await sp.GetRequiredService<IAlertPublisher>().PublishAsync(new AlertMessage(AlertTypes.BackupFailed, "Backup verification failed",
+                $"Backup {record.FileName} was created but its restore verification failed.", AlertSeverity.Critical, $"backup-verify:{record.Id}"), ct);
+            throw new InvalidOperationException("Backup created but restore verification failed: " + record.VerificationDetails);
+        }
     }
 }

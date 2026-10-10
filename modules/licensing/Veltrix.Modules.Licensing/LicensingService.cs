@@ -23,8 +23,11 @@ public static class PlanDefaults
 /// <summary>Device-facing activation protocol (anonymous endpoints, authenticated by license key + device key signatures).</summary>
 public sealed class ActivationService(
     DbContext db, LicenseSigner signer, LicensingOptions options, IClock clock, IAuditWriter audit,
-    TenantAdminService tenantAdmin, IMemoryCache cache)
+    TenantAdminService tenantAdmin, IMemoryCache cache, IAlertPublisher alerts, IDiagnosticsRecorder diagnostics,
+    Microsoft.AspNetCore.Http.IHttpContextAccessor http)
 {
+    public const string ActivationFailedAction = "licensing.activation_failed";
+
     public static readonly string[] Purposes = ["activate", "refresh", "release"];
 
     public async Task<ChallengeResponse> CreateChallengeAsync(ChallengeRequest req, CancellationToken ct)
@@ -65,7 +68,51 @@ public sealed class ActivationService(
             .Require(req.Platform is "windows" or "android", "platform", "Unsupported platform.")
             .NotEmpty(req.DeviceName, "deviceName", 120).NotEmpty(req.PublicKey, "publicKey", 500).NotEmpty(req.FingerprintHash, "fingerprintHash", 128)
             .MaxLength(req.AppVersion, "appVersion", 40).ThrowIfInvalid();
+        try
+        {
+            return await ActivateCoreAsync(req, ct);
+        }
+        catch (DomainException ex)
+        {
+            await RecordFailedActivationAsync(req, ex.Code, ct);
+            throw;
+        }
+    }
 
+    /// <summary>Failed activation attempts are kept in the audit trail (and the license history when the key is recognized).
+    /// The license key itself is never stored.</summary>
+    private async Task RecordFailedActivationAsync(ActivateRequest req, string code, CancellationToken ct)
+    {
+        try
+        {
+            db.ChangeTracker.Clear();
+            var keyHash = LicenseKeys.Hash(req.LicenseKey);
+            var license = await db.Set<License>().IgnoreQueryFilters().AsNoTracking().SingleOrDefaultAsync(l => l.KeyHash == keyHash, ct);
+            var now = clock.UtcNow;
+            db.Set<AuditLog>().Add(new AuditLog
+            {
+                TenantId = license?.TenantId, Action = ActivationFailedAction, EntityType = nameof(License), EntityId = license?.Id.ToString(),
+                Details = System.Text.Json.JsonSerializer.Serialize(new { code, platform = req.Platform, installationId = req.InstallationId, keyRecognized = license is not null }),
+                IpAddress = http.HttpContext?.Connection.RemoteIpAddress?.ToString(), OccurredAt = now,
+            });
+            if (license is not null) AddEvent(license, null, "device.activation_failed", code);
+            await db.SaveChangesAsync(ct);
+            var tenantName = license is null ? null : await db.Set<Company>().Where(c => c.Id == license.TenantId).Select(c => c.Name).SingleOrDefaultAsync(ct);
+            await diagnostics.RecordAsync(new ServerDiagnosticEvent(DiagnosticCategories.DeviceRegistration, DiagnosticSeverities.Warning, "activation_failed",
+                $"License activation failed: {code}", license?.TenantId), ct);
+            await alerts.PublishAsync(new AlertMessage(AlertTypes.LicenseActivationFailed, "License activation failed",
+                $"Activation failed ({code}) on a {req.Platform} device" + (tenantName is null ? " with an unrecognized key." : $" for {tenantName}."),
+                AlertSeverity.Warning, $"activation-failed:{req.InstallationId}:{code}", license?.TenantId), ct);
+        }
+        catch (Exception e) when (e is not OperationCanceledException)
+        {
+            // Recording a failure must never mask the original error.
+            db.ChangeTracker.Clear();
+        }
+    }
+
+    private async Task<ActivateResponse> ActivateCoreAsync(ActivateRequest req, CancellationToken ct)
+    {
         await ConsumeChallengeAsync(req.ChallengeId, req.InstallationId, "activate", req.PublicKey, req.Signature, ct);
 
         var now = clock.UtcNow;
@@ -89,6 +136,7 @@ public sealed class ActivationService(
         var devices = await db.Set<Device>().IgnoreQueryFilters().Where(d => d.LicenseId == license.Id && d.Status == DeviceStatus.Active).ToListAsync(ct);
 
         var device = devices.FirstOrDefault(d => d.InstallationId == req.InstallationId && d.PublicKeyThumbprint == thumb);
+        var isNewDevice = device is null;
         if (device is null)
         {
             // Same hardware re-installed (new installation/key, same fingerprint): replace the old activation in place.
@@ -118,9 +166,13 @@ public sealed class ActivationService(
         audit.Write("licensing.device_activated", nameof(Device), device.Id.ToString(), new { license.Id, req.Platform, req.DeviceName });
         await db.SaveChangesAsync(ct);
         cache.Remove(DeviceCacheKey(device.Id));
+        var activeCount = devices.Count(d => d.Status == DeviceStatus.Active) + (devices.Contains(device) ? 0 : 1);
+        if (isNewDevice)
+            await alerts.PublishAsync(new AlertMessage(AlertTypes.DeviceActivated, "New device activated",
+                $"{company.Name}: new {req.Platform} device \"{req.DeviceName.Trim()}\" activated ({activeCount}/{license.MaxDevices} seats).",
+                AlertSeverity.Info, $"device-activated:{device.Id}", license.TenantId), ct);
 
         var setup = company.SetupCompleted ? null : await tenantAdmin.IssueSetupTokenIfPendingAsync(company.Id, ct);
-        var activeCount = devices.Count(d => d.Status == DeviceStatus.Active) + (devices.Contains(device) ? 0 : 1);
         return new ActivateResponse(device.Id, license.TenantId, company.Name, IssueCertificate(license, device, company.Name, now),
             ToSummary(license, activeCount, now), setup?.Token, setup?.Expires, company.SetupCompleted);
     }
@@ -340,17 +392,93 @@ public sealed class LicenseAdminService(DbContext db, ITenantContext ctx, IClock
         return new PagedResult<DeviceDto>(page.Items.Select(d => ToDto(d, names.GetValueOrDefault(d.TenantId))).ToList(), page.Page, page.PageSize, page.TotalCount);
     }
 
-    public async Task RevokeDeviceAsync(Guid deviceId, string reason, CancellationToken ct)
+    /// <summary>Deactivates a device and frees its seat. <paramref name="asReplaced"/> marks it as replaced (customer swaps hardware)
+    /// instead of revoked; either way the device must activate again to obtain a new certificate.</summary>
+    public async Task RevokeDeviceAsync(Guid deviceId, string reason, CancellationToken ct, bool asReplaced = false)
     {
         new Validator().NotEmpty(reason, "reason", 500).ThrowIfInvalid();
         var query = ctx.IsPlatformAdmin ? db.Set<Device>().IgnoreQueryFilters() : db.Set<Device>();
         var d = await query.SingleOrDefaultAsync(x => x.Id == deviceId, ct) ?? throw new NotFoundException("device.not_found", "Device not found.");
         if (d.Status != DeviceStatus.Active) return;
-        d.Status = DeviceStatus.Revoked; d.RevokedAt = clock.UtcNow; d.RevokedReason = reason;
-        db.Set<LicenseEvent>().Add(new LicenseEvent { TenantId = d.TenantId, LicenseId = d.LicenseId, DeviceId = d.Id, Type = "device.revoked", Details = reason, OccurredAt = clock.UtcNow });
-        audit.Write("licensing.device_revoked", nameof(Device), d.Id.ToString(), new { reason });
+        d.Status = asReplaced ? DeviceStatus.Replaced : DeviceStatus.Revoked; d.RevokedAt = clock.UtcNow; d.RevokedReason = reason;
+        var type = asReplaced ? "device.replaced" : "device.revoked";
+        db.Set<LicenseEvent>().Add(new LicenseEvent { TenantId = d.TenantId, LicenseId = d.LicenseId, DeviceId = d.Id, Type = type, Details = reason, OccurredAt = clock.UtcNow });
+        audit.Write(asReplaced ? "licensing.device_replaced" : "licensing.device_revoked", nameof(Device), d.Id.ToString(), new { reason });
         await db.SaveChangesAsync(ct);
         cache.Remove(ActivationService.DeviceCacheKey(d.Id));
+    }
+
+    /// <summary>Moves an active device to another usable license of the same tenant (seat check applies). The device picks up
+    /// the new license on its next certificate refresh.</summary>
+    public async Task ReassignDeviceAsync(Guid deviceId, Guid targetLicenseId, string reason, CancellationToken ct)
+    {
+        new Validator().NotEmpty(reason, "reason", 500).ThrowIfInvalid();
+        var d = await db.Set<Device>().IgnoreQueryFilters().SingleOrDefaultAsync(x => x.Id == deviceId, ct) ?? throw new NotFoundException("device.not_found", "Device not found.");
+        if (d.Status != DeviceStatus.Active) throw new DomainException("device.inactive", "Only active devices can be reassigned.", 409);
+        if (d.LicenseId == targetLicenseId) throw ValidationException.For("targetLicenseId", "The device already uses this license.");
+        var target = await LoadAsync(targetLicenseId, ct);
+        if (target.TenantId != d.TenantId) throw ValidationException.For("targetLicenseId", "The target license belongs to another tenant. Use a license transfer instead.");
+        if (!target.IsUsable(clock.UtcNow)) throw new DomainException("licensing.unavailable", "The target license is not usable.", 409);
+        var used = await db.Set<Device>().IgnoreQueryFilters().CountAsync(x => x.LicenseId == target.Id && x.Status == DeviceStatus.Active, ct);
+        if (used >= target.MaxDevices) throw new ConflictException("licensing.seats_exhausted", "The target license has no free seat.");
+        var from = d.LicenseId;
+        d.LicenseId = target.Id;
+        db.Set<LicenseEvent>().Add(new LicenseEvent { TenantId = d.TenantId, LicenseId = from, DeviceId = d.Id, Type = "device.reassigned_out", Details = $"to {target.Id}: {reason}", OccurredAt = clock.UtcNow });
+        AddEvent(target, d.Id, "device.reassigned_in", $"from {from}: {reason}");
+        audit.Write("licensing.device_reassigned", nameof(Device), d.Id.ToString(), new { fromLicense = from, toLicense = target.Id, reason });
+        await db.SaveChangesAsync(ct);
+        cache.Remove(ActivationService.DeviceCacheKey(d.Id));
+        status.Invalidate(d.TenantId);
+    }
+
+    /// <summary>Demo license: trial plan, all features, short fixed duration.</summary>
+    public Task<CreateLicenseResponse> IssueDemoAsync(Guid tenantId, int days, int maxDevices, string? notes, CancellationToken ct)
+    {
+        new Validator().Require(days is >= 1 and <= 60, "days", "Must be between 1 and 60.").Require(maxDevices is >= 1 and <= 10, "maxDevices", "Must be between 1 and 10.")
+            .MaxLength(notes, "notes", 2000).ThrowIfInvalid();
+        var now = clock.UtcNow;
+        return CreateAsync(new CreateLicenseRequest(tenantId, nameof(LicenseType.Trial), "trial", maxDevices, now, now.AddDays(days), null, null,
+            string.IsNullOrWhiteSpace(notes) ? "Demo license" : "Demo license — " + notes), ct);
+    }
+
+    /// <summary>Change the seat count; refuses to go below the number of active devices.</summary>
+    public async Task<LicenseDto> ChangeSeatsAsync(Guid id, int maxDevices, string reason, CancellationToken ct)
+    {
+        new Validator().Require(maxDevices is >= 1 and <= 1000, "maxDevices", "Must be between 1 and 1000.").NotEmpty(reason, "reason", 500).ThrowIfInvalid();
+        var l = await LoadAsync(id, ct);
+        if (l.Status is LicenseStatus.Revoked or LicenseStatus.Transferred) throw new DomainException("licensing.closed", "This license is closed.");
+        var active = await db.Set<Device>().IgnoreQueryFilters().CountAsync(d => d.LicenseId == l.Id && d.Status == DeviceStatus.Active, ct);
+        if (maxDevices < active) throw new DomainException("licensing.seats_in_use", $"{active} devices are active; deactivate devices before reducing seats.", 409);
+        var old = l.MaxDevices;
+        l.MaxDevices = maxDevices;
+        AddEvent(l, null, "license.seats_changed", $"{old} -> {maxDevices}: {reason}");
+        audit.Write("platform.license_seats_changed", nameof(License), l.Id.ToString(), new { old, maxDevices, reason });
+        await db.SaveChangesAsync(ct);
+        status.Invalidate(l.TenantId);
+        return await ToDtoAsync(l, ct);
+    }
+
+    /// <summary>Failed activation attempts recorded by <see cref="ActivationService"/> (audit trail; no key material).</summary>
+    public async Task<PagedResult<Veltrix.Contracts.Operations.ActivationFailureDto>> ActivationFailuresAsync(PageQuery q, Guid? tenantId, Guid? licenseId, CancellationToken ct)
+    {
+        var query = db.Set<AuditLog>().AsNoTracking().Where(a => a.Action == ActivationService.ActivationFailedAction);
+        if (tenantId is { } t) query = query.Where(a => a.TenantId == t);
+        if (licenseId is { } lid) { var s = lid.ToString(); query = query.Where(a => a.EntityId == s); }
+        var page = await query.OrderByDescending(a => a.OccurredAt).ToPagedAsync(q, ct);
+        return new PagedResult<Veltrix.Contracts.Operations.ActivationFailureDto>(page.Items.Select(a =>
+        {
+            string code = "", platform = ""; Guid? installation = null;
+            if (a.Details is not null)
+            {
+                using var doc = System.Text.Json.JsonDocument.Parse(a.Details);
+                var r = doc.RootElement;
+                if (r.TryGetProperty("code", out var c)) code = c.GetString() ?? "";
+                if (r.TryGetProperty("platform", out var p)) platform = p.GetString() ?? "";
+                if (r.TryGetProperty("installationId", out var i) && i.TryGetGuid(out var g)) installation = g;
+            }
+            return new Veltrix.Contracts.Operations.ActivationFailureDto(a.Id, a.TenantId, Guid.TryParse(a.EntityId, out var l) ? l : null, code, platform, installation,
+                a.IpAddress, a.OccurredAt);
+        }).ToList(), page.Page, page.PageSize, page.TotalCount);
     }
 
     public async Task<IReadOnlyList<LicenseEventDto>> EventsAsync(Guid licenseId, CancellationToken ct)

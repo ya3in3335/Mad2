@@ -31,7 +31,8 @@ namespace Veltrix.Modules.Synchronization;
 ///  - Customers: last-writer-wins guarded by BaseVersion; when the server copy changed after the device's base version the server wins and a conflict is reported.
 ///  - Catalog, prices, tax, settings: server-authoritative, pulled only.
 /// </summary>
-public sealed class SyncService(DbContext db, TenantContext ctx, IServiceProvider services, IClock clock, IDeviceAuthorization devices, ILogger<SyncService> logger)
+public sealed class SyncService(DbContext db, TenantContext ctx, IServiceProvider services, IClock clock, IDeviceAuthorization devices, ILogger<SyncService> logger,
+    IDiagnosticsRecorder diagnostics)
 {
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web) { Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() } };
 
@@ -73,6 +74,8 @@ public sealed class SyncService(DbContext db, TenantContext ctx, IServiceProvide
         {
             db.ChangeTracker.Clear();
             logger.LogWarning(e, "Sync operation {OpId} ({Type}) failed transiently", op.OpId, op.Type);
+            await diagnostics.RecordAsync(new ServerDiagnosticEvent(DiagnosticCategories.Sync, DiagnosticSeverities.Error, "sync_transient:" + op.Type,
+                $"{e.GetType().Name}: {e.Message}", tid, ctx.DeviceId), ct);
             return new(op.OpId, "retry", "sync.transient", "Temporary failure; the device will retry.", null, null);
         }
 

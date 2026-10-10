@@ -53,7 +53,9 @@ public sealed class TenantAccessMiddleware(RequestDelegate next)
         {
             var s = await status.GetStatusAsync(tid, http.RequestAborted);
             var isRead = HttpMethods.IsGet(http.Request.Method) || HttpMethods.IsHead(http.Request.Method);
-            if (!s.AllowsAccess() && !(isRead && s.AllowsReadOnly()) && !http.Request.Path.StartsWithSegments("/api/v1/auth"))
+            // Telemetry (heartbeat, error reports) stays available to read-only (expired) tenants so the vendor keeps visibility.
+            var isTelemetry = http.Request.Path.StartsWithSegments("/api/v1/devices/heartbeat") || http.Request.Path.StartsWithSegments("/api/v1/diagnostics/errors");
+            if (!s.AllowsAccess() && !((isRead || isTelemetry) && s.AllowsReadOnly()) && !http.Request.Path.StartsWithSegments("/api/v1/auth"))
             {
                 var code = s == TenantAccessStatus.Expired ? "subscription.expired" : "tenant.suspended";
                 var msg = s == TenantAccessStatus.Expired

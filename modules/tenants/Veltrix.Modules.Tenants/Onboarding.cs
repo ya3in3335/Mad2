@@ -16,7 +16,7 @@ public static class SetupTokens
 /// <summary>Completes first-run company configuration. Runs every module's onboarding contributor in one transaction.</summary>
 public sealed class OnboardingService(
     DbContext db, TenantContext ctx, IEnumerable<IOnboardingContributor> contributors, IClock clock, IAuditWriter audit,
-    ITenantStatusProvider status)
+    ITenantStatusProvider status, IAlertPublisher alerts)
 {
     public async Task<OnboardingResult> CompleteAsync(CompleteOnboardingRequest req, CancellationToken ct)
     {
@@ -63,12 +63,14 @@ public sealed class OnboardingService(
         await db.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
         status.Invalidate(company.Id);
+        await alerts.PublishAsync(new AlertMessage(AlertTypes.TenantOnboarded, "Tenant onboarding completed",
+            $"{company.Name} completed onboarding and is now active.", AlertSeverity.Info, $"tenant-onboarded:{company.Id}", company.Id), ct);
         return new OnboardingResult(company.Id, branch.Id, wh.Id);
     }
 }
 
 /// <summary>Vendor-side tenant administration (Control Center). Requires platform permissions.</summary>
-public sealed class TenantAdminService(DbContext db, IClock clock, IAuditWriter audit, ITenantStatusProvider status)
+public sealed class TenantAdminService(DbContext db, IClock clock, IAuditWriter audit, ITenantStatusProvider status, IAlertPublisher alerts)
 {
     public async Task<CreateTenantResponse> CreateAsync(CreateTenantRequest req, CancellationToken ct)
     {
@@ -82,6 +84,9 @@ public sealed class TenantAdminService(DbContext db, IClock clock, IAuditWriter 
         db.Set<Company>().Add(c);
         audit.Write("platform.tenant_created", nameof(Company), c.Id.ToString(), new { c.Name });
         await db.SaveChangesAsync(ct);
+        await alerts.PublishAsync(new AlertMessage(AlertTypes.TenantRegistered, "New tenant registered",
+            $"{c.Name}{(string.IsNullOrWhiteSpace(c.Wilaya) ? "" : " (" + c.Wilaya + ")")} was registered and awaits onboarding.", AlertSeverity.Info,
+            $"tenant-registered:{c.Id}", c.Id), ct);
         return new CreateTenantResponse(c.Id, token, c.SetupTokenExpiresAt!.Value);
     }
 
