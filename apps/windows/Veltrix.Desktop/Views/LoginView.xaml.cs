@@ -27,6 +27,11 @@ public partial class LoginView : UserControl
         if (DataContext is LoginViewModel vm) vm.Password = PasswordBox.Password;
     }
 
+    private void OnConfirmChanged(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is LoginViewModel vm) vm.ConfirmPassword = ConfirmBox.Password;
+    }
+
     private void OnVmChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(LoginViewModel.MfaRequired) && sender is LoginViewModel { MfaRequired: true })

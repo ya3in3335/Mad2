@@ -9,8 +9,10 @@ public enum StartRoute { Activation, Onboarding, Login, Shell }
 public static class StartupRouter
 {
     /// <summary>Chooses the first screen after the splash from the offline license evaluation and the stored session.</summary>
-    public static StartRoute Decide(bool hasServer, LicenseEvaluation license, bool setupCompleted, bool hasSetupToken, bool hasSession)
+    public static StartRoute Decide(bool hasServer, LicenseEvaluation license, bool setupCompleted, bool hasSetupToken, bool hasSession, bool standalone = false)
     {
+        // Standalone (offline license): no server at all; the login screen creates the local owner on first run.
+        if (standalone && !license.RequiresActivation && license.State is not (LicenseState.ClockRollback or LicenseState.Suspended)) return StartRoute.Login;
         if (!hasServer || license.RequiresActivation || license.State is LicenseState.ClockRollback or LicenseState.Suspended) return StartRoute.Activation;
         if (!setupCompleted && hasSetupToken) return StartRoute.Onboarding;
         return hasSession ? StartRoute.Shell : StartRoute.Login;
@@ -32,7 +34,8 @@ public sealed partial class AppViewModel(DesktopServices services) : ObservableO
         s.Api.DeviceId = s.Settings.DeviceId;
 
         var eval = s.License.Evaluate();
-        if (s.Settings.ServerUrl is not null && s.Settings.DeviceId is not null && eval.State is not LicenseState.Missing)
+        if (s.IsStandalone) await s.Standalone.Store.EnsureRegisterAsync(ct);
+        if (!s.IsStandalone && s.Settings.ServerUrl is not null && s.Settings.DeviceId is not null && eval.State is not LicenseState.Missing)
         {
             // Renew the certificate if the server answers quickly; otherwise continue on the offline grace period.
             using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
@@ -44,7 +47,7 @@ public sealed partial class AppViewModel(DesktopServices services) : ObservableO
         }
 
         var hasSession = false;
-        if (!eval.RequiresActivation && s.Settings.ServerUrl is not null)
+        if (!s.IsStandalone && !eval.RequiresActivation && s.Settings.ServerUrl is not null)
         {
             using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
             timeout.CancelAfter(TimeSpan.FromSeconds(6));
@@ -53,7 +56,7 @@ public sealed partial class AppViewModel(DesktopServices services) : ObservableO
         }
 
         var route = StartupRouter.Decide(s.Settings.ServerUrl is not null, eval, s.Settings.SetupCompleted,
-            s.Secrets.Get(SecureStore.SetupToken) is not null, hasSession);
+            s.Secrets.Get(SecureStore.SetupToken) is not null, hasSession, s.IsStandalone);
         s.Log.Info($"Startup complete: license={eval.State}, route={route}");
         return route;
     }

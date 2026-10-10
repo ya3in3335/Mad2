@@ -58,6 +58,11 @@ public sealed class DesktopServices
     public required TimeProvider Time { get; init; }
     public required AppLog Log { get; init; }
     public required string Version { get; init; }
+    /// <summary>Local accounts, repository and backups for standalone (offline-licensed) installations.</summary>
+    public required Core.Standalone.StandaloneService Standalone { get; init; }
+
+    /// <summary>The device runs on an offline license: single-device, local data only, no server and no sync.</summary>
+    public bool IsStandalone => License.IsStandalone;
 
     public void SaveSettings() => SettingsStore.Save(Settings);
 

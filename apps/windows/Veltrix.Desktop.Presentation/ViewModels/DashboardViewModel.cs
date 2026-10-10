@@ -23,7 +23,7 @@ public sealed partial class DashboardViewModel(DesktopServices s) : PageViewMode
 
     protected override async Task<bool> LoadAsync(CancellationToken ct)
     {
-        var d = await S.Api.GetAsync<DashboardDto>("/api/v1/reports/dashboard", ct);
+        var d = S.IsStandalone ? await S.Standalone.Store.DashboardAsync(ct) : await S.Api.GetAsync<DashboardDto>("/api/v1/reports/dashboard", ct);
         Apply(d);
         return true;
     }

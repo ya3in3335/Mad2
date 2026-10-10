@@ -13,6 +13,18 @@ public sealed class SessionService(ApiClient api, SecureTokenStore tokens, Secur
 {
     public UserProfileDto? User { get; private set; }
     public bool IsOfflineSession { get; private set; }
+    /// <summary>Signed in with a local account of a standalone (offline-licensed) installation.</summary>
+    public bool IsStandaloneSession { get; private set; }
+    public Standalone.LocalUser? LocalUser { get; private set; }
+
+    /// <summary>Starts a session for a local account that <see cref="Standalone.LocalAuthService"/> has verified.</summary>
+    public void SignInLocal(Standalone.LocalUser user)
+    {
+        LocalUser = user;
+        User = user.ToProfile();
+        IsOfflineSession = false;
+        IsStandaloneSession = true;
+    }
 
     public bool HasPermission(string permission) =>
         User is { } u && (u.IsPlatformAdmin || u.Permissions.Contains("*") || u.Permissions.Contains(permission));
@@ -79,6 +91,7 @@ public sealed class SessionService(ApiClient api, SecureTokenStore tokens, Secur
     {
         User = null;
         IsOfflineSession = false;
+        if (IsStandaloneSession) { IsStandaloneSession = false; LocalUser = null; return; }
         await api.LogoutAsync(ct);
     }
 }

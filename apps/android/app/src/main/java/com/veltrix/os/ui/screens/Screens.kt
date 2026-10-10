@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
@@ -45,8 +46,11 @@ import kotlinx.serialization.json.contentOrNull
 @HiltViewModel
 class ScreensViewModel @Inject constructor(
     val remote: RemoteRepository, val db: VeltrixDatabase, val settings: AppSettings, val session: SessionRepository, val license: LicenseRepository,
-    val sync: SyncRepository,
-) : ViewModel()
+    val sync: SyncRepository, val local: StandaloneRepository,
+) : ViewModel() {
+    /** Offline license: every screen reads/writes the local database; server-only features are hidden. */
+    val standalone: Boolean get() = license.standalone
+}
 
 @Composable
 private fun <T> rememberLoad(key: Any = Unit, block: suspend () -> T): Pair<Load<T>, () -> Unit> {
@@ -58,7 +62,7 @@ private fun <T> rememberLoad(key: Any = Unit, block: suspend () -> T): Pair<Load
 // ---------------------------------------------------------------- Dashboard
 @Composable
 fun DashboardScreen(vm: ScreensViewModel = hiltViewModel()) {
-    val (state, retry) = rememberLoad { vm.remote.dashboard() }
+    val (state, retry) = rememberLoad { if (vm.standalone) vm.local.dashboard() else vm.remote.dashboard() }
     val localToday by vm.db.sales().totalSince(LocalDate.now().atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()).collectAsState(0.0)
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(12.dp)) {
         item {
@@ -85,7 +89,7 @@ fun DashboardScreen(vm: ScreensViewModel = hiltViewModel()) {
                 }
             }
         }
-        item {
+        if (!vm.standalone) item {
             SectionTitle(stringResource(R.string.app_offline) + " / " + stringResource(R.string.pos_cart))
             KpiCard(stringResource(R.string.rep_salesToday) + " (local)", money(localToday), Modifier.fillMaxWidth())
         }
@@ -113,30 +117,78 @@ fun Sparkline(values: List<Double>) {
 @Composable
 fun CatalogScreen(vm: ScreensViewModel = hiltViewModel()) {
     var q by remember { mutableStateOf("") }
-    val products by vm.db.catalog().searchProducts(q).collectAsState(emptyList())
-    Column(Modifier.fillMaxSize()) {
-        OutlinedTextField(q, { q = it }, Modifier.fillMaxWidth().padding(12.dp), placeholder = { Text(stringResource(R.string.nav_search)) },
-            leadingIcon = { Icon(Icons.Outlined.Search, null) }, singleLine = true)
-        if (products.isEmpty()) EmptyState(stringResource(R.string.state_empty))
-        LazyColumn {
-            items(products, key = { it.id }) { p ->
-                ListItem(headlineContent = { Text(p.name) }, supportingContent = { Text("${p.sku}${p.nameAr?.let { " · $it" } ?: ""}") },
-                    trailingContent = { Text(money(p.salePrice), fontWeight = FontWeight.SemiBold) })
-                HorizontalDivider()
+    val products by (if (vm.standalone) vm.local.products(q) else vm.db.catalog().searchProducts(q)).collectAsState(emptyList())
+    var editing by remember { mutableStateOf<com.veltrix.os.data.db.ProductEntity?>(null) }
+    var adding by remember { mutableStateOf(false) }
+    Scaffold(floatingActionButton = {
+        // Standalone: the catalog is managed on this device (online it comes from the server).
+        if (vm.standalone) FloatingActionButton(onClick = { adding = true }) { Icon(Icons.Outlined.Add, stringResource(R.string.action_add)) }
+    }) { pad ->
+        Column(Modifier.fillMaxSize().padding(pad)) {
+            OutlinedTextField(q, { q = it }, Modifier.fillMaxWidth().padding(12.dp), placeholder = { Text(stringResource(R.string.nav_search)) },
+                leadingIcon = { Icon(Icons.Outlined.Search, null) }, singleLine = true)
+            if (products.isEmpty()) EmptyState(stringResource(R.string.state_empty))
+            LazyColumn {
+                items(products, key = { it.id }) { p ->
+                    ListItem(headlineContent = { Text(p.name) }, supportingContent = { Text("${p.sku}${p.nameAr?.let { " · $it" } ?: ""}") },
+                        trailingContent = { Text(money(p.salePrice), fontWeight = FontWeight.SemiBold) },
+                        modifier = if (vm.standalone) Modifier.clickable { editing = p } else Modifier)
+                    HorizontalDivider()
+                }
             }
         }
     }
+    if (adding || editing != null) ProductDialog(vm, editing) { adding = false; editing = null }
+}
+
+@Composable
+private fun ProductDialog(vm: ScreensViewModel, original: com.veltrix.os.data.db.ProductEntity?, onClose: () -> Unit) {
+    fun num(d: Double) = if (d % 1.0 == 0.0) d.toLong().toString() else d.toString()
+    var sku by remember { mutableStateOf(original?.sku ?: "") }
+    var name by remember { mutableStateOf(original?.name ?: "") }
+    var price by remember { mutableStateOf(original?.salePrice?.let(::num) ?: "") }
+    var cost by remember { mutableStateOf(original?.costPrice?.let(::num) ?: "0") }
+    var tax by remember { mutableStateOf(original?.taxRatePercent?.let(::num) ?: "0") }
+    var low by remember { mutableStateOf(original?.lowStockThreshold?.let(::num) ?: "0") }
+    var barcodes by remember { mutableStateOf(original?.barcodes ?: "") }
+    var track by remember { mutableStateOf(original?.trackStock ?: true) }
+    var error by remember { mutableStateOf<String?>(null) }
+    val scope = rememberCoroutineScope()
+    fun dec(s: String) = s.filter { c -> c.isDigit() || c == '.' }
+    AlertDialog(onDismissRequest = onClose, title = { Text(stringResource(R.string.nav_products)) }, text = {
+        Column(Modifier.verticalScroll(rememberScrollState())) {
+            OutlinedTextField(sku, { sku = it }, label = { Text("SKU") }, singleLine = true)
+            OutlinedTextField(name, { name = it }, label = { Text(stringResource(R.string.cat_name)) }, singleLine = true)
+            OutlinedTextField(price, { price = dec(it) }, label = { Text(stringResource(R.string.sa_salePrice)) }, singleLine = true)
+            OutlinedTextField(cost, { cost = dec(it) }, label = { Text(stringResource(R.string.sa_costPrice)) }, singleLine = true)
+            OutlinedTextField(tax, { tax = dec(it) }, label = { Text(stringResource(R.string.sa_taxRate)) }, singleLine = true)
+            OutlinedTextField(low, { low = dec(it) }, label = { Text(stringResource(R.string.inv_lowStock)) }, singleLine = true)
+            OutlinedTextField(barcodes, { barcodes = it }, label = { Text(stringResource(R.string.sa_barcodes)) }, singleLine = true)
+            Row(verticalAlignment = Alignment.CenterVertically) { Checkbox(track, { track = it }); Text(stringResource(R.string.sa_trackStock)) }
+            error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+        }
+    }, confirmButton = {
+        TextButton(enabled = sku.isNotBlank() && name.isNotBlank() && price.toDoubleOrNull() != null, onClick = {
+            scope.launch {
+                runCatching { vm.local.saveProduct(original?.id, sku, name, price.toDouble(), cost.toDoubleOrNull() ?: 0.0, tax.toDoubleOrNull() ?: 0.0, track,
+                    low.toDoubleOrNull() ?: 0.0, barcodes) }.onSuccess { onClose() }.onFailure { error = it.message }
+            }
+        }) { Text(stringResource(R.string.action_save)) }
+    }, dismissButton = { TextButton(onClick = onClose) { Text(stringResource(R.string.action_cancel)) } })
 }
 
 // ---------------------------------------------------------------- Inventory
 @Composable
 fun InventoryScreen(vm: ScreensViewModel = hiltViewModel()) {
-    val (state, retry) = rememberLoad { vm.remote.stock(vm.settings.warehouseId) }
+    val (state, retry) = rememberLoad { if (vm.standalone) vm.local.stock() else vm.remote.stock(vm.settings.warehouseId) }
+    var adjusting by remember { mutableStateOf<StockBalance?>(null) }
     LoadView(state, retry) { page ->
+        if (page.items.isEmpty()) EmptyState(stringResource(R.string.state_empty))
         LazyColumn {
             items(page.items, key = { it.productId + it.warehouseId }) { s ->
                 val low = s.lowStockThreshold > 0 && s.quantity <= s.lowStockThreshold
                 ListItem(headlineContent = { Text(s.productName) }, supportingContent = { Text("${s.sku} · ${s.warehouseName}") },
+                    modifier = if (vm.standalone) Modifier.clickable { adjusting = s } else Modifier,
                     trailingContent = {
                         Column(horizontalAlignment = Alignment.End) {
                             Text("${s.quantity}", fontWeight = FontWeight.SemiBold, color = if (low) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface)
@@ -147,6 +199,23 @@ fun InventoryScreen(vm: ScreensViewModel = hiltViewModel()) {
             }
         }
     }
+    adjusting?.let { AdjustStockDialog(vm, it) { adjusting = null; retry() } }
+}
+
+@Composable
+private fun AdjustStockDialog(vm: ScreensViewModel, item: StockBalance, onClose: () -> Unit) {
+    var delta by remember { mutableStateOf("") }
+    val scope = rememberCoroutineScope()
+    AlertDialog(onDismissRequest = onClose, title = { Text(item.productName) }, text = {
+        Column {
+            Text("${stringResource(R.string.inv_available)}: ${item.quantity}")
+            OutlinedTextField(delta, { delta = it.filter { c -> c.isDigit() || c == '.' || c == '-' } }, label = { Text(stringResource(R.string.sa_adjustQty)) }, singleLine = true)
+        }
+    }, confirmButton = {
+        TextButton(enabled = (delta.toDoubleOrNull() ?: 0.0) != 0.0, onClick = { scope.launch { vm.local.adjustStock(item.productId, delta.toDouble()); onClose() } }) {
+            Text(stringResource(R.string.action_save))
+        }
+    }, dismissButton = { TextButton(onClick = onClose) { Text(stringResource(R.string.action_cancel)) } })
 }
 
 // ---------------------------------------------------------------- Customers
@@ -180,6 +249,7 @@ fun CustomersScreen(vm: ScreensViewModel = hiltViewModel()) {
             TextButton(enabled = name.isNotBlank(), onClick = {
                 scope.launch {
                     // Offline-first: stable client id + outbox op; the server de-duplicates replays.
+                    if (vm.standalone) { vm.local.addCustomer(name, phone); adding = false; return@launch }
                     val id = UUID.randomUUID().toString()
                     vm.db.catalog().upsertCustomers(listOf(com.veltrix.os.data.db.CustomerEntity(id, "…", name, phone, 0.0, 0.0, 0.0, java.time.Instant.now().toString(), true)))
                     vm.sync.enqueue("customer.upsert", UpsertCustomerRequest("Individual", name, phone.ifBlank { null }, null, id = id), UpsertCustomerRequest.serializer(), "cust-$id")
@@ -193,7 +263,7 @@ fun CustomersScreen(vm: ScreensViewModel = hiltViewModel()) {
 // ---------------------------------------------------------------- Orders, expenses, employees
 @Composable
 fun OrdersScreen(vm: ScreensViewModel = hiltViewModel()) {
-    val (state, retry) = rememberLoad { vm.remote.salesDocuments() }
+    val (state, retry) = rememberLoad { if (vm.standalone) vm.local.salesHistory() else vm.remote.salesDocuments() }
     LoadView(state, retry) { page ->
         if (page.items.isEmpty()) EmptyState(stringResource(R.string.state_empty))
         LazyColumn {
@@ -290,7 +360,7 @@ fun EmployeesScreen(vm: ScreensViewModel = hiltViewModel()) {
 // ---------------------------------------------------------------- Reports
 @Composable
 fun ReportsScreen(vm: ScreensViewModel = hiltViewModel()) {
-    val (list, retry) = rememberLoad { vm.remote.reports() }
+    val (list, retry) = rememberLoad { if (vm.standalone) vm.local.reports() else vm.remote.reports() }
     var selected by remember { mutableStateOf<ReportInfo?>(null) }
     val from = LocalDate.now().withDayOfMonth(1).toString()
     val to = LocalDate.now().toString()
@@ -302,7 +372,9 @@ fun ReportsScreen(vm: ScreensViewModel = hiltViewModel()) {
         }
         Text("${stringResource(R.string.rep_from)} $from ${stringResource(R.string.rep_to)} $to", Modifier.padding(horizontal = 16.dp), style = MaterialTheme.typography.bodySmall)
         selected?.let { r ->
-            val (table, retryTable) = rememberLoad(r.key) { vm.remote.report(r.key, from, to) }
+            val (table, retryTable) = rememberLoad(r.key) {
+                if (vm.standalone) vm.local.report(r.key, LocalDate.parse(from), LocalDate.parse(to)) else vm.remote.report(r.key, from, to)
+            }
             LoadView(table, retryTable) { t ->
                 LazyColumn(Modifier.horizontalScroll(rememberScrollState())) {
                     item { Row { t.columns.forEach { c -> Text(c.title, Modifier.width(140.dp).padding(8.dp), fontWeight = FontWeight.SemiBold) } } }
@@ -383,7 +455,9 @@ fun LicenseScreen(vm: ScreensViewModel = hiltViewModel()) {
         Text(stringResource(R.string.lic_recovery), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(16.dp))
         Button(onClick = { scope.launch { runCatching { vm.license.refresh() } } }) { Text(stringResource(R.string.action_refresh)) }
-        OutlinedButton(onClick = { requireBiometric(activity, activity.getString(R.string.lic_release)) { confirmRelease = true } }) { Text(stringResource(R.string.lic_release)) }
+        // An offline license has no server seat to release.
+        if (!vm.standalone) OutlinedButton(onClick = { requireBiometric(activity, activity.getString(R.string.lic_release)) { confirmRelease = true } }) { Text(stringResource(R.string.lic_release)) }
+        else Text(stringResource(R.string.sa_localMode), style = MaterialTheme.typography.bodySmall)
     }
     if (confirmRelease) AlertDialog(onDismissRequest = { confirmRelease = false }, text = { Text(stringResource(R.string.dlg_confirmDelete)) },
         confirmButton = { TextButton(onClick = { scope.launch { runCatching { vm.license.release(); vm.session.logout() } }; confirmRelease = false }) { Text(stringResource(R.string.action_confirm)) } },
@@ -427,8 +501,11 @@ fun SettingsScreen(vm: ScreensViewModel = hiltViewModel()) {
                 Switch(biometric, { biometric = it; vm.settings.biometricEnabled = it })
             })
         }
-        item { ListItem(headlineContent = { Text(stringResource(R.string.onb_server)) }, supportingContent = { Text(vm.settings.serverUrl) }) }
-        item { ListItem(headlineContent = { Text(stringResource(R.string.sync_lastSync)) }, supportingContent = { Text(if (vm.settings.lastSyncAt == 0L) "—" else java.time.Instant.ofEpochMilli(vm.settings.lastSyncAt).toString()) }) }
+        if (vm.standalone) item { Text(stringResource(R.string.sa_serverOnly), Modifier.padding(16.dp), style = MaterialTheme.typography.bodyMedium) }
+        else {
+            item { ListItem(headlineContent = { Text(stringResource(R.string.onb_server)) }, supportingContent = { Text(vm.settings.serverUrl) }) }
+            item { ListItem(headlineContent = { Text(stringResource(R.string.sync_lastSync)) }, supportingContent = { Text(if (vm.settings.lastSyncAt == 0L) "—" else java.time.Instant.ofEpochMilli(vm.settings.lastSyncAt).toString()) }) }
+        }
         item { ListItem(headlineContent = { Text(stringResource(R.string.app_version)) }, supportingContent = { Text("${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE}) ${stringResource(R.string.build_label)}") }) }
         item { Text(stringResource(R.string.acc_reviewNotice), Modifier.padding(16.dp), style = MaterialTheme.typography.bodySmall) }
     }
@@ -463,7 +540,7 @@ fun SyncIssuesScreen(vm: ScreensViewModel = hiltViewModel()) {
 }
 
 @Composable
-fun MoreScreen(onNavigate: (String) -> Unit) {
+fun MoreScreen(vm: ScreensViewModel = hiltViewModel(), onNavigate: (String) -> Unit) {
     val entries = listOf(
         Triple("inventory", R.string.nav_inventory, Icons.Outlined.Warehouse), Triple("orders", R.string.nav_orders, Icons.Outlined.ReceiptLong),
         Triple("expenses", R.string.nav_expenses, Icons.Outlined.Payments), Triple("reports", R.string.nav_reports, Icons.Outlined.Assessment),
@@ -471,10 +548,121 @@ fun MoreScreen(onNavigate: (String) -> Unit) {
         Triple("branch", R.string.nav_branch, Icons.Outlined.Store), Triple("license", R.string.nav_licensing, Icons.Outlined.VerifiedUser),
         Triple("sync", R.string.action_sync, Icons.Outlined.Sync), Triple("settings", R.string.nav_settings, Icons.Outlined.Settings),
         Triple("profile", R.string.nav_profile, Icons.Outlined.AccountCircle),
-    )
+        Triple("users", R.string.sa_users, Icons.Outlined.Group), Triple("backup", R.string.sa_backup, Icons.Outlined.Backup),
+    ).filter { com.veltrix.os.data.standalone.ModePolicy.isVisible(it.first, vm.standalone) }
     LazyColumn {
         items(entries) { (route, label, icon) ->
             ListItem(headlineContent = { Text(stringResource(label)) }, leadingContent = { Icon(icon, null) }, modifier = Modifier.clickable { onNavigate(route) })
         }
+    }
+}
+
+// ---------------------------------------------------------------- Standalone: local users and encrypted backup
+@Composable
+fun UsersScreen(vm: ScreensViewModel = hiltViewModel()) {
+    var users by remember { mutableStateOf(vm.local.auth.users) }
+    val isOwner = vm.session.localUser?.isOwner == true
+    var name by remember { mutableStateOf("") }
+    var secret by remember { mutableStateOf("") }
+    var role by remember { mutableStateOf(com.veltrix.os.data.standalone.LocalRoles.CASHIER) }
+    var error by remember { mutableStateOf<Int?>(null) }
+    var busy by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp)) {
+        item { SectionTitle(stringResource(R.string.sa_users)) }
+        items(users, key = { it.id }) { u ->
+            ListItem(headlineContent = { Text(u.name) }, supportingContent = { Text(u.role) }, trailingContent = {
+                if (isOwner && u.id != vm.session.localUser?.id) IconButton(onClick = {
+                    runCatching { vm.local.auth.removeUser(u.id) }.onFailure { error = (it as? com.veltrix.os.data.standalone.LocalAuthException)?.let { e -> com.veltrix.os.ui.auth.errorRes(e.key) } }
+                    users = vm.local.auth.users
+                }) { Icon(Icons.Outlined.Delete, stringResource(R.string.action_delete)) }
+            })
+            HorizontalDivider()
+        }
+        if (isOwner) item {
+            Column(Modifier.padding(top = 16.dp)) {
+                OutlinedTextField(name, { name = it }, label = { Text(stringResource(R.string.sa_userName)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(secret, { secret = it }, label = { Text(stringResource(R.string.sa_secret)) }, singleLine = true, modifier = Modifier.fillMaxWidth(),
+                    visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation())
+                Text(stringResource(R.string.sa_secretRule), style = MaterialTheme.typography.bodySmall)
+                Row {
+                    listOf(com.veltrix.os.data.standalone.LocalRoles.CASHIER, com.veltrix.os.data.standalone.LocalRoles.OWNER).forEach { r ->
+                        FilterChip(role == r, { role = r }, { Text(r) }, Modifier.padding(end = 6.dp))
+                    }
+                }
+                error?.let { Text(stringResource(it), color = MaterialTheme.colorScheme.error) }
+                Button(enabled = !busy && name.isNotBlank() && secret.isNotEmpty(), onClick = {
+                    busy = true; error = null
+                    scope.launch {
+                        try {
+                            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) { vm.local.auth.addUser(name, secret, role) }
+                            name = ""; secret = ""; users = vm.local.auth.users
+                        } catch (e: com.veltrix.os.data.standalone.LocalAuthException) { error = com.veltrix.os.ui.auth.errorRes(e.key) }
+                        busy = false
+                    }
+                }) { Text(stringResource(R.string.action_add)) }
+            }
+        }
+    }
+}
+
+@Composable
+fun BackupScreen(vm: ScreensViewModel = hiltViewModel()) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var password by remember { mutableStateOf("") }
+    var message by remember { mutableStateOf<Int?>(null) }
+    var busy by remember { mutableStateOf(false) }
+    val owner = vm.session.localUser?.takeIf { it.isOwner }
+    fun fail(e: Throwable) {
+        message = when (e) {
+            is com.veltrix.os.data.standalone.LocalAuthException -> com.veltrix.os.ui.auth.errorRes(e.key)
+            is com.veltrix.os.data.standalone.BackupException -> com.veltrix.os.ui.auth.errorRes(e.key)
+            else -> R.string.sa_err_backupFile
+        }
+    }
+    val create = androidx.activity.compose.rememberLauncherForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.CreateDocument(com.veltrix.os.data.standalone.BackupCodec.MIME)) { uri ->
+        if (uri == null || owner == null) return@rememberLauncherForActivityResult
+        busy = true
+        scope.launch {
+            runCatching {
+                val bytes = vm.local.exportBackup(owner, password)
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { context.contentResolver.openOutputStream(uri)?.use { it.write(bytes) } ?: error("write") }
+            }.onSuccess { message = R.string.sa_backupSaved }.onFailure(::fail)
+            busy = false
+        }
+    }
+    val open = androidx.activity.compose.rememberLauncherForActivityResult(androidx.activity.result.contract.ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        busy = true
+        scope.launch {
+            runCatching {
+                val bytes = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { context.contentResolver.openInputStream(uri)?.use { it.readBytes() } } ?: error("read")
+                vm.local.restoreBackup(bytes, password, vm.license.state.value is LicenseState.Valid && vm.standalone)
+            }.onSuccess { message = R.string.sa_restoredHere }.onFailure(::fail)
+            busy = false
+        }
+    }
+    Column(Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState())) {
+        SectionTitle(stringResource(R.string.sa_backup))
+        Text(stringResource(R.string.sa_backupHint), style = MaterialTheme.typography.bodyMedium)
+        Spacer(Modifier.height(12.dp))
+        if (owner == null) Text(stringResource(R.string.sa_err_ownerOnly), color = MaterialTheme.colorScheme.error)
+        else {
+            OutlinedTextField(password, { password = it }, label = { Text(stringResource(R.string.sa_backupPassword)) }, singleLine = true, modifier = Modifier.fillMaxWidth(),
+                visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation())
+            Spacer(Modifier.height(8.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(enabled = !busy && password.isNotEmpty(), onClick = { create.launch("veltrix-backup-${LocalDate.now()}${com.veltrix.os.data.standalone.BackupCodec.EXTENSION}") }) {
+                    Text(stringResource(R.string.sa_export))
+                }
+                OutlinedButton(enabled = !busy && password.isNotEmpty(), onClick = { open.launch(arrayOf("*/*")) }) { Text(stringResource(R.string.sa_restore)) }
+            }
+            if (busy) LinearProgressIndicator(Modifier.fillMaxWidth().padding(top = 8.dp))
+            message?.let { Text(stringResource(it), Modifier.padding(top = 8.dp)) }
+        }
+        Spacer(Modifier.height(16.dp))
+        Text(stringResource(R.string.sa_serverOnly), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }

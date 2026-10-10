@@ -58,19 +58,24 @@ fun MainScreen(vm: MainViewModel = hiltViewModel()) {
     val pending by vm.sync.pendingCount.collectAsState(0)
     val attention by vm.sync.attentionCount.collectAsState(0)
     val licenseState by vm.license.state.collectAsState()
+    val standalone = vm.license.standalone
 
     val content: @Composable (PaddingValues) -> Unit = { padding ->
         Column(Modifier.padding(padding)) {
             LicenseBanner(licenseState, vm)
-            if (pending > 0 || attention > 0) SyncBanner(pending, attention) { nav.navigate("sync") }
+            if (standalone) StandaloneBanner()
+            else if (pending > 0 || attention > 0) SyncBanner(pending, attention) { nav.navigate("sync") }
             Host(nav, Modifier.weight(1f))
         }
     }
     val context = LocalContext.current
     val topBar: @Composable () -> Unit = {
         TopAppBar(title = { Text(vm.settings.tenantName ?: stringResource(R.string.app_name)) }, actions = {
-            IconButton(onClick = { SyncWorker.syncNow(context) }) { Icon(Icons.Outlined.Sync, stringResource(R.string.action_sync)) }
-            IconButton(onClick = { nav.navigate("notifications") }) { Icon(Icons.Outlined.Notifications, stringResource(R.string.nav_notifications)) }
+            // Standalone: no server — no sync and no server notifications.
+            if (!standalone) {
+                IconButton(onClick = { SyncWorker.syncNow(context) }) { Icon(Icons.Outlined.Sync, stringResource(R.string.action_sync)) }
+                IconButton(onClick = { nav.navigate("notifications") }) { Icon(Icons.Outlined.Notifications, stringResource(R.string.nav_notifications)) }
+            }
             IconButton(onClick = { nav.navigate("scanner") }) { Icon(Icons.Outlined.QrCodeScanner, stringResource(R.string.nav_scanner)) }
         })
     }
@@ -110,6 +115,8 @@ private fun Host(nav: NavHostController, modifier: Modifier) {
         composable("catalog") { CatalogScreen() }
         composable("customers") { CustomersScreen() }
         composable("more") { MoreScreen { nav.navigate(it) } }
+        composable("users") { UsersScreen() }
+        composable("backup") { BackupScreen() }
         composable("inventory") { InventoryScreen() }
         composable("orders") { OrdersScreen() }
         composable("expenses") { ExpensesScreen() }
@@ -122,6 +129,13 @@ private fun Host(nav: NavHostController, modifier: Modifier) {
         composable("profile") { ProfileScreen() }
         composable("sync") { SyncIssuesScreen() }
         composable("scanner") { ScannerScreen(onDone = { nav.popBackStack() }) }
+    }
+}
+
+@Composable
+private fun StandaloneBanner() {
+    Surface(color = MaterialTheme.colorScheme.surfaceVariant, modifier = Modifier.fillMaxWidth()) {
+        Text(stringResource(R.string.sa_localMode), Modifier.padding(horizontal = 16.dp, vertical = 6.dp), style = MaterialTheme.typography.bodySmall)
     }
 }
 

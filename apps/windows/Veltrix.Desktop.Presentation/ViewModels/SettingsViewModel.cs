@@ -31,6 +31,82 @@ public sealed partial class SettingsViewModel(DesktopServices s, ShellViewModel 
     [ObservableProperty] private string? _seats;
 
     public string Version => S.Version;
+
+    // ---- Standalone (offline license): local users and encrypted backups; server, sync and seat release do not apply.
+    public bool IsStandalone => S.IsStandalone;
+    public bool IsOnlineMode => !S.IsStandalone;
+    public bool IsOwner => S.Session.LocalUser?.IsOwner == true;
+    public IReadOnlyList<string> LocalRoleOptions { get; } = [Core.Standalone.LocalRoles.Cashier, Core.Standalone.LocalRoles.Owner];
+    public ObservableCollection<Core.Standalone.LocalUser> LocalUsers { get; } = [];
+    [ObservableProperty] private string _newUserName = "";
+    [ObservableProperty] private string _newUserRole = Core.Standalone.LocalRoles.Cashier;
+    /// <summary>Set by the view from PasswordBoxes.</summary>
+    public string NewUserSecret { private get; set; } = "";
+    public string BackupPassword { private get; set; } = "";
+
+    [RelayCommand]
+    public Task AddLocalUserAsync() => TryActionAsync(async () =>
+    {
+        if (!IsOwner) throw new InvalidOperationException(Loc.Get("err.permission"));
+        try
+        {
+            var name = NewUserName; var secret = NewUserSecret; var role = NewUserRole;
+            await Task.Run(() => S.Standalone.Auth.AddUser(name, secret, role));
+        }
+        catch (InvalidOperationException e) { throw new InvalidOperationException(Loc.Get(e.Message)); }
+        NewUserName = "";
+        LoadUsers();
+    }, "dk.saved");
+
+    [RelayCommand]
+    public Task RemoveLocalUserAsync(Core.Standalone.LocalUser? user) => TryActionAsync(() =>
+    {
+        if (user is null || !IsOwner) return Task.CompletedTask;
+        if (user.Id == S.Session.LocalUser?.Id) throw new InvalidOperationException(Loc.Get("dk.sa.err.lastOwner"));
+        if (!S.Ui.Confirm(Loc.Format("dk.sa.removeConfirm", user.Name))) return Task.CompletedTask;
+        try { S.Standalone.Auth.RemoveUser(user.Id); }
+        catch (InvalidOperationException e) { throw new InvalidOperationException(Loc.Get(e.Message)); }
+        LoadUsers();
+        return Task.CompletedTask;
+    }, "dk.saved");
+
+    /// <summary>Owner only: writes an AES-GCM encrypted backup whose key is derived from the owner's password.</summary>
+    [RelayCommand]
+    public Task ExportBackupAsync() => TryActionAsync(async () =>
+    {
+        if (S.Session.LocalUser is not { IsOwner: true } owner) throw new InvalidOperationException(Loc.Get("err.permission"));
+        if (BackupPassword.Length == 0) throw new InvalidOperationException(Loc.Get("dk.sa.backupPasswordPrompt"));
+        var path = S.Ui.PickSaveFile($"veltrix-backup-{S.Time.GetLocalNow():yyyyMMdd-HHmm}{Core.Standalone.LocalBackup.FileExtension}",
+            Loc.Get("dk.sa.backupFilter") + "|*" + Core.Standalone.LocalBackup.FileExtension);
+        if (path is null) return;
+        var password = BackupPassword;
+        byte[] bytes;
+        try { bytes = await Task.Run(() => S.Standalone.ExportBackupAsync(owner, password, S.Settings.TenantId?.ToString(), S.Settings.TenantName)); }
+        catch (InvalidOperationException e) { throw new InvalidOperationException(Loc.Get(e.Message)); }
+        await File.WriteAllBytesAsync(path, bytes);
+    }, "dk.sa.backupSaved");
+
+    [RelayCommand]
+    public Task RestoreBackupAsync() => TryActionAsync(async () =>
+    {
+        if (!IsOwner) throw new InvalidOperationException(Loc.Get("err.permission"));
+        if (BackupPassword.Length == 0) throw new InvalidOperationException(Loc.Get("dk.sa.backupPasswordPrompt"));
+        if (!S.Ui.Confirm(Loc.Get("dk.sa.restoreConfirm"))) return;
+        var path = S.Ui.PickOpenFile(Loc.Get("dk.sa.backupFilter") + "|*" + Core.Standalone.LocalBackup.FileExtension);
+        if (path is null) return;
+        var bytes = await File.ReadAllBytesAsync(path);
+        var password = BackupPassword;
+        try { await Task.Run(() => S.Standalone.RestoreBackupAsync(bytes, password)); }
+        catch (InvalidOperationException e) { throw new InvalidOperationException(Loc.Get(e.Message)); }
+        LoadUsers();
+    }, "dk.sa.restored");
+
+    private void LoadUsers()
+    {
+        LocalUsers.Clear();
+        if (!IsStandalone) return;
+        foreach (var u in S.Standalone.Auth.Users.OrderBy(u => u.Name)) LocalUsers.Add(u);
+    }
     public string InstallationId => S.Settings.InstallationId.ToString();
     public string? DeviceId => S.Settings.DeviceId?.ToString();
 
@@ -96,6 +172,7 @@ public sealed partial class SettingsViewModel(DesktopServices s, ShellViewModel 
             Issues.Clear();
             foreach (var e in issues) Issues.Add(new OutboxIssue(e.Seq, e.Type, e.Status, e.Attempts, e.LastError, e.ClientTime));
         }
+        LoadUsers();
         var eval = S.License.Current ?? S.License.Evaluate();
         LicenseStatus = LicenseText.Describe(Loc, eval) ?? Loc.Get("dk.license.valid");
         var summary = S.License.Summary;

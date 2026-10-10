@@ -55,13 +55,15 @@
                         <TextBlock Text="{Binding SyncStatus}" Style="{StaticResource Text.Caption}" VerticalAlignment="Center" Margin="0,0,12,0" MaxWidth="320"
                                    TextTrimming="CharacterEllipsis"/>
                         <Button Command="{Binding SyncNowCommand}" Style="{StaticResource Button.Ghost}" ToolTip="{DynamicResource action.sync}"
+                                Visibility="{Binding IsStandalone, Converter={StaticResource InvBoolToVis}}"
                                 AutomationProperties.Name="{DynamicResource action.sync}">
                             <Path x:Name="SyncIcon" Data="{StaticResource Icon.Sync}" Width="18" Height="18" Stretch="Uniform" Stroke="{DynamicResource Brush.accent}"
                                   StrokeThickness="2" RenderTransformOrigin="0.5,0.5">
                                 <Path.RenderTransform><RotateTransform x:Name="SyncRotation"/></Path.RenderTransform>
                             </Path>
                         </Button>
-                        <Border CornerRadius="10" Padding="10,3" Margin="12,0,0,0" VerticalAlignment="Center" Background="{DynamicResource Brush.surfaceRaised}">
+                        <Border CornerRadius="10" Padding="10,3" Margin="12,0,0,0" VerticalAlignment="Center" Background="{DynamicResource Brush.surfaceRaised}"
+                                Visibility="{Binding IsStandalone, Converter={StaticResource InvBoolToVis}}">
                             <StackPanel Orientation="Horizontal">
                                 <Ellipse Width="8" Height="8" VerticalAlignment="Center">
                                     <Ellipse.Style>

@@ -38,6 +38,7 @@ enum class Stage { Splash, Onboarding, Login, Main }
 @HiltViewModel
 class AppViewModel @Inject constructor(
     val settings: AppSettings, private val license: LicenseRepository, private val session: SessionRepository, private val identity: DeviceIdentity,
+    private val standalone: com.veltrix.os.data.repo.StandaloneRepository,
 ) : ViewModel() {
     private val _stage = MutableStateFlow(Stage.Splash)
     val stage = _stage.asStateFlow()
@@ -50,6 +51,7 @@ class AppViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             identity.publicKeySpki()
             val state = license.evaluate()
+            if (license.standalone) standalone.ensureRegister()
             next = when {
                 !settings.languageChosen || !settings.privacyAccepted || state is LicenseState.Missing || state is LicenseState.WrongDevice -> Stage.Onboarding
                 !settings.setupCompleted -> Stage.Onboarding

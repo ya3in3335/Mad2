@@ -18,12 +18,14 @@
                         <CheckBox Content="{DynamicResource set.reducedMotion}" IsChecked="{Binding ReducedMotion}" Margin="0,16,0,0"/>
                     </StackPanel>
                 </Border>
-                <!-- Server -->
+                <!-- Server (online mode) / printer -->
                 <Border Style="{StaticResource Card}" Margin="0,0,0,12">
                     <StackPanel>
-                        <TextBlock Text="{DynamicResource onb.server}" Style="{StaticResource Text.Section}"/>
-                        <TextBox Text="{Binding ServerUrl, UpdateSourceTrigger=PropertyChanged}" FlowDirection="LeftToRight"/>
-                        <Button Content="{DynamicResource action.save}" Command="{Binding SaveServerCommand}" HorizontalAlignment="Left" Margin="0,10,0,0"/>
+                        <StackPanel Visibility="{Binding IsOnlineMode, Converter={StaticResource BoolToVis}}">
+                            <TextBlock Text="{DynamicResource onb.server}" Style="{StaticResource Text.Section}"/>
+                            <TextBox Text="{Binding ServerUrl, UpdateSourceTrigger=PropertyChanged}" FlowDirection="LeftToRight"/>
+                            <Button Content="{DynamicResource action.save}" Command="{Binding SaveServerCommand}" HorizontalAlignment="Left" Margin="0,10,0,0"/>
+                        </StackPanel>
                         <TextBlock Text="{DynamicResource set.printer}" Style="{StaticResource Text.Label}" Margin="0,16,0,6"/>
                         <StackPanel Orientation="Horizontal">
                             <RadioButton Content="58 mm" GroupName="paper" IsChecked="{Binding ReceiptPaperMm, Converter={StaticResource Equals}, ConverterParameter=58}"/>
@@ -31,8 +33,8 @@
                         </StackPanel>
                     </StackPanel>
                 </Border>
-                <!-- Sync -->
-                <Border Style="{StaticResource Card}" Margin="0,0,12,12">
+                <!-- Sync (online mode) -->
+                <Border Style="{StaticResource Card}" Margin="0,0,12,12" Visibility="{Binding IsOnlineMode, Converter={StaticResource BoolToVis}}">
                     <StackPanel>
                         <TextBlock Text="{DynamicResource action.sync}" Style="{StaticResource Text.Section}"/>
                         <TextBlock><Run Text="{DynamicResource sync.lastSync}"/>: <Run Text="{Binding LastSync, Mode=OneWay}"/></TextBlock>
@@ -61,8 +63,52 @@
                         <TextBlock><Run Text="{DynamicResource lic.seats}"/>: <Run Text="{Binding Seats, Mode=OneWay}"/></TextBlock>
                         <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
                             <Button Content="{DynamicResource dk.check}" Command="{Binding RenewLicenseCommand}" Margin="0,0,8,0"/>
-                            <Button Content="{DynamicResource lic.release}" Command="{Binding ReleaseDeviceCommand}" Style="{StaticResource Button.Danger}"/>
+                            <Button Content="{DynamicResource lic.release}" Command="{Binding ReleaseDeviceCommand}" Style="{StaticResource Button.Danger}"
+                                    Visibility="{Binding IsOnlineMode, Converter={StaticResource BoolToVis}}"/>
                         </StackPanel>
+                    </StackPanel>
+                </Border>
+                <!-- Standalone: local users (owner only) -->
+                <Border Style="{StaticResource Card}" Margin="0,0,12,12" Visibility="{Binding IsStandalone, Converter={StaticResource BoolToVis}}">
+                    <StackPanel>
+                        <TextBlock Text="{DynamicResource dk.sa.users}" Style="{StaticResource Text.Section}"/>
+                        <ItemsControl ItemsSource="{Binding LocalUsers}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <DockPanel Margin="0,3">
+                                        <Button DockPanel.Dock="Right" Content="{DynamicResource action.delete}" Style="{StaticResource Button.Ghost}"
+                                                Command="{Binding DataContext.RemoveLocalUserCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+                                        <TextBlock VerticalAlignment="Center"><Run Text="{Binding Name, Mode=OneWay}" FontWeight="SemiBold"/> · <Run Text="{Binding Role, Mode=OneWay}"/></TextBlock>
+                                    </DockPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <StackPanel Visibility="{Binding IsOwner, Converter={StaticResource BoolToVis}}">
+                            <TextBlock Text="{DynamicResource dk.sa.userName}" Style="{StaticResource Text.Label}"/>
+                            <TextBox Text="{Binding NewUserName, UpdateSourceTrigger=PropertyChanged}"/>
+                            <TextBlock Text="{DynamicResource auth.password}" Style="{StaticResource Text.Label}"/>
+                            <PasswordBox x:Name="NewUserSecretBox" PasswordChanged="OnNewUserSecretChanged" FlowDirection="LeftToRight"/>
+                            <TextBlock Text="{DynamicResource dk.sa.secretRule}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap"/>
+                            <ComboBox ItemsSource="{Binding LocalRoleOptions}" SelectedItem="{Binding NewUserRole}" Margin="0,8,0,0"/>
+                            <Button Content="{DynamicResource action.add}" Command="{Binding AddLocalUserCommand}" HorizontalAlignment="Left" Margin="0,10,0,0"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+                <!-- Standalone: encrypted backup (owner only) -->
+                <Border Style="{StaticResource Card}" Margin="0,0,0,12" Visibility="{Binding IsStandalone, Converter={StaticResource BoolToVis}}">
+                    <StackPanel>
+                        <TextBlock Text="{DynamicResource dk.sa.backup}" Style="{StaticResource Text.Section}"/>
+                        <TextBlock Text="{DynamicResource dk.sa.backupHint}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap"/>
+                        <StackPanel Visibility="{Binding IsOwner, Converter={StaticResource BoolToVis}}">
+                            <TextBlock Text="{DynamicResource dk.sa.backupPasswordPrompt}" Style="{StaticResource Text.Label}"/>
+                            <PasswordBox x:Name="BackupPasswordBox" PasswordChanged="OnBackupPasswordChanged" FlowDirection="LeftToRight"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                                <Button Content="{DynamicResource dk.sa.export}" Command="{Binding ExportBackupCommand}" Style="{StaticResource Button.Primary}" Margin="0,0,8,0"/>
+                                <Button Content="{DynamicResource dk.sa.restore}" Command="{Binding RestoreBackupCommand}"/>
+                            </StackPanel>
+                        </StackPanel>
+                        <TextBlock Text="{Binding StatusMessage}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,8,0,0"/>
+                        <TextBlock Text="{DynamicResource dk.sa.serverOnly}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,12,0,0"/>
                     </StackPanel>
                 </Border>
                 <!-- Diagnostics -->

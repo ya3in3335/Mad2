@@ -33,6 +33,15 @@ public sealed partial class SalesViewModel(DesktopServices s) : PageViewModel(s)
 
     protected override async Task<bool> LoadAsync(CancellationToken ct)
     {
+        if (S.IsStandalone)
+        {
+            // Standalone: POS receipts recorded on this device are the sales history (no server documents).
+            var local = await S.Standalone.Store.SalesAsync(Search, S.Time.GetUtcNow().AddDays(-90), ct);
+            OfflineSales.Clear();
+            Receipts.Clear();
+            foreach (var x in local) Receipts.Add(x);
+            return Receipts.Count > 0;
+        }
         await LoadOfflineAsync(ct);
         if (TabIndex == 0)
         {
@@ -85,6 +94,14 @@ public sealed partial class SalesViewModel(DesktopServices s) : PageViewModel(s)
     {
         if (SelectedReceipt is null) return;
         var width = Core.Pos.ReceiptText.CharsFor(S.Settings.ReceiptPaperMm);
+        if (S.IsStandalone)
+        {
+            await using var db = S.Db();
+            var sale = await db.Sales.FindAsync(SelectedReceipt.Id) ?? throw new InvalidOperationException(Loc.Get("err.generic"));
+            var model = System.Text.Json.JsonSerializer.Deserialize<Core.Pos.ReceiptModel>(sale.ReceiptJson, ApiClient.Json)!;
+            S.Ui.PrintText(model.Number, Core.Pos.ReceiptText.Render(model, width), width);
+            return;
+        }
         var r = await S.Api.GetAsync<ReceiptDto>($"/api/v1/pos/sales/{SelectedReceipt.Id}/receipt" + ApiClient.Query(("width", width), ("reprint", true)));
         S.Ui.PrintText(r.Number, r.Content, width);
     });

@@ -31,6 +31,15 @@ class SessionRepository @Inject constructor(private val api: ApiClient, private 
 
     private fun loadProfile(): UserProfile? = store.get(SecureStore.PROFILE)?.let { runCatching { api.json.decodeFromString(UserProfile.serializer(), it) }.getOrNull() }
 
+    /** Local account of a standalone (offline-licensed) installation; kept in memory only, so every app start asks to sign in. */
+    var localUser: com.veltrix.os.data.standalone.LocalUser? = null
+        private set
+
+    fun signInLocal(user: com.veltrix.os.data.standalone.LocalUser) {
+        localUser = user
+        _profile.value = user.toProfile()
+    }
+
     val isSignedIn: Boolean get() = store.get(SecureStore.REFRESH_TOKEN) != null || _profile.value != null && store.get(SecureStore.OFFLINE_VERIFIER) != null
 
     /** Online sign-in bound to this device. A salted PBKDF2 verifier is kept so the same user can unlock offline later. */
@@ -63,6 +72,7 @@ class SessionRepository @Inject constructor(private val api: ApiClient, private 
         SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256").generateSecret(PBEKeySpec("$email:$password".toCharArray(), salt, 120_000, 256)).encoded
 
     suspend fun logout() {
+        if (localUser != null) { localUser = null; _profile.value = null; return }
         store.get(SecureStore.REFRESH_TOKEN)?.let { runCatching { api.postNoContent("/api/v1/auth/logout", RefreshRequest(it), auth = false) } }
         store.put(SecureStore.ACCESS_TOKEN, null)
         store.put(SecureStore.REFRESH_TOKEN, null)
@@ -190,6 +200,13 @@ class LicenseRepository @Inject constructor(private val api: ApiClient, private 
         evaluate()
     }
 
+    /** Offline (vendor-issued) license → standalone mode: local accounts and data only, no server and no sync. */
+    val standalone: Boolean get() = when (val s = state.value) {
+        is LicenseState.Valid -> com.veltrix.os.data.standalone.ModePolicy.isStandalone(s.cert.type)
+        is LicenseState.Expired -> com.veltrix.os.data.standalone.ModePolicy.isStandalone(s.cert.type)
+        else -> false
+    }
+
     fun hasFeature(f: String): Boolean = (state.value as? LicenseState.Valid)?.cert?.ent?.contains(f) == true
 }
 
@@ -252,13 +269,16 @@ data class CartLine(val product: ProductEntity, val quantity: Double, val discou
 }
 
 @Singleton
-class PosRepository @Inject constructor(private val db: VeltrixDatabase, private val sync: SyncRepository, private val settings: AppSettings, private val api: ApiClient) {
+class PosRepository @Inject constructor(private val db: VeltrixDatabase, private val sync: SyncRepository, private val settings: AppSettings, private val api: ApiClient,
+    private val license: LicenseRepository, private val local: StandaloneRepository, private val session: SessionRepository) {
     /**
      * Records a sale locally (atomic: stock decrement, receipt, outbox op) — the server is authoritative for prices, tax and
      * accounting when the op syncs. Offline stock policy: the local available quantity must cover the sale unless the
      * company allows negative stock; conflicts beyond that are flagged by the server, never silently dropped.
      */
     suspend fun completeSale(lines: List<CartLine>, payments: List<PaymentInput>, customerId: String?, allowNegative: Boolean): LocalSaleEntity {
+        // Standalone: recorded locally with stock decrement and sale lines; never queued for a server.
+        if (license.standalone) return local.completeSale(lines, payments, session.profile.value?.fullName)
         val registerId = settings.registerId ?: error("Select a register first.")
         val shiftId = settings.shiftId ?: error("Open a shift first.")
         val warehouseId = settings.warehouseId ?: error("No warehouse configured.")
@@ -280,8 +300,10 @@ class PosRepository @Inject constructor(private val db: VeltrixDatabase, private
     }
 
     suspend fun openShift(openingFloat: Double): String {
+        if (license.standalone) local.ensureRegister()
         val registerId = settings.registerId ?: error("Select a register first.")
         val id = UUID.randomUUID().toString()
+        if (license.standalone) { settings.shiftId = id; return id }
         sync.enqueue("pos.shift.open", OpenShiftRequest(registerId, openingFloat, id, Instant.now().toString()), OpenShiftRequest.serializer(), "shift-open-$id")
         settings.shiftId = id
         return id
@@ -289,6 +311,7 @@ class PosRepository @Inject constructor(private val db: VeltrixDatabase, private
 
     suspend fun closeShift(counted: Double, notes: String?) {
         val shiftId = settings.shiftId ?: return
+        if (license.standalone) { settings.shiftId = null; return }
         sync.enqueue("pos.shift.close", ShiftPayload(shiftId, CloseShiftRequest(counted, notes, Instant.now().toString())),
             ShiftPayload.serializer(CloseShiftRequest.serializer()), "shift-close-$shiftId")
         settings.shiftId = null

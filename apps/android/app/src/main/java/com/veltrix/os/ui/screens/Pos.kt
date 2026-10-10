@@ -53,7 +53,8 @@ class ScanBus @Inject constructor() {
 
 @HiltViewModel
 class PosViewModel @Inject constructor(private val pos: PosRepository, private val db: VeltrixDatabase, val settings: AppSettings,
-    val session: SessionRepository, val scans: ScanBus) : ViewModel() {
+    val session: SessionRepository, val scans: ScanBus, private val license: com.veltrix.os.data.repo.LicenseRepository) : ViewModel() {
+    val standalone: Boolean get() = license.standalone
     val cart = MutableStateFlow<List<CartLine>>(emptyList())
     val message = MutableStateFlow<String?>(null)
     val lastSale = MutableStateFlow<String?>(null)
@@ -102,7 +103,7 @@ class PosViewModel @Inject constructor(private val pos: PosRepository, private v
             val sale = pos.completeSale(cart.value, payments, null, allowNegative = false)
             cart.value = emptyList()
             lastSale.value = sale.number
-            SyncWorker.syncNow(context)
+            if (!standalone) SyncWorker.syncNow(context)
         } catch (e: IllegalStateException) {
             message.value = e.message
         }
@@ -177,7 +178,7 @@ fun PosScreen(onScan: () -> Unit, vm: PosViewModel = hiltViewModel()) {
         closing = false
         requireBiometric(activity, context.getString(R.string.pos_closeShift)) { vm.closeShift(counted) }
     }
-    lastSale?.let { SaleCompleteDialog(it) { vm.lastSale.value = null } }
+    lastSale?.let { SaleCompleteDialog(it, vm.standalone) { vm.lastSale.value = null } }
 }
 
 @Composable
@@ -230,7 +231,7 @@ private fun CloseShiftDialog(onDismiss: () -> Unit, onClose: (Double) -> Unit) {
 
 /** Successful payment micro-interaction: animated check mark. */
 @Composable
-private fun SaleCompleteDialog(number: String, onDismiss: () -> Unit) {
+private fun SaleCompleteDialog(number: String, standalone: Boolean, onDismiss: () -> Unit) {
     var start by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { start = true }
     val p by animateFloatAsState(if (start) 1f else 0f, tween(600), label = "check")
@@ -249,7 +250,7 @@ private fun SaleCompleteDialog(number: String, onDismiss: () -> Unit) {
             Spacer(Modifier.height(8.dp))
             Text(stringResource(R.string.pos_saleComplete), style = MaterialTheme.typography.titleLarge)
             Text(number)
-            Text(stringResource(R.string.pos_savedOffline), style = MaterialTheme.typography.bodySmall)
+            Text(stringResource(if (standalone) R.string.sa_saleSavedLocal else R.string.pos_savedOffline), style = MaterialTheme.typography.bodySmall)
         }
     })
 }

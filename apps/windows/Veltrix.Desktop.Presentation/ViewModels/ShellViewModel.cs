@@ -43,6 +43,8 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
             ("reports", "nav.reports", "Icon.Reports", null, () => new ReportsViewModel(s)),
             ("settings", "nav.settings", "Icon.Settings", null, () => new SettingsViewModel(s, this)),
         };
+        // Standalone (offline license): purchasing documents live on the server, so the module is hidden.
+        if (s.IsStandalone) all.RemoveAll(a => a.Key == "purchasing");
         NavItems = new ObservableCollection<NavItem>(all.Where(a => a.Permission is null || s.Session.HasPermission(a.Permission))
             .Select(a => new NavItem(a.Key, a.Title, a.Icon, a.Make)));
         UpdateTexts();
@@ -53,7 +55,8 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
         s.License.Changed += OnLicenseChanged;
         UpdateLicense(s.License.Current);
         _ = NavigateAsync(NavItems.FirstOrDefault(n => n.Key == "pos" && s.Session.HasPermission("pos.sell") && !s.Session.HasPermission("reports.sales")) ?? NavItems[0]);
-        _ = SyncLoopAsync(_life.Token);
+        if (s.IsStandalone) SyncStatus = s.Loc.Get("dk.sa.localMode");
+        else _ = SyncLoopAsync(_life.Token);
     }
 
     public ObservableCollection<NavItem> NavItems { get; }
@@ -119,8 +122,11 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
         catch (OperationCanceledException) { }
     }
 
+    public bool IsStandalone => _s.IsStandalone;
+
     public async Task RunSyncAsync(CancellationToken ct)
     {
+        if (_s.IsStandalone) { SyncStatus = _s.Loc.Get("dk.sa.localMode"); return; }
         if (IsSyncing || _s.Session.User is null || _s.Tokens.RefreshToken is null) { await UpdatePendingAsync(ct); return; }
         IsSyncing = true;
         try

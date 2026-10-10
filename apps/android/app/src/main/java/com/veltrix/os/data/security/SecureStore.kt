@@ -4,6 +4,7 @@ import android.content.Context
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Base64
+import com.veltrix.os.data.standalone.SecretStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.security.KeyStore
 import javax.crypto.Cipher
@@ -19,7 +20,7 @@ import javax.inject.Singleton
  * Used for session tokens, the license certificate and the clock watermark.
  */
 @Singleton
-class SecureStore @Inject constructor(@ApplicationContext context: Context) {
+class SecureStore @Inject constructor(@ApplicationContext context: Context) : SecretStore {
     private val prefs = context.getSharedPreferences("veltrix_secure", Context.MODE_PRIVATE)
 
     private fun key(): SecretKey {
@@ -37,7 +38,7 @@ class SecureStore @Inject constructor(@ApplicationContext context: Context) {
     }
 
     @Synchronized
-    fun put(name: String, value: String?) {
+    override fun put(name: String, value: String?) {
         if (value == null) {
             prefs.edit().remove(name).apply()
             return
@@ -49,7 +50,7 @@ class SecureStore @Inject constructor(@ApplicationContext context: Context) {
     }
 
     @Synchronized
-    fun get(name: String): String? {
+    override fun get(name: String): String? {
         val raw = prefs.getString(name, null) ?: return null
         return try {
             val packed = Base64.decode(raw, Base64.NO_WRAP)

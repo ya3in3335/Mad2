@@ -104,7 +104,8 @@ public partial class App : Application
         {
             Api = api, Settings = settings, SettingsStore = settingsStore, Secrets = secrets, Tokens = tokens, License = license,
             Session = new SessionService(api, tokens, secrets), Db = db, Sync = new SyncEngine(db, new ApiSyncTransport(api), time),
-            Pos = new PosService(api, db, time), Loc = localizer, Ui = new WpfPlatformUi(localizer), Time = time, Log = log, Version = version,
+            Pos = new PosService(api, db, time, () => license.IsStandalone), Loc = localizer, Ui = new WpfPlatformUi(localizer), Time = time, Log = log, Version = version,
+            Standalone = new Core.Standalone.StandaloneService(secrets, db, time, () => license.IsStandalone && (license.Current?.CanSell ?? false)),
         };
     }
 

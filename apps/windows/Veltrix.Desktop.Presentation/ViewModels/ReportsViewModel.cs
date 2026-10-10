@@ -27,7 +27,9 @@ public sealed partial class ReportsViewModel(DesktopServices s) : PageViewModel(
 
     protected override async Task<bool> LoadAsync(CancellationToken ct)
     {
-        Reports = await S.Api.GetAsync<List<ReportInfo>>("/api/v1/reports/", ct);
+        Reports = S.IsStandalone
+            ? Core.Standalone.StandaloneStore.Reports.Select(r => new ReportInfo(r.Key, Loc.Get("dk.sa.report." + r.Key))).ToList()
+            : await S.Api.GetAsync<List<ReportInfo>>("/api/v1/reports/", ct);
         SelectedReport ??= Reports.FirstOrDefault();
         return Reports.Count > 0;
     }
@@ -44,7 +46,9 @@ public sealed partial class ReportsViewModel(DesktopServices s) : PageViewModel(
         RunError = null;
         try
         {
-            var t = await S.Api.GetAsync<ReportTable>(RunPath(null));
+            var t = S.IsStandalone
+                ? await S.Standalone.Store.RunReportAsync(SelectedReport.Key, DateOnly.FromDateTime(From), DateOnly.FromDateTime(To))
+                : await S.Api.GetAsync<ReportTable>(RunPath(null));
             TableTitle = t.Title;
             Table = ToDataTable(t, Loc.Culture).DefaultView;
             Summary = t.Summary.Select(kv => new KeyValuePair<string, string>(kv.Key, FormatCell(kv.Value, "text", Loc.Culture))).ToList();
@@ -63,6 +67,15 @@ public sealed partial class ReportsViewModel(DesktopServices s) : PageViewModel(
     public Task ExportAsync(string? format) => TryActionAsync(async () =>
     {
         if (SelectedReport is null || format is not ("csv" or "xlsx" or "pdf")) return;
+        if (S.IsStandalone)
+        {
+            // Excel/PDF rendering lives on the server; standalone exports CSV.
+            var csvPath = S.Ui.PickSaveFile($"{SelectedReport.Key}-{From:yyyyMMdd}-{To:yyyyMMdd}.csv", "CSV (*.csv)|*.csv");
+            if (csvPath is null) return;
+            var table = await S.Standalone.Store.RunReportAsync(SelectedReport.Key, DateOnly.FromDateTime(From), DateOnly.FromDateTime(To));
+            await File.WriteAllTextAsync(csvPath, Core.Standalone.StandaloneStore.ToCsv(table), new System.Text.UTF8Encoding(true));
+            return;
+        }
         var name = $"{SelectedReport.Key}-{From:yyyyMMdd}-{To:yyyyMMdd}.{format}";
         var path = S.Ui.PickSaveFile(name, format switch { "csv" => "CSV (*.csv)|*.csv", "xlsx" => "Excel (*.xlsx)|*.xlsx", _ => "PDF (*.pdf)|*.pdf" });
         if (path is null) return;

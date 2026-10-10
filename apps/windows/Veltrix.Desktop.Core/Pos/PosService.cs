@@ -8,6 +8,7 @@ using Veltrix.Contracts.Sync;
 using Veltrix.Contracts.Tenants;
 using Veltrix.Desktop.Core.Api;
 using Veltrix.Desktop.Core.Data;
+using Veltrix.Desktop.Core.Standalone;
 using Veltrix.Desktop.Core.Sync;
 
 namespace Veltrix.Desktop.Core.Pos;
@@ -22,12 +23,16 @@ public sealed record ShiftInfo(Guid Id, Guid RegisterId, DateTimeOffset OpenedAt
 /// local database and queued in the outbox (the op id doubles as the server idempotency key, so a sale that reached the
 /// server before the connection dropped can never be booked twice).
 /// </summary>
-public sealed class PosService(ApiClient api, Func<LocalDb> dbFactory, TimeProvider time)
+public sealed class PosService(ApiClient api, Func<LocalDb> dbFactory, TimeProvider time, Func<bool>? standalone = null)
 {
+    /// <summary>Standalone (offline-licensed) installation: every operation is local, nothing is sent to a server or queued.</summary>
+    public bool Standalone => standalone?.Invoke() == true;
+
     public async Task<PosConfig> LoadConfigAsync(CancellationToken ct)
     {
         try
         {
+            if (Standalone) throw new ApiOfflineException(new InvalidOperationException("standalone"));
             var list = await api.GetAsync<List<SettingDto>>("/api/v1/settings", ct);
             return PosConfig.FromSettings(list.ToDictionary(s => s.Key, s => s.Value));
         }
@@ -42,6 +47,13 @@ public sealed class PosService(ApiClient api, Func<LocalDb> dbFactory, TimeProvi
 
     public async Task<(IReadOnlyList<RegisterDto> Registers, bool Offline)> RegistersAsync(CancellationToken ct)
     {
+        if (Standalone)
+        {
+            var reg = await new StandaloneStore(dbFactory, time).EnsureRegisterAsync(ct);
+            await using var sdb = dbFactory();
+            var open = await sdb.Shifts.Where(s => s.Status == "Open" && s.RegisterId == reg.Id).Select(s => (Guid?)s.Id).FirstOrDefaultAsync(ct);
+            return ([new RegisterDto(reg.Id, reg.BranchId, reg.WarehouseId, reg.Code, reg.Name, true, open)], false);
+        }
         try
         {
             return (await api.GetAsync<List<RegisterDto>>("/api/v1/pos/registers", ct), false);
@@ -63,6 +75,7 @@ public sealed class PosService(ApiClient api, Func<LocalDb> dbFactory, TimeProvi
         if (code.Length == 0) return null;
         try
         {
+            if (Standalone) throw new ApiOfflineException(new InvalidOperationException("standalone"));
             return SellableProduct.From(await api.GetAsync<ProductDto>("/api/v1/catalog/products/by-code/" + Uri.EscapeDataString(code), ct));
         }
         catch (ApiException e) when (e.Status == 404)
@@ -83,6 +96,7 @@ public sealed class PosService(ApiClient api, Func<LocalDb> dbFactory, TimeProvi
     {
         try
         {
+            if (Standalone) throw new ApiOfflineException(new InvalidOperationException("standalone"));
             var page = await api.GetAsync<PagedResponse<ProductDto>>("/api/v1/catalog/products" + ApiClient.Query(("search", text), ("status", "Active"), ("pageSize", 30)), ct);
             return (page.Items.Select(SellableProduct.From).ToList(), false);
         }
@@ -90,8 +104,12 @@ public sealed class PosService(ApiClient api, Func<LocalDb> dbFactory, TimeProvi
         {
             await using var db = dbFactory();
             var q = db.Products.Where(p => p.Status == "Active");
-            if (!string.IsNullOrWhiteSpace(text)) q = q.Where(p => p.Name.Contains(text) || p.Sku.Contains(text) || (p.NameAr != null && p.NameAr.Contains(text)));
-            return ((await q.OrderBy(p => p.Name).Take(30).ToListAsync(ct)).Select(SellableProduct.From).ToList(), true);
+            if (!string.IsNullOrWhiteSpace(text))
+            {
+                var like = StandaloneStore.LikePattern(text);
+                q = q.Where(p => EF.Functions.Like(p.Name, like, "\\") || EF.Functions.Like(p.Sku, like, "\\") || (p.NameAr != null && EF.Functions.Like(p.NameAr, like, "\\")));
+            }
+            return ((await q.OrderBy(p => p.Name).Take(30).ToListAsync(ct)).Select(SellableProduct.From).ToList(), !Standalone);
         }
     }
 
@@ -109,6 +127,13 @@ public sealed class PosService(ApiClient api, Func<LocalDb> dbFactory, TimeProvi
         var id = Guid.NewGuid();
         var now = time.GetUtcNow();
         var request = new OpenShiftRequest(registerId, openingFloat, id, now);
+        if (Standalone)
+        {
+            await using var sdb = dbFactory();
+            sdb.Shifts.Add(new LocalShift { Id = id, RegisterId = registerId, OpenedAt = now, OpeningFloat = openingFloat });
+            await sdb.SaveChangesAsync(ct);
+            return new ShiftInfo(id, registerId, now, openingFloat, false);
+        }
         try
         {
             var s = await api.PostAsync<ShiftDto>("/api/v1/pos/shifts", request, ct);
@@ -131,6 +156,16 @@ public sealed class PosService(ApiClient api, Func<LocalDb> dbFactory, TimeProvi
         var request = new CloseShiftRequest(countedCash, notes, now);
         await using var db = dbFactory();
         var local = await db.Shifts.FindAsync([shiftId], ct);
+        if (Standalone)
+        {
+            if (local is null) return null;
+            var sales = await db.Sales.Where(x => x.ShiftId == shiftId).ToListAsync(ct);
+            var expected = local.OpeningFloat + sales.Sum(x => x.CashReceived - x.Change);
+            local.Status = "Closed"; local.ClosedAt = now; local.CountedCash = countedCash;
+            await db.SaveChangesAsync(ct);
+            return new ShiftDto(shiftId, local.RegisterId, Guid.Empty, Guid.Empty, local.OpenedAt, local.OpeningFloat, "Closed", now, null, countedCash, expected,
+                countedCash - expected, notes);
+        }
         // A shift opened offline must reach the server before its close, so the close is queued behind it.
         var mustQueue = await db.Outbox.AnyAsync(e => e.Status == OutboxStatus.Pending, ct);
         ShiftDto? result = null;
@@ -160,6 +195,8 @@ public sealed class PosService(ApiClient api, Func<LocalDb> dbFactory, TimeProvi
         var recorded = payments.Where(p => p.Amount > 0).ToList();
 
         await using var db = dbFactory();
+        if (Standalone) return await RecordLocalSaleAsync(db, cart, config, totals, settlement, registerId, registerCode, shift, customerId, customerName,
+            payments, companyName, cashier, language, saleId, opId, now, ct);
         var mustQueue = shift.Offline || await db.Outbox.AnyAsync(e => e.Status == OutboxStatus.Pending && e.Type == SyncOperationTypes.ShiftOpen, ct);
         if (!mustQueue)
         {
@@ -185,6 +222,54 @@ public sealed class PosService(ApiClient api, Func<LocalDb> dbFactory, TimeProvi
         });
         await db.SaveChangesAsync(ct);
         return new CheckoutResult(number, true, offlineReceipt, null);
+    }
+
+    /// <summary>Standalone sale: receipt, sale lines and stock decrement commit in one transaction; nothing is queued for a server.</summary>
+    private async Task<CheckoutResult> RecordLocalSaleAsync(LocalDb db, Cart cart, PosConfig config, CartTotals totals, Settlement settlement, Guid registerId,
+        string registerCode, ShiftInfo shift, Guid? customerId, string? customerName, IReadOnlyList<PaymentLine> payments, string companyName, string cashier,
+        string language, Guid saleId, string opId, DateTimeOffset now, CancellationToken ct)
+    {
+        await using var tx = await db.Database.BeginTransactionAsync(ct);
+        var number = await NextLocalNumberAsync(db, registerCode, now, ct);
+        var receipt = cart.ToReceipt(config, companyName, number, now, cashier, customerName, payments, settlement, false, language);
+        var warehouseId = (await db.Registers.FindAsync([registerId], ct))?.WarehouseId ?? throw new InvalidOperationException("Unknown register.");
+        var ids = cart.Items.Select(i => i.Product.Id).Distinct().ToList();
+        var products = await db.Products.Where(p => ids.Contains(p.Id)).ToDictionaryAsync(p => p.Id, ct);
+        for (var i = 0; i < cart.Items.Count; i++)
+        {
+            var item = cart.Items[i];
+            var t = totals.Lines[i];
+            products.TryGetValue(item.Product.Id, out var p);
+            db.SaleLines.Add(new LocalSaleLine
+            {
+                Id = Guid.NewGuid(), SaleId = saleId, ProductId = item.Product.Id, Sku = item.Product.Sku, Name = item.Product.Name, Quantity = item.Quantity,
+                UnitPrice = item.Product.SalePrice, Discount = t.Discount, Net = t.Net, Tax = t.Tax, Total = t.Total, UnitCost = p?.PurchasePrice ?? 0, CreatedAt = now,
+            });
+            if (item.Product.TrackStock)
+                StandaloneStore.ApplyStock(db, await db.Stock.FindAsync([warehouseId, item.Product.Id], ct), warehouseId, item.Product.Id, -item.Quantity, now);
+        }
+        if (customerId is { } cid && await db.Customers.FindAsync([cid], ct) is { } customer)
+            customer.Balance += payments.Where(p => p.Method == "OnAccount").Sum(p => p.Amount);
+        db.Sales.Add(new LocalSale
+        {
+            Id = saleId, ClientNumber = number, ShiftId = shift.Id, RegisterId = registerId, CustomerId = customerId, OpId = opId, CreatedAt = now,
+            Subtotal = totals.Gross, Discount = totals.Discount, Tax = totals.Tax, Total = totals.Total + settlement.Rounding,
+            CashReceived = payments.Where(p => p.Method == "Cash").Sum(p => p.Amount), Change = settlement.Change,
+            ReceiptJson = JsonSerializer.Serialize(receipt, ApiClient.Json), SyncStatus = OutboxStatus.Local,
+        });
+        await db.SaveChangesAsync(ct);
+        await tx.CommitAsync(ct);
+        return new CheckoutResult(number, false, receipt, null);
+    }
+
+    /// <summary>Standalone receipt number: <c>{register}-{yyMMdd}-{counter}</c>.</summary>
+    public static async Task<string> NextLocalNumberAsync(LocalDb db, string registerCode, DateTimeOffset now, CancellationToken ct)
+    {
+        var current = await db.GetValueAsync(LocalDb.Keys.ReceiptCounter, ct);
+        var next = (long.TryParse(current, NumberStyles.Integer, CultureInfo.InvariantCulture, out var n) ? n : 0) + 1;
+        await db.SetValueAsync(LocalDb.Keys.ReceiptCounter, next.ToString(CultureInfo.InvariantCulture), ct);
+        var code = string.IsNullOrWhiteSpace(registerCode) ? "POS" : registerCode.Trim().ToUpperInvariant();
+        return $"{code}-{now.ToLocalTime():yyMMdd}-{next.ToString("00000", CultureInfo.InvariantCulture)}";
     }
 
     /// <summary>Device-side receipt number: <c>{register}-{yyMMdd}-{counter}</c>, unique per register and monotonic.</summary>

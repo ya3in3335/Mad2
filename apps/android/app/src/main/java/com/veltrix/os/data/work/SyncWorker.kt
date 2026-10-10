@@ -26,7 +26,13 @@ class SyncWorker @AssistedInject constructor(
     @Assisted context: Context, @Assisted params: WorkerParameters,
     private val sync: SyncRepository, private val license: LicenseRepository,
 ) : CoroutineWorker(context, params) {
-    override suspend fun doWork(): Result = try {
+    override suspend fun doWork(): Result {
+        // Standalone (offline license): there is no server — nothing to push, pull or renew.
+        if (license.isOfflineLicense) return Result.success()
+        return sync()
+    }
+
+    private suspend fun sync(): Result = try {
         runCatching { license.refresh() }
         sync.push()
         sync.pull()

@@ -58,6 +58,11 @@ public sealed partial class ProductsViewModel(DesktopServices s) : ListPageViewM
 
     protected override async Task<PagedResponse<ProductDto>> FetchAsync(int page, string search, CancellationToken ct)
     {
+        if (S.IsStandalone)
+        {
+            if (TaxCategories.Count == 0) TaxCategories = Core.Standalone.StandaloneStore.TaxCategories;
+            return await S.Standalone.Store.ProductsAsync(page, PageSize, search, ct);
+        }
         if (TaxCategories.Count == 0)
         {
             TaxCategories = await S.Api.GetAsync<List<TaxCategoryDto>>("/api/v1/catalog/tax-categories", ct);
@@ -80,7 +85,9 @@ public sealed partial class ProductsViewModel(DesktopServices s) : ListPageViewM
     {
         if (Editor is null) return;
         var req = Editor.ToRequest();
-        var saved = Editor.IsNew
+        var saved = S.IsStandalone
+            ? await S.Standalone.Store.UpsertProductAsync(req, Editor.Original?.Id)
+            : Editor.IsNew
             ? await S.Api.PostAsync<ProductDto>("/api/v1/catalog/products", req)
             : await S.Api.PutAsync<ProductDto>($"/api/v1/catalog/products/{Editor.Original!.Id}", req);
         var idx = Items.ToList().FindIndex(p => p.Id == saved.Id);

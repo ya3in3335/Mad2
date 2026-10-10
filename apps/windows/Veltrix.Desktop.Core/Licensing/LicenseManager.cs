@@ -57,6 +57,10 @@ public sealed class LicenseManager(ApiClient api, SecureStore store, AppSettings
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
     public LicenseEvaluation? Current { get; private set; }
+
+    /// <summary>Set by <see cref="Evaluate"/>: the device runs on a vendor-issued offline license, i.e. as a standalone single-device
+    /// app with local accounts and local data only (no server, no sync).</summary>
+    public bool IsStandalone { get; private set; }
     public event EventHandler<LicenseEvaluation>? Changed;
 
     /// <summary>The pinned vendor key: compiled in (recommended) or trusted on first activation.</summary>
@@ -92,6 +96,7 @@ public sealed class LicenseManager(ApiClient api, SecureStore store, AppSettings
         else if (key is null) result = new LicenseEvaluation(LicenseState.InvalidSignature, null, watermark, null, null);
         else result = LicenseVerifier.Evaluate(cert, key, identity.InstallationId, identity.Thumbprint, time.GetUtcNow(), watermark);
         if (result.Watermark > watermark) store.Set(SecureStore.Watermark, result.Watermark.ToString(CultureInfo.InvariantCulture));
+        IsStandalone = result.Payload?.Type == OfflineLicensing.OfflineType && !result.RequiresActivation;
         Current = result;
         Changed?.Invoke(this, result);
         return result;

@@ -54,8 +54,9 @@ public sealed partial class CustomersViewModel(DesktopServices s) : ListPageView
 
     public bool CanManage => Can("customers.manage");
 
-    protected override Task<PagedResponse<CustomerDto>> FetchAsync(int page, string search, CancellationToken ct) =>
-        S.Api.GetAsync<PagedResponse<CustomerDto>>("/api/v1/customers" + ApiClient.Query(("page", page), ("pageSize", PageSize), ("search", search)), ct);
+    protected override Task<PagedResponse<CustomerDto>> FetchAsync(int page, string search, CancellationToken ct) => S.IsStandalone
+        ? S.Standalone.Store.CustomersAsync(page, PageSize, search, ct)
+        : S.Api.GetAsync<PagedResponse<CustomerDto>>("/api/v1/customers" + ApiClient.Query(("page", page), ("pageSize", PageSize), ("search", search)), ct);
 
     partial void OnSelectedChanged(CustomerDto? value)
     {
@@ -68,7 +69,8 @@ public sealed partial class CustomersViewModel(DesktopServices s) : ListPageView
     {
         try
         {
-            var list = await S.Api.GetAsync<List<CustomerPurchaseDto>>($"/api/v1/customers/{id}/purchases");
+            var list = S.IsStandalone ? await S.Standalone.Store.CustomerPurchasesAsync(id)
+                : await S.Api.GetAsync<List<CustomerPurchaseDto>>($"/api/v1/customers/{id}/purchases");
             if (Selected?.Id == id) Purchases = list;
         }
         catch (Exception e) { S.Log.Warn("Customer purchases failed", e); }
@@ -89,7 +91,8 @@ public sealed partial class CustomersViewModel(DesktopServices s) : ListPageView
         var req = Editor.ToRequest(id);
         try
         {
-            var saved = id is null ? await S.Api.PostAsync<CustomerDto>("/api/v1/customers", req) : await S.Api.PutAsync<CustomerDto>($"/api/v1/customers/{id}", req);
+            var saved = S.IsStandalone ? await S.Standalone.Store.UpsertCustomerAsync(req, id)
+                : id is null ? await S.Api.PostAsync<CustomerDto>("/api/v1/customers", req) : await S.Api.PutAsync<CustomerDto>($"/api/v1/customers/{id}", req);
             var idx = Items.ToList().FindIndex(c => c.Id == saved.Id);
             if (idx >= 0) Items[idx] = saved; else Items.Insert(0, saved);
             Selected = saved;
