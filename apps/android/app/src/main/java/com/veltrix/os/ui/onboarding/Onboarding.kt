@@ -132,10 +132,8 @@ fun OnboardingFlow(onDone: () -> Unit, vm: OnboardingViewModel = hiltViewModel()
                     when (s) {
                         0 -> LanguageStep(vm::chooseLanguage)
                         1 -> PrivacyStep(vm::acceptPrivacy)
-                        2 -> {
-                            ActivationStep(vm.settings.serverUrl, busy, error, vm::activate)
-                            OfflineActivationSection(vm)
-                        }
+                        // Standalone product: activation is device-bound and offline only (no server address, no license key).
+                        2 -> OfflineActivationSection(vm)
                         3 -> CompanyStep(busy, error, vm.settings.language, vm::completeSetup)
                         else -> DoneStep(onDone)
                     }
@@ -166,25 +164,6 @@ fun OnboardingFlow(onDone: () -> Unit, vm: OnboardingViewModel = hiltViewModel()
         Text(stringResource(R.string.onb_accept))
     }
     Button(onClick = onAccept, enabled = checked, modifier = Modifier.fillMaxWidth().height(48.dp)) { Text(stringResource(R.string.action_next)) }
-}
-
-@Composable private fun ActivationStep(initialServer: String, busy: Boolean, error: String?, onActivate: (String, String) -> Unit) {
-    var server by remember { mutableStateOf(initialServer) }
-    var key by remember { mutableStateOf("") }
-    Text(stringResource(R.string.onb_activate), style = MaterialTheme.typography.headlineMedium)
-    Spacer(Modifier.height(12.dp))
-    OutlinedTextField(server, { server = it }, label = { Text(stringResource(R.string.onb_server)) }, singleLine = true, modifier = Modifier.fillMaxWidth(),
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri))
-    Spacer(Modifier.height(8.dp))
-    OutlinedTextField(key, { key = it.uppercase() }, label = { Text(stringResource(R.string.onb_licenseKey)) }, singleLine = true, modifier = Modifier.fillMaxWidth(),
-        placeholder = { Text("VLX-XXXXX-XXXXX-XXXXX-XXXXX") })
-    ErrorText(error)
-    Spacer(Modifier.height(12.dp))
-    Button(onClick = { onActivate(server, key) }, enabled = !busy && key.length >= 20, modifier = Modifier.fillMaxWidth().height(48.dp)) {
-        if (busy) CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp) else Text(stringResource(R.string.onb_activate))
-    }
-    Spacer(Modifier.height(12.dp))
-    Text(stringResource(R.string.lic_recovery), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
 }
 
 @Composable private fun CompanyStep(busy: Boolean, error: String?, lang: String, onSubmit: (CompleteOnboardingRequest) -> Unit) {
@@ -227,7 +206,6 @@ fun OnboardingFlow(onDone: () -> Unit, vm: OnboardingViewModel = hiltViewModel()
 @Composable private fun OfflineActivationSection(vm: OnboardingViewModel) {
     val context = LocalContext.current
     val offlineError by vm.offlineError.collectAsState()
-    var expanded by rememberSaveable { mutableStateOf(false) }
     var code by rememberSaveable { mutableStateOf("") }
     val openFile = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri != null) {
@@ -237,10 +215,8 @@ fun OnboardingFlow(onDone: () -> Unit, vm: OnboardingViewModel = hiltViewModel()
             if (text != null) code = text.trim() else vm.offlineError.value = R.string.offline_invalid
         }
     }
-    Spacer(Modifier.height(20.dp))
-    HorizontalDivider()
-    TextButton(onClick = { expanded = !expanded }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.offline_title)) }
-    if (!expanded) return
+    Text(stringResource(R.string.offline_title), style = MaterialTheme.typography.headlineSmall)
+    Spacer(Modifier.height(16.dp))
     if (!vm.offlineConfigured) {
         Text(stringResource(R.string.offline_notConfigured), color = MaterialTheme.colorScheme.error)
         return

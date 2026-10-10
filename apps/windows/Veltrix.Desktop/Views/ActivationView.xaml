@@ -45,6 +45,8 @@
                     </StackPanel>
                 </Border>
 
+                <!-- Standalone product: server activation is hidden; activation is offline and device-bound only. -->
+                <StackPanel Visibility="Collapsed">
                 <TextBlock Text="{DynamicResource onb.server}" Style="{StaticResource Text.Label}" Margin="0,16,0,4"/>
                 <TextBox Text="{Binding ServerUrl, UpdateSourceTrigger=PropertyChanged}" FlowDirection="LeftToRight"
                          AutomationProperties.Name="{DynamicResource onb.server}"/>
@@ -58,11 +60,12 @@
                     </TextBox.InputBindings>
                 </TextBox>
 
+                </StackPanel>
                 <TextBlock Text="{Binding ErrorMessage}" Style="{StaticResource Text.Error}" Visibility="{Binding ErrorMessage, Converter={StaticResource NotNullToVis}}"/>
 
                 <Grid Margin="0,20,0,0">
                     <Button Content="{DynamicResource onb.activate}" Command="{Binding ActivateCommand}" Style="{StaticResource Button.Primary}" MinHeight="44"
-                            Visibility="{Binding Activated, Converter={StaticResource InvBoolToVis}}"/>
+                            Visibility="Collapsed"/>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Visibility="{Binding Activated, Converter={StaticResource BoolToVis}}">
                         <Path Data="{StaticResource Icon.Check}" Stroke="{DynamicResource Brush.success}" StrokeThickness="3" Width="28" Height="28" Stretch="Uniform"/>
                         <TextBlock Text="{DynamicResource onb.activated}" Foreground="{DynamicResource Brush.success}" FontSize="16" Margin="10,0,0,0" VerticalAlignment="Center"/>
@@ -73,7 +76,7 @@
                     <TextBlock Text="{DynamicResource onb.activating}" Style="{StaticResource Text.Caption}" HorizontalAlignment="Center" Margin="0,6,0,0"/>
                 </StackPanel>
                 <!-- Offline activation: no server; the owner issues a device-bound activation code from the device code. -->
-                <Expander Header="{DynamicResource dk.offline.title}" IsExpanded="{Binding ShowOffline}" Margin="0,20,0,0">
+                <Expander Header="{DynamicResource dk.offline.title}" IsExpanded="True" Margin="0,20,0,0">
                     <Border Style="{StaticResource Card}" Margin="0,8,0,0">
                         <StackPanel>
                             <TextBlock Text="{DynamicResource dk.offline.notConfigured}" Style="{StaticResource Text.Error}" TextWrapping="Wrap"
