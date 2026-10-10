@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>Veltrix.Desktop.Core</RootNamespace>
+    <Description>Platform-neutral logic for the VELTRIX OS Windows client (licensing, sync, POS math, API client, local database).</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\packages\contracts\Veltrix.Contracts\Veltrix.Contracts.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Veltrix.Desktop.Tests" />
+  </ItemGroup>
+</Project>
