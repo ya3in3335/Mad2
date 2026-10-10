@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 685 640" width="685" height="640" role="img" aria-label="VELTRIX OS">
+  <defs>
+    <linearGradient id="vL" x1="84" y1="104" x2="260" y2="432" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3478FF"/><stop offset="1" stop-color="#00D9FF"/>
+    </linearGradient>
+    <linearGradient id="vR" x1="428" y1="104" x2="300" y2="336" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#765BFF"/><stop offset="1" stop-color="#3478FF"/>
+    </linearGradient>
+  </defs>
+  
+  <g transform="translate(152.40000000000003 20) scale(0.7421875)"><g>
+    <path d="M 84 104 L 184 104 L 282 356 L 240 432 Z" fill="url(#vL)"/>
+    <path d="M 428 104 L 346 104 L 282 268 L 322 336 Z" fill="url(#vR)"/>
+    <path d="M 156 156 L 226 316" stroke="#F5F8FF" stroke-opacity="0.85" stroke-width="6" stroke-linecap="round" fill="none"/>
+    <circle cx="156" cy="156" r="9" fill="#F5F8FF" fill-opacity="0.85"/>
+    <circle cx="226" cy="316" r="9" fill="#F5F8FF" fill-opacity="0.85"/>
+    <circle cx="300" cy="384" r="14" fill="#00D9FF"/>
+  </g></g>
+  <g transform="translate(40.0 450) scale(0.8)"><g fill="none" stroke="#F5F8FF" stroke-width="13" stroke-linecap="square" stroke-linejoin="miter" stroke-miterlimit="2"><path transform="translate(0 0)" d="M7 7 L37 93 L67 7"/><path transform="translate(96 0)" d="M53 7 H7 V93 H53 M7 50 H45"/><path transform="translate(178 0)" d="M7 7 V93 H49"/><path transform="translate(256 0)" d="M0 7 H66 M33 7 V93"/><path transform="translate(344 0)" d="M7 100 V7 H38 A22 22 0 0 1 38 57 H7 M34 57 L57 93"/><path transform="translate(430 0)" d="M7 7 V93"/><path transform="translate(466 0)" d="M7 7 L63 93 M63 7 L7 93"/></g><g transform="translate(536 0)" fill="none" stroke="#00D9FF" stroke-width="13" stroke-linecap="square" stroke-linejoin="miter" stroke-miterlimit="2"><path transform="translate(56 0)" d="M40 7 A33 43 0 1 1 39.9 7 Z"/><path transform="translate(158 0)" d="M55 7 H24 A17 18.0 0 0 0 24 50 H38 A17 18.0 0 0 1 38 93 H7"/></g></g>
+  <g transform="translate(107.60000000000002 570) scale(0.2)" fill="none" stroke="#00D9FF" stroke-width="13" stroke-linecap="square" opacity="0.85"><path transform="translate(0 0)" d="M7 100 V7 H36 A22 22 0 0 1 36 57 H7"/><path transform="translate(82 0)" d="M40 7 A33 43 0 1 1 39.9 7 Z"/><path transform="translate(184 0)" d="M7 7 L27 93 L49 30 L71 93 L91 7"/><path transform="translate(304 0)" d="M53 7 H7 V93 H53 M7 50 H45"/><path transform="translate(386 0)" d="M7 100 V7 H38 A22 22 0 0 1 38 57 H7 M34 57 L57 93"/><path transform="translate(472 0)" d="M7 7 V93"/><path transform="translate(508 0)" d="M7 100 V7 L61 93 V0"/><path transform="translate(598 0)" d="M67 11 H40 A33 43 0 0 0 40 93 H67 V52 H44"/><path transform="translate(750 0)" d="M7 7 H36 A20 21 0 0 1 36 50 H7 M7 50 H40 A21 21.5 0 0 1 40 93 H7 Z"/><path transform="translate(834 0)" d="M7 0 V62 A27 27 0 0 0 61 62 V0"/><path transform="translate(924 0)" d="M55 7 H24 A17 18.0 0 0 0 24 50 H38 A17 18.0 0 0 1 38 93 H7"/><path transform="translate(1008 0)" d="M7 7 V93"/><path transform="translate(1044 0)" d="M7 100 V7 L61 93 V0"/><path transform="translate(1134 0)" d="M53 7 H7 V93 H53 M7 50 H45"/><path transform="translate(1216 0)" d="M55 7 H24 A17 18.0 0 0 0 24 50 H38 A17 18.0 0 0 1 38 93 H7"/><path transform="translate(1300 0)" d="M55 7 H24 A17 18.0 0 0 0 24 50 H38 A17 18.0 0 0 1 38 93 H7"/><path transform="translate(1440 0)" d="M7 7 V93"/><path transform="translate(1476 0)" d="M7 100 V7 L61 93 V0"/><path transform="translate(1566 0)" d="M0 7 H66 M33 7 V93"/><path transform="translate(1654 0)" d="M53 7 H7 V93 H53 M7 50 H45"/><path transform="translate(1736 0)" d="M7 7 V93 H49"/><path transform="translate(1814 0)" d="M7 7 V93 H49"/><path transform="translate(1892 0)" d="M7 7 V93"/><path transform="translate(1928 0)" d="M67 11 H40 A33 43 0 0 0 40 93 H67 V52 H44"/><path transform="translate(2024 0)" d="M53 7 H7 V93 H53 M7 50 H45"/><path transform="translate(2106 0)" d="M7 100 V7 L61 93 V0"/><path transform="translate(2196 0)" d="M63 11 H40 A33 43 0 0 0 40 93 H63"/><path transform="translate(2288 0)" d="M53 7 H7 V93 H53 M7 50 H45"/></g>
+</svg>

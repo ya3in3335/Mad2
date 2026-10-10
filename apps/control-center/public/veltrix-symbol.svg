@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="VELTRIX">
+  <defs>
+    <linearGradient id="vL" x1="84" y1="104" x2="260" y2="432" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3478FF"/><stop offset="1" stop-color="#00D9FF"/>
+    </linearGradient>
+    <linearGradient id="vR" x1="428" y1="104" x2="300" y2="336" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#765BFF"/><stop offset="1" stop-color="#3478FF"/>
+    </linearGradient>
+  </defs>
+  
+  <g transform="translate(0 0) scale(1.0)"><g>
+    <path d="M 84 104 L 184 104 L 282 356 L 240 432 Z" fill="url(#vL)"/>
+    <path d="M 428 104 L 346 104 L 282 268 L 322 336 Z" fill="url(#vR)"/>
+    <path d="M 156 156 L 226 316" stroke="#F5F8FF" stroke-opacity="0.85" stroke-width="6" stroke-linecap="round" fill="none"/>
+    <circle cx="156" cy="156" r="9" fill="#F5F8FF" fill-opacity="0.85"/>
+    <circle cx="226" cy="316" r="9" fill="#F5F8FF" fill-opacity="0.85"/>
+    <circle cx="300" cy="384" r="14" fill="#00D9FF"/>
+  </g></g>
+</svg>
