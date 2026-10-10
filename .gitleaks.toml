@@ -1,0 +1,11 @@
+# Gitleaks configuration: default rules + an allowlist for the two FAKE credentials used by
+# integration tests to prove the server-side redactor strips secrets. Do not add real values here.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Known fake test credentials (jwt.io sample token, TEST-ONLY Telegram token)"
+regexes = [
+  '''eyJhbGciOiJIUzI1NiJ9\.eyJzdWIiOiIxMjM0NTY3ODkwIn0\.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U''',
+  '''TEST-ONLY-token-not-real''',
+]
