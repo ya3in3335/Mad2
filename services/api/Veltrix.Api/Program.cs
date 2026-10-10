@@ -13,6 +13,17 @@ using Veltrix.Api.Infrastructure;
 using Veltrix.Modules.Identity;
 using Veltrix.SharedKernel;
 
+if (args is ["decrypt-backup", var input, var output, ..])
+{
+    // Usage: VELTRIX_BACKUP_KEY=<base64> Veltrix.Api decrypt-backup <file.vbk> <out.dump>  (then: pg_restore -d <db> out.dump)
+    var key = Veltrix.Workers.BackupService.Key(new Veltrix.Workers.BackupOptions { EncryptionKey = Environment.GetEnvironmentVariable("VELTRIX_BACKUP_KEY") });
+    await using var inStream = File.OpenRead(input);
+    await using var outStream = File.Create(output);
+    await Veltrix.Workers.BackupService.DecryptAsync(inStream, outStream, key, CancellationToken.None);
+    Console.WriteLine($"Decrypted {input} -> {output}");
+    return;
+}
+
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
 builder.Logging.AddJsonConsole(o => { o.IncludeScopes = true; o.TimestampFormat = "O"; });

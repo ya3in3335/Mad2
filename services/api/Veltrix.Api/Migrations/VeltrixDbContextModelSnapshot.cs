@@ -1458,6 +1458,833 @@ namespace Veltrix.Api.Migrations
                     b.ToTable("opportunities", "crm");
                 });
 
+            modelBuilder.Entity("Veltrix.Modules.Hr.AttendanceRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("CheckIn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("CheckOut")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("LateMinutes")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("OvertimeApproved")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("OvertimeMinutes")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.Property<int>("WorkedMinutes")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("EmployeeId", "Date")
+                        .IsUnique();
+
+                    b.ToTable("attendance", "hr");
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Hr.Department", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ManagerEmployeeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("TenantId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("departments", "hr");
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Hr.Employee", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<string>("BankAccount")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
+                    b.Property<decimal?>("BaseSalary")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<DateOnly?>("BirthDate")
+                        .HasColumnType("date");
+
+                    b.Property<Guid>("BranchId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<string>("ContractType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("DepartmentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateOnly>("HireDate")
+                        .HasColumnType("date");
+
+                    b.Property<Guid?>("JobTitleId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ManagerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("NationalId")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<Guid?>("SalaryStructureId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly?>("TerminationDate")
+                        .HasColumnType("date");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.Property<Guid?>("WorkScheduleId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DepartmentId");
+
+                    b.HasIndex("JobTitleId");
+
+                    b.HasIndex("SalaryStructureId");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("WorkScheduleId");
+
+                    b.HasIndex("TenantId", "Code")
+                        .IsUnique();
+
+                    b.HasIndex("TenantId", "UserId");
+
+                    b.ToTable("employees", "hr");
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Hr.EmployeeDocument", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly?>("ExpiresOn")
+                        .HasColumnType("date");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("StoragePath")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("employee_documents", "hr");
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Hr.ExpenseClaim", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("JournalEntryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("expense_claims", "hr");
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Hr.JobTitle", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("TenantId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("job_titles", "hr");
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Hr.LeaveRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Days")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<Guid?>("DecidedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("DecisionNote")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly>("EndDate")
+                        .HasColumnType("date");
+
+                    b.Property<Guid>("LeaveTypeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateOnly>("StartDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LeaveTypeId");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("EmployeeId", "StartDate");
+
+                    b.ToTable("leave_requests", "hr");
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Hr.LeaveType", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("AnnualAllowanceDays")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<bool>("Paid")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("TenantId", "Code")
+                        .IsUnique();
+
+                    b.ToTable("leave_types", "hr");
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Hr.PayrollInput", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<int>("Month")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("EmployeeId", "Year", "Month");
+
+                    b.ToTable("payroll_inputs", "hr");
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Hr.PayrollRun", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("JournalEntryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Month")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Number")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("TotalDeductions")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<decimal>("TotalGross")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<decimal>("TotalNet")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("TenantId", "Number")
+                        .IsUnique();
+
+                    b.HasIndex("TenantId", "Year", "Month")
+                        .IsUnique();
+
+                    b.ToTable("payroll_runs", "hr");
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Hr.Payslip", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("BaseSalary")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Deductions")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Gross")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<string>("LinesJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<decimal>("Net")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<Guid>("RunId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("RunId", "EmployeeId")
+                        .IsUnique();
+
+                    b.ToTable("payslips", "hr");
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Hr.SalaryStructure", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ComponentsJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Jurisdiction")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("salary_structures", "hr");
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Hr.WorkSchedule", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("BreakMinutes")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<TimeOnly>("EndTime")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<TimeOnly>("StartTime")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.Property<string>("WorkingDays")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("work_schedules", "hr");
+                });
+
             modelBuilder.Entity("Veltrix.Modules.Identity.PasswordResetToken", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2856,6 +3683,352 @@ namespace Veltrix.Api.Migrations
                     b.ToTable("push_tokens", "notifications");
                 });
 
+            modelBuilder.Entity("Veltrix.Modules.Platform.Announcement", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("EndsAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("Published")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Severity")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTimeOffset>("StartsAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("announcements", "platform");
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Platform.AppRelease", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Channel")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("DownloadUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("MinSupportedVersion")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<string>("Platform")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTimeOffset>("PublishedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ReleaseNotes")
+                        .HasMaxLength(8000)
+                        .HasColumnType("character varying(8000)");
+
+                    b.Property<string>("Sha256")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Version")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Platform", "Channel", "Version")
+                        .IsUnique();
+
+                    b.ToTable("releases", "platform");
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Platform.BackupRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Error")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<string>("Sha256")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<long>("SizeBytes")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTimeOffset>("StartedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("VerificationDetails")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<bool>("Verified")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset?>("VerifiedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("backups", "platform");
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Platform.PlatformSetting", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Key")
+                        .IsUnique();
+
+                    b.ToTable("settings", "platform");
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Platform.SupportCase", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Priority")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId", "Status");
+
+                    b.ToTable("support_cases", "platform");
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Platform.SupportMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AuthorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasMaxLength(8000)
+                        .HasColumnType("character varying(8000)");
+
+                    b.Property<Guid>("CaseId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("FromVendor")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CaseId");
+
+                    b.ToTable("support_messages", "platform");
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Platform.WorkerHeartbeat", b =>
+                {
+                    b.Property<string>("Name")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
+                    b.Property<string>("LastError")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<DateTimeOffset>("LastRunAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("LastStatus")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.HasKey("Name");
+
+                    b.ToTable("worker_heartbeats", "platform");
+                });
+
             modelBuilder.Entity("Veltrix.Modules.Pos.CashMovement", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3407,6 +4580,1494 @@ namespace Veltrix.Api.Migrations
                     b.ToTable("shifts", "pos");
                 });
 
+            modelBuilder.Entity("Veltrix.Modules.Purchasing.GoodsReceipt", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("JournalEntryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Number")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<Guid>("PurchaseOrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Value")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.Property<Guid>("WarehouseId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PurchaseOrderId");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("TenantId", "Number")
+                        .IsUnique();
+
+                    b.ToTable("goods_receipts", "purchasing");
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Purchasing.PurchaseOrder", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("ApprovedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ApprovedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("BranchId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly?>("ExpectedDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("Number")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<DateOnly>("OrderDate")
+                        .HasColumnType("date");
+
+                    b.Property<Guid?>("PurchaseRequestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<decimal>("Subtotal")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<Guid>("SupplierId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("TaxTotal")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Total")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.Property<Guid>("WarehouseId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SupplierId");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("TenantId", "Number")
+                        .IsUnique();
+
+                    b.HasIndex("TenantId", "Status");
+
+                    b.ToTable("purchase_orders", "purchasing");
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Purchasing.PurchaseOrderLine", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("InvoicedQuantity")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Quantity")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<decimal>("ReceivedQuantity")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<decimal>("TaxRatePercent")
+                        .HasPrecision(7, 4)
+                        .HasColumnType("numeric(7,4)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("UnitCost")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("purchase_order_lines", "purchasing");
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Purchasing.PurchaseRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("BranchId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("DecidedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("Number")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("TenantId", "Number")
+                        .IsUnique();
+
+                    b.ToTable("purchase_requests", "purchasing");
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Purchasing.PurchaseRequestLine", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Quantity")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<Guid>("RequestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("RequestId");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("purchase_request_lines", "purchasing");
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Purchasing.PurchaseReturn", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<Guid?>("JournalEntryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Number")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<Guid>("SupplierId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Total")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.Property<Guid>("WarehouseId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SupplierId");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("TenantId", "Number")
+                        .IsUnique();
+
+                    b.ToTable("purchase_returns", "purchasing");
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Purchasing.Supplier", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<int>("PaymentTermsDays")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<string>("TaxId")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("TradeRegisterNo")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("TenantId", "Code")
+                        .IsUnique();
+
+                    b.ToTable("suppliers", "purchasing");
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Purchasing.SupplierInvoice", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("AmountPaid")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly>("DueDate")
+                        .HasColumnType("date");
+
+                    b.Property<Guid?>("JournalEntryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Number")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<Guid?>("PurchaseOrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<decimal>("Subtotal")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<Guid>("SupplierId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("SupplierInvoiceNo")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
+                    b.Property<decimal>("TaxTotal")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Total")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SupplierId");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("TenantId", "Number")
+                        .IsUnique();
+
+                    b.HasIndex("TenantId", "SupplierId", "SupplierInvoiceNo")
+                        .IsUnique();
+
+                    b.ToTable("supplier_invoices", "purchasing");
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Purchasing.SupplierPayment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<Guid?>("JournalEntryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Method")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Number")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<Guid>("PaymentAccountId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Reference")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<Guid>("SupplierId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SupplierId");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("TenantId", "Number")
+                        .IsUnique();
+
+                    b.ToTable("supplier_payments", "purchasing");
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Purchasing.SupplierPaymentAllocation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("InvoiceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("PaymentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InvoiceId");
+
+                    b.HasIndex("PaymentId");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("supplier_payment_allocations", "purchasing");
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Reporting.ScheduledReport", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Format")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<string>("Frequency")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset?>("LastRunAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("LastStatus")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<Guid>("OwnerUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ParametersJson")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("Recipients")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("ReportKey")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("scheduled_reports", "reporting");
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Sales.CommissionRule", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("RatePercent")
+                        .HasPrecision(7, 4)
+                        .HasColumnType("numeric(7,4)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("TenantId", "UserId")
+                        .IsUnique();
+
+                    b.ToTable("commission_rules", "sales");
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Sales.CustomerPayment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<Guid?>("JournalEntryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Method")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Number")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<Guid>("PaymentAccountId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Reference")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("TenantId", "Number")
+                        .IsUnique();
+
+                    b.ToTable("customer_payments", "sales");
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Sales.CustomerPaymentAllocation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("InvoiceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("PaymentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InvoiceId");
+
+                    b.HasIndex("PaymentId");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("customer_payment_allocations", "sales");
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Sales.DeliveryNote", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("CostValue")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("JournalEntryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Number")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.Property<Guid>("WarehouseId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("TenantId", "Number")
+                        .IsUnique();
+
+                    b.ToTable("delivery_notes", "sales");
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Sales.SalesDocument", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("AmountPaid")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<DateTimeOffset?>("ApprovedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ApprovedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("BranchId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<decimal>("DiscountTotal")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<DateOnly?>("DueDate")
+                        .HasColumnType("date");
+
+                    b.Property<Guid?>("JournalEntryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("Number")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<Guid?>("SalespersonId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("SourceDocumentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<decimal>("Subtotal")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<decimal>("TaxTotal")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Total")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly?>("ValidUntil")
+                        .HasColumnType("date");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.Property<Guid>("WarehouseId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("TenantId", "CustomerId");
+
+                    b.HasIndex("TenantId", "Number")
+                        .IsUnique();
+
+                    b.HasIndex("TenantId", "Type", "Status");
+
+                    b.ToTable("documents", "sales");
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Sales.SalesDocumentLine", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("CreditedQuantity")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<decimal>("DeliveredQuantity")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<decimal>("DiscountPercent")
+                        .HasPrecision(7, 4)
+                        .HasColumnType("numeric(7,4)");
+
+                    b.Property<Guid>("DocumentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("InvoicedQuantity")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<int>("LineNo")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("LineTotal")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<decimal>("NetAmount")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Quantity")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<Guid?>("SourceLineId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("TaxAmount")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<decimal>("TaxRatePercent")
+                        .HasPrecision(7, 4)
+                        .HasColumnType("numeric(7,4)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("UnitCost")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DocumentId");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("document_lines", "sales");
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Subscriptions.BillingInvoice", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<Guid?>("ConfirmedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<DateOnly>("DueDate")
+                        .HasColumnType("date");
+
+                    b.Property<bool>("IsRenewal")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset>("IssuedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Number")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<DateTimeOffset?>("PaidAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("PaymentMethod")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<string>("PaymentReference")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTimeOffset>("PeriodEnd")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("PeriodStart")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<Guid>("SubscriptionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Tax")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Total")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Number")
+                        .IsUnique();
+
+                    b.HasIndex("SubscriptionId");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("invoices", "subscriptions");
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Subscriptions.EntitlementChange", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("At")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Change")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Details")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<Guid>("SubscriptionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("entitlement_changes", "subscriptions");
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Subscriptions.Subscription", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("BillingCycle")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<bool>("CancelAtPeriodEnd")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)");
+
+                    b.Property<DateTimeOffset>("CurrentPeriodEnd")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("CurrentPeriodStart")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("LicenseId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("PeriodPrice")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<string>("PlanCode")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<int>("Seats")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("subscriptions", "subscriptions");
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Subscriptions.SubscriptionPlan", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("AnnualPrice")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("Features")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsPublic")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("MaxBranches")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MaxDevices")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MaxUsers")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("MonthlyPrice")
+                        .HasPrecision(19, 4)
+                        .HasColumnType("numeric(19,4)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("OfflineGraceDays")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TrialDays")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("plans", "subscriptions");
+                });
+
             modelBuilder.Entity("Veltrix.Modules.Tenants.Branch", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3847,7 +6508,8 @@ namespace Veltrix.Api.Migrations
                         .HasColumnType("xid")
                         .HasColumnName("xmin");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_settings1");
 
                     b.HasIndex("TenantId");
 
@@ -4041,6 +6703,95 @@ namespace Veltrix.Api.Migrations
                     b.HasOne("Veltrix.Modules.Crm.Customer", null)
                         .WithMany()
                         .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Hr.AttendanceRecord", b =>
+                {
+                    b.HasOne("Veltrix.Modules.Hr.Employee", null)
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Hr.Employee", b =>
+                {
+                    b.HasOne("Veltrix.Modules.Hr.Department", null)
+                        .WithMany()
+                        .HasForeignKey("DepartmentId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Veltrix.Modules.Hr.JobTitle", null)
+                        .WithMany()
+                        .HasForeignKey("JobTitleId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Veltrix.Modules.Hr.SalaryStructure", null)
+                        .WithMany()
+                        .HasForeignKey("SalaryStructureId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Veltrix.Modules.Hr.WorkSchedule", null)
+                        .WithMany()
+                        .HasForeignKey("WorkScheduleId")
+                        .OnDelete(DeleteBehavior.SetNull);
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Hr.EmployeeDocument", b =>
+                {
+                    b.HasOne("Veltrix.Modules.Hr.Employee", null)
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Hr.ExpenseClaim", b =>
+                {
+                    b.HasOne("Veltrix.Modules.Hr.Employee", null)
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Hr.LeaveRequest", b =>
+                {
+                    b.HasOne("Veltrix.Modules.Hr.Employee", null)
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Veltrix.Modules.Hr.LeaveType", null)
+                        .WithMany()
+                        .HasForeignKey("LeaveTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Hr.PayrollInput", b =>
+                {
+                    b.HasOne("Veltrix.Modules.Hr.Employee", null)
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Hr.Payslip", b =>
+                {
+                    b.HasOne("Veltrix.Modules.Hr.Employee", null)
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Veltrix.Modules.Hr.PayrollRun", null)
+                        .WithMany()
+                        .HasForeignKey("RunId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -4239,6 +6990,15 @@ namespace Veltrix.Api.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Veltrix.Modules.Platform.SupportMessage", b =>
+                {
+                    b.HasOne("Veltrix.Modules.Platform.SupportCase", null)
+                        .WithMany("Messages")
+                        .HasForeignKey("CaseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Veltrix.Modules.Pos.CashMovement", b =>
                 {
                     b.HasOne("Veltrix.Modules.Pos.Shift", null)
@@ -4310,6 +7070,171 @@ namespace Veltrix.Api.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Veltrix.Modules.Purchasing.GoodsReceipt", b =>
+                {
+                    b.HasOne("Veltrix.Modules.Purchasing.PurchaseOrder", null)
+                        .WithMany()
+                        .HasForeignKey("PurchaseOrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Purchasing.PurchaseOrder", b =>
+                {
+                    b.HasOne("Veltrix.Modules.Purchasing.Supplier", null)
+                        .WithMany()
+                        .HasForeignKey("SupplierId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Purchasing.PurchaseOrderLine", b =>
+                {
+                    b.HasOne("Veltrix.Modules.Purchasing.PurchaseOrder", null)
+                        .WithMany("Lines")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Veltrix.Modules.Catalog.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Purchasing.PurchaseRequestLine", b =>
+                {
+                    b.HasOne("Veltrix.Modules.Catalog.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Veltrix.Modules.Purchasing.PurchaseRequest", null)
+                        .WithMany("Lines")
+                        .HasForeignKey("RequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Purchasing.PurchaseReturn", b =>
+                {
+                    b.HasOne("Veltrix.Modules.Purchasing.Supplier", null)
+                        .WithMany()
+                        .HasForeignKey("SupplierId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Purchasing.SupplierInvoice", b =>
+                {
+                    b.HasOne("Veltrix.Modules.Purchasing.Supplier", null)
+                        .WithMany()
+                        .HasForeignKey("SupplierId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Purchasing.SupplierPayment", b =>
+                {
+                    b.HasOne("Veltrix.Modules.Purchasing.Supplier", null)
+                        .WithMany()
+                        .HasForeignKey("SupplierId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Purchasing.SupplierPaymentAllocation", b =>
+                {
+                    b.HasOne("Veltrix.Modules.Purchasing.SupplierInvoice", null)
+                        .WithMany()
+                        .HasForeignKey("InvoiceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Veltrix.Modules.Purchasing.SupplierPayment", null)
+                        .WithMany("Allocations")
+                        .HasForeignKey("PaymentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Sales.CustomerPayment", b =>
+                {
+                    b.HasOne("Veltrix.Modules.Crm.Customer", null)
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Sales.CustomerPaymentAllocation", b =>
+                {
+                    b.HasOne("Veltrix.Modules.Sales.SalesDocument", null)
+                        .WithMany()
+                        .HasForeignKey("InvoiceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Veltrix.Modules.Sales.CustomerPayment", null)
+                        .WithMany("Allocations")
+                        .HasForeignKey("PaymentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Sales.DeliveryNote", b =>
+                {
+                    b.HasOne("Veltrix.Modules.Sales.SalesDocument", null)
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Sales.SalesDocument", b =>
+                {
+                    b.HasOne("Veltrix.Modules.Crm.Customer", null)
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Sales.SalesDocumentLine", b =>
+                {
+                    b.HasOne("Veltrix.Modules.Sales.SalesDocument", null)
+                        .WithMany("Lines")
+                        .HasForeignKey("DocumentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Veltrix.Modules.Catalog.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Subscriptions.BillingInvoice", b =>
+                {
+                    b.HasOne("Veltrix.Modules.Subscriptions.Subscription", null)
+                        .WithMany()
+                        .HasForeignKey("SubscriptionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Subscriptions.Subscription", b =>
+                {
+                    b.HasOne("Veltrix.Modules.Tenants.Company", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Veltrix.Modules.Tenants.Branch", b =>
                 {
                     b.HasOne("Veltrix.Modules.Tenants.Company", null)
@@ -4367,11 +7292,41 @@ namespace Veltrix.Api.Migrations
                     b.Navigation("Lines");
                 });
 
+            modelBuilder.Entity("Veltrix.Modules.Platform.SupportCase", b =>
+                {
+                    b.Navigation("Messages");
+                });
+
             modelBuilder.Entity("Veltrix.Modules.Pos.PosSale", b =>
                 {
                     b.Navigation("Lines");
 
                     b.Navigation("Payments");
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Purchasing.PurchaseOrder", b =>
+                {
+                    b.Navigation("Lines");
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Purchasing.PurchaseRequest", b =>
+                {
+                    b.Navigation("Lines");
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Purchasing.SupplierPayment", b =>
+                {
+                    b.Navigation("Allocations");
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Sales.CustomerPayment", b =>
+                {
+                    b.Navigation("Allocations");
+                });
+
+            modelBuilder.Entity("Veltrix.Modules.Sales.SalesDocument", b =>
+                {
+                    b.Navigation("Lines");
                 });
 #pragma warning restore 612, 618
         }

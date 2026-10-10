@@ -7,7 +7,7 @@ namespace Veltrix.Api.Infrastructure;
 
 /// <summary>Single unit-of-work for the modular monolith. Each module contributes entity configurations from its
 /// own assembly. Tenant isolation is enforced through global query filters plus write-time ownership checks.</summary>
-public sealed class VeltrixDbContext(DbContextOptions<VeltrixDbContext> options, ITenantContext tenant, IClock clock)
+public sealed class VeltrixDbContext(DbContextOptions<VeltrixDbContext> options, ITenantContext tenant, IClock clock, IServiceProvider? services = null)
     : DbContext(options)
 {
     public static readonly List<Assembly> ModuleAssemblies = new();
@@ -55,10 +55,14 @@ public sealed class VeltrixDbContext(DbContextOptions<VeltrixDbContext> options,
         return base.SaveChanges(acceptAllChangesOnSuccess);
     }
 
-    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken ct = default)
+    public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken ct = default)
     {
         ApplyRules();
-        return base.SaveChangesAsync(acceptAllChangesOnSuccess, ct);
+        var added = ChangeTracker.Entries<Veltrix.Modules.Notifications.Notification>().Where(e => e.State == EntityState.Added).Select(e => e.Entity).ToList();
+        var result = await base.SaveChangesAsync(acceptAllChangesOnSuccess, ct);
+        if (added.Count > 0 && services?.GetService(typeof(IRealtimePublisher)) is IRealtimePublisher rt)
+            foreach (var n in added) await rt.NotifyTenantAsync(n.TenantId, "notification", new { n.Id, n.Type, n.Title, severity = n.Severity.ToString() });
+        return result;
     }
 
     private void ApplyRules()

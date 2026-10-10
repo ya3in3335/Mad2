@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
+    <ProjectReference Include="../../shared-kernel/Veltrix.SharedKernel/Veltrix.SharedKernel.csproj" />
+    <ProjectReference Include="../../sales/Veltrix.Modules.Sales/Veltrix.Modules.Sales.csproj" />
+    <ProjectReference Include="../../purchasing/Veltrix.Modules.Purchasing/Veltrix.Modules.Purchasing.csproj" />
+    <ProjectReference Include="../../hr/Veltrix.Modules.Hr/Veltrix.Modules.Hr.csproj" />
+    <ProjectReference Include="../../notifications/Veltrix.Modules.Notifications/Veltrix.Modules.Notifications.csproj" />
+    <ProjectReference Include="../../../packages/contracts/Veltrix.Contracts/Veltrix.Contracts.csproj" />
+  </ItemGroup>
+</Project>

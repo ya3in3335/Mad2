@@ -51,6 +51,20 @@ public static class Bootstrap
             await db.Database.MigrateAsync();
         }
 
+        // Plan templates (features/limits) so the vendor can start selling; prices are left at 0 and plans are private
+        // until the vendor sets real prices in the Control Center.
+        if (!await db.Set<Veltrix.Modules.Subscriptions.SubscriptionPlan>().AnyAsync())
+        {
+            foreach (var (code, def) in Veltrix.Modules.Licensing.PlanDefaults.Plans.Where(p => p.Key != "trial"))
+                db.Add(new Veltrix.Modules.Subscriptions.SubscriptionPlan
+                {
+                    Code = code, Name = char.ToUpperInvariant(code[0]) + code[1..], Description = "Template — set pricing before publishing.",
+                    Features = string.Join(',', def.Features), MaxDevices = def.MaxDevices, OfflineGraceDays = def.GraceDays, IsPublic = false,
+                    MaxUsers = def.MaxDevices * 5, MaxBranches = code == "starter" ? 1 : code == "professional" ? 5 : 100,
+                });
+            await db.SaveChangesAsync();
+        }
+
         // Optional one-time creation of the first platform administrator. No default credentials exist.
         var email = config["Bootstrap:PlatformAdminEmail"];
         var password = config["Bootstrap:PlatformAdminPassword"];

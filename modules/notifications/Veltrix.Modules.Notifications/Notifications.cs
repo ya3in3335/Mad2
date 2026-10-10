@@ -131,6 +131,15 @@ public sealed class LiveHub : Hub
     }
 }
 
+public sealed class SignalRRealtimePublisher(IHubContext<LiveHub> hub) : IRealtimePublisher
+{
+    public async Task NotifyTenantAsync(Guid tenantId, string eventName, object payload)
+    {
+        try { await hub.Clients.Group("tenant:" + tenantId).SendAsync(eventName, payload); }
+        catch (Exception) { /* best effort */ }
+    }
+}
+
 public sealed class NotificationService(DbContext db, ITenantContext ctx, IClock clock)
 {
     private IQueryable<Notification> Visible()
@@ -206,6 +215,7 @@ public interface IEmailSender
 {
     bool IsConfigured { get; }
     Task SendAsync(string to, string subject, string body, CancellationToken ct);
+    Task SendAsync(string to, string subject, string body, IReadOnlyList<(string FileName, string ContentType, byte[] Content)> attachments, CancellationToken ct);
 }
 
 public sealed class SmtpOptions
@@ -229,6 +239,16 @@ public sealed class SmtpEmailSender(SmtpOptions options, ILogger<SmtpEmailSender
         using var client = new SmtpClient(options.Host, options.Port) { EnableSsl = options.EnableSsl };
         if (!string.IsNullOrEmpty(options.Username)) client.Credentials = new NetworkCredential(options.Username, options.Password);
         using var msg = new MailMessage(options.From, to, subject, body);
+        await client.SendMailAsync(msg, ct);
+    }
+
+    public async Task SendAsync(string to, string subject, string body, IReadOnlyList<(string FileName, string ContentType, byte[] Content)> attachments, CancellationToken ct)
+    {
+        if (!IsConfigured) return;
+        using var client = new SmtpClient(options.Host, options.Port) { EnableSsl = options.EnableSsl };
+        if (!string.IsNullOrEmpty(options.Username)) client.Credentials = new NetworkCredential(options.Username, options.Password);
+        using var msg = new MailMessage(options.From, to, subject, body);
+        foreach (var a in attachments) msg.Attachments.Add(new Attachment(new MemoryStream(a.Content), a.FileName, a.ContentType));
         await client.SendMailAsync(msg, ct);
     }
 }
@@ -275,6 +295,7 @@ public sealed class NotificationsModule : IModule
         services.AddSingleton<IPushProvider, NullPushProvider>();
         services.AddScoped<IPasswordResetNotifier, EmailPasswordResetNotifier>();
         services.AddSignalR();
+        services.AddSingleton<IRealtimePublisher, SignalRRealtimePublisher>();
     }
 
     public void MapEndpoints(IEndpointRouteBuilder app)

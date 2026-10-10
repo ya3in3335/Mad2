@@ -47,6 +47,7 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
             ["RateLimits:AuthPerMinute"] = "10000",
             ["RateLimits:BurstPerClient"] = "100000",
             ["RateLimits:PerSecondPerClient"] = "100000",
+            ["Workers:Enabled"] = "false",
     };
 
     public Task InitializeAsync() => Task.CompletedTask;

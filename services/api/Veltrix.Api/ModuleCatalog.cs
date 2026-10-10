@@ -16,5 +16,12 @@ public static class ModuleCatalog
         new Veltrix.Modules.Inventory.InventoryModule(),
         new Veltrix.Modules.Crm.CrmModule(),
         new Veltrix.Modules.Pos.PosModule(),
+        new Veltrix.Modules.Purchasing.PurchasingModule(),
+        new Veltrix.Modules.Sales.SalesModule(),
+        new Veltrix.Modules.Hr.HrModule(),
+        new Veltrix.Modules.Reporting.ReportingModule(),
+        new Veltrix.Modules.Synchronization.SynchronizationModule(),
+        new Veltrix.Modules.Subscriptions.SubscriptionsModule(),
+        new Veltrix.Modules.Platform.PlatformModule(),
     ];
 }

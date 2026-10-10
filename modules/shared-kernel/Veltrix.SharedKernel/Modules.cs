@@ -74,3 +74,35 @@ public interface INotificationPublisher
     void Publish(Guid tenantId, string type, string title, string body, NotificationSeverity severity = NotificationSeverity.Info,
         string? requiredPermission = null, Guid? userId = null, string? link = null, string? dedupeKey = null);
 }
+
+/// <summary>Verifies a step-up credential (current password re-entry) for privileged operations.</summary>
+public interface IStepUpVerifier
+{
+    Task<bool> VerifyAsync(Guid userId, string password, CancellationToken ct);
+}
+
+public static class StepUpEndpointExtensions
+{
+    public const string Header = "X-Confirm-Password";
+
+    /// <summary>Privileged operations require the caller to re-enter their password (header X-Confirm-Password).</summary>
+    public static TBuilder RequireStepUp<TBuilder>(this TBuilder builder) where TBuilder : IEndpointConventionBuilder
+    {
+        builder.AddEndpointFilter(async (ctx, next) =>
+        {
+            var tenant = ctx.HttpContext.RequestServices.GetRequiredService<ITenantContext>();
+            var password = ctx.HttpContext.Request.Headers[Header].FirstOrDefault();
+            if (string.IsNullOrEmpty(password) || tenant.UserId is not { } uid ||
+                !await ctx.HttpContext.RequestServices.GetRequiredService<IStepUpVerifier>().VerifyAsync(uid, password, ctx.HttpContext.RequestAborted))
+                throw new ForbiddenException("auth.step_up_required", "Confirm your password to perform this operation.");
+            return await next(ctx);
+        });
+        return builder;
+    }
+}
+
+/// <summary>Live event push to connected clients (SignalR). Best-effort; clients always re-read from the API.</summary>
+public interface IRealtimePublisher
+{
+    Task NotifyTenantAsync(Guid tenantId, string eventName, object payload);
+}

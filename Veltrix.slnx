@@ -9,6 +9,9 @@
   <Folder Name="/modules/crm/">
     <Project Path="modules/crm/Veltrix.Modules.Crm/Veltrix.Modules.Crm.csproj" />
   </Folder>
+  <Folder Name="/modules/hr/">
+    <Project Path="modules/hr/Veltrix.Modules.Hr/Veltrix.Modules.Hr.csproj" />
+  </Folder>
   <Folder Name="/modules/identity/">
     <Project Path="modules/identity/Veltrix.Modules.Identity/Veltrix.Modules.Identity.csproj" />
   </Folder>
@@ -21,11 +24,29 @@
   <Folder Name="/modules/notifications/">
     <Project Path="modules/notifications/Veltrix.Modules.Notifications/Veltrix.Modules.Notifications.csproj" />
   </Folder>
+  <Folder Name="/modules/platform/">
+    <Project Path="modules/platform/Veltrix.Modules.Platform/Veltrix.Modules.Platform.csproj" />
+  </Folder>
   <Folder Name="/modules/pos/">
     <Project Path="modules/pos/Veltrix.Modules.Pos/Veltrix.Modules.Pos.csproj" />
   </Folder>
+  <Folder Name="/modules/purchasing/">
+    <Project Path="modules/purchasing/Veltrix.Modules.Purchasing/Veltrix.Modules.Purchasing.csproj" />
+  </Folder>
+  <Folder Name="/modules/reporting/">
+    <Project Path="modules/reporting/Veltrix.Modules.Reporting/Veltrix.Modules.Reporting.csproj" />
+  </Folder>
+  <Folder Name="/modules/sales/">
+    <Project Path="modules/sales/Veltrix.Modules.Sales/Veltrix.Modules.Sales.csproj" />
+  </Folder>
   <Folder Name="/modules/shared-kernel/">
     <Project Path="modules/shared-kernel/Veltrix.SharedKernel/Veltrix.SharedKernel.csproj" />
+  </Folder>
+  <Folder Name="/modules/subscriptions/">
+    <Project Path="modules/subscriptions/Veltrix.Modules.Subscriptions/Veltrix.Modules.Subscriptions.csproj" />
+  </Folder>
+  <Folder Name="/modules/synchronization/">
+    <Project Path="modules/synchronization/Veltrix.Modules.Synchronization/Veltrix.Modules.Synchronization.csproj" />
   </Folder>
   <Folder Name="/modules/tenants/">
     <Project Path="modules/tenants/Veltrix.Modules.Tenants/Veltrix.Modules.Tenants.csproj" />
@@ -37,6 +58,9 @@
   <Folder Name="/services/" />
   <Folder Name="/services/api/">
     <Project Path="services/api/Veltrix.Api/Veltrix.Api.csproj" />
+  </Folder>
+  <Folder Name="/services/background-workers/">
+    <Project Path="services/background-workers/Veltrix.Workers/Veltrix.Workers.csproj" />
   </Folder>
   <Folder Name="/tests/" />
   <Folder Name="/tests/integration/">

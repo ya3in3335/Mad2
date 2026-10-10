@@ -314,3 +314,14 @@ public sealed class AuthService(
 
     private static string? Truncate(string? s, int max) => s is null ? null : s.Length <= max ? s : s[..max];
 }
+
+public sealed class PasswordStepUpVerifier(DbContext db, PasswordHasher hasher, IAuditWriter audit) : IStepUpVerifier
+{
+    public async Task<bool> VerifyAsync(Guid userId, string password, CancellationToken ct)
+    {
+        var hash = await db.Set<User>().Where(u => u.Id == userId && u.IsActive).Select(u => u.PasswordHash).SingleOrDefaultAsync(ct);
+        var ok = hash is not null && hasher.Verify(password, hash, out _);
+        if (!ok) audit.Write("auth.step_up_failed", nameof(User), userId.ToString());
+        return ok;
+    }
+}

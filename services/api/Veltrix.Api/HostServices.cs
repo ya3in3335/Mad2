@@ -3,6 +3,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Veltrix.Modules.Identity;
 using Veltrix.Modules.Tenants;
 using Veltrix.SharedKernel;
+using Veltrix.Workers;
 
 namespace Veltrix.Api;
 
@@ -11,10 +12,22 @@ public static class HostServices
 {
     public static void Register(IServiceCollection services, IConfiguration config)
     {
+        services.AddVeltrixWorkers(config);
         services.AddSingleton<IFileStorage>(sp => new LocalFileStorage(config["Storage:Root"] ?? Path.Combine(config["Veltrix:DataDirectory"] ?? Path.Combine(AppContext.BaseDirectory, ".veltrix-data"), "files")));
     }
 
-    public static void MapEndpoints(IEndpointRouteBuilder app) { }
+    public static void MapEndpoints(IEndpointRouteBuilder app)
+    {
+        app.MapPost("/api/v1/platform/backups/run", async (BackupService backups, CancellationToken ct) =>
+            Veltrix.Modules.Platform.PlatformService.ToDto(await backups.RunAsync(ct)))
+            .WithTags("Platform").RequirePermission(Permissions.PlatformConfig).RequireStepUp();
+        app.MapPost("/api/v1/platform/jobs/{name}/run", async (string name, JobScheduler scheduler, IEnumerable<IJob> jobs, CancellationToken ct) =>
+        {
+            var job = jobs.SingleOrDefault(j => j.Name == name) ?? throw new NotFoundException("job.not_found", "Unknown job.");
+            await scheduler.RunJobAsync(job, ct);
+            return Results.NoContent();
+        }).WithTags("Platform").RequirePermission(Permissions.PlatformConfig);
+    }
 }
 
 public sealed class BasicTenantStatusProvider(CompanyStatusReader reader, IMemoryCache cache) : ITenantStatusProvider

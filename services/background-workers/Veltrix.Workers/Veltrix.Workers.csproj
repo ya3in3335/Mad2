@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Description>Background jobs (subscription status, reminders, email, scheduled reports, encrypted backups, cleanup).</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+    <ProjectReference Include="../../../modules/platform/Veltrix.Modules.Platform/Veltrix.Modules.Platform.csproj" />
+    <ProjectReference Include="../../../modules/reporting/Veltrix.Modules.Reporting/Veltrix.Modules.Reporting.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Veltrix.Api.IntegrationTests" />
+    <InternalsVisibleTo Include="Veltrix.UnitTests" />
+  </ItemGroup>
+</Project>

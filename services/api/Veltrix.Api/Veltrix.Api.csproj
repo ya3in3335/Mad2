@@ -26,6 +26,14 @@
     <ProjectReference Include="../../../modules/crm/Veltrix.Modules.Crm/Veltrix.Modules.Crm.csproj" />
     <ProjectReference Include="../../../modules/pos/Veltrix.Modules.Pos/Veltrix.Modules.Pos.csproj" />
     <ProjectReference Include="../../../modules/notifications/Veltrix.Modules.Notifications/Veltrix.Modules.Notifications.csproj" />
+    <ProjectReference Include="../../../modules/purchasing/Veltrix.Modules.Purchasing/Veltrix.Modules.Purchasing.csproj" />
+    <ProjectReference Include="../../../modules/sales/Veltrix.Modules.Sales/Veltrix.Modules.Sales.csproj" />
+    <ProjectReference Include="../../../modules/hr/Veltrix.Modules.Hr/Veltrix.Modules.Hr.csproj" />
+    <ProjectReference Include="../../../modules/reporting/Veltrix.Modules.Reporting/Veltrix.Modules.Reporting.csproj" />
+    <ProjectReference Include="../../../modules/synchronization/Veltrix.Modules.Synchronization/Veltrix.Modules.Synchronization.csproj" />
+    <ProjectReference Include="../../../modules/subscriptions/Veltrix.Modules.Subscriptions/Veltrix.Modules.Subscriptions.csproj" />
+    <ProjectReference Include="../../../modules/platform/Veltrix.Modules.Platform/Veltrix.Modules.Platform.csproj" />
+    <ProjectReference Include="../../background-workers/Veltrix.Workers/Veltrix.Workers.csproj" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Veltrix.Api.Tests" />

@@ -62,7 +62,7 @@ public sealed class TenantsModule : IModule
         {
             await svc.SetSuspendedAsync(id, true, req.Reason, ct);
             return Results.NoContent();
-        });
+        }).RequireStepUp();
         admin.MapPost("/{id:guid}/reactivate", async (Guid id, TenantAdminService svc, CancellationToken ct) =>
         {
             await svc.SetSuspendedAsync(id, false, null, ct);

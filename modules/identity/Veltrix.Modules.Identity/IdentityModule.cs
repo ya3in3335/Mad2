@@ -18,6 +18,7 @@ public sealed class IdentityModule : IModule
         services.AddSingleton(sp => new PasswordHasher(sp.GetRequiredService<IOptions<AuthOptions>>().Value.PasswordIterations));
         services.AddScoped<AuthService>();
         services.AddScoped<UserService>();
+        services.AddScoped<IStepUpVerifier, PasswordStepUpVerifier>();
         services.AddScoped<IOnboardingContributor, IdentityOnboardingContributor>();
     }
 
