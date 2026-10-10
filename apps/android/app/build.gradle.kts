@@ -22,6 +22,12 @@ val signingProps = Properties().apply {
 }
 val hasReleaseSigning = signingProps.size == 4
 
+// Offline activation: the vendor PUBLIC key (SPKI PEM) committed at licensing/vendor-public-key.pem is embedded as base64.
+// Missing file → empty string → the app shows "offline activation not configured". Never put a private key there.
+val vendorPublicKeySpki: String = rootProject.file("../../licensing/vendor-public-key.pem").let { f ->
+    if (f.isFile) f.readText().replace(Regex("-----[A-Z ]+-----|\\s"), "") else ""
+}
+
 android {
     namespace = "com.veltrix.os"
     compileSdk = 36
@@ -35,6 +41,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         // Optional pinned vendor licensing public key (SPKI, base64). When empty the key is pinned on first activation.
         buildConfigField("String", "VENDOR_PUBLIC_KEY", "\"${System.getenv("VELTRIX_VENDOR_PUBLIC_KEY") ?: ""}\"")
+        buildConfigField("String", "VENDOR_PUBLIC_KEY_SPKI", "\"$vendorPublicKeySpki\"")
         buildConfigField("String", "DEFAULT_SERVER_URL", "\"${System.getenv("VELTRIX_DEFAULT_SERVER") ?: "https://api.veltrix.example"}\"")
         resourceConfigurations += listOf("en", "fr", "ar")
     }

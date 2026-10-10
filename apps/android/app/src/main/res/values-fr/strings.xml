@@ -207,4 +207,16 @@
     <string name="dlg_unsaved">Vous avez des modifications non enregistrées.</string>
     <string name="help_docs">Guide utilisateur</string>
     <string name="help_contact">Contacter le support</string>
+    <string name="offline_title">Activation hors ligne (sans serveur)</string>
+    <string name="offline_hint">Envoyez ce code appareil à votre fournisseur. Vous recevrez un code d\'activation lié à cet appareil uniquement : collez-le ci-dessous ou ouvrez le fichier .txt reçu.</string>
+    <string name="offline_deviceCode">Code appareil</string>
+    <string name="offline_copy">Copier</string>
+    <string name="offline_share">Partager</string>
+    <string name="offline_activationCode">Code d\'activation</string>
+    <string name="offline_openFile">Ouvrir un fichier…</string>
+    <string name="offline_activate">Activer hors ligne</string>
+    <string name="offline_notConfigured">L\'activation hors ligne n\'est pas configurée dans cette version (aucune clé publique fournisseur).</string>
+    <string name="offline_invalid">Ce code d\'activation n\'est pas valide. Vérifiez qu\'il a été copié en entier.</string>
+    <string name="offline_wrongDevice">Ce code d\'activation a été émis pour un autre appareil.</string>
+    <string name="offline_expired">Ce code d\'activation a expiré.</string>
 </resources>

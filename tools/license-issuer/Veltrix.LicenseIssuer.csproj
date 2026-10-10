@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>Veltrix.LicenseIssuer</RootNamespace>
+    <AssemblyName>veltrix-license-issuer</AssemblyName>
+    <Description>Owner-side tool: generates the vendor key pair and issues offline, device-bound activation codes.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../packages/contracts/Veltrix.Contracts/Veltrix.Contracts.csproj" />
+    <!-- Read-only: the single plan grants every feature listed in the shared kernel. -->
+    <ProjectReference Include="../../modules/shared-kernel/Veltrix.SharedKernel/Veltrix.SharedKernel.csproj" />
+  </ItemGroup>
+</Project>

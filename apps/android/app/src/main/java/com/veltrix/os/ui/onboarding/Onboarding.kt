@@ -1,6 +1,14 @@
 package com.veltrix.os.ui.onboarding
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.content.Intent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -9,6 +17,8 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
@@ -73,6 +83,24 @@ class OnboardingViewModel @Inject constructor(val settings: AppSettings, private
         busy.value = false
     }
 
+    // ---- Offline activation (no server): device code → owner issues an activation code → paste or open it here ----
+    val offlineConfigured: Boolean get() = license.offlineActivationConfigured
+    val deviceCode: String by lazy { license.deviceCode }
+    /** String resource of the last offline activation error, or null. */
+    val offlineError = MutableStateFlow<Int?>(null)
+
+    fun activateOffline(text: String) {
+        val res = license.activateOffline(text)
+        offlineError.value = when (res) {
+            LicenseRepository.OfflineResult.Activated -> null
+            LicenseRepository.OfflineResult.NotConfigured -> R.string.offline_notConfigured
+            LicenseRepository.OfflineResult.WrongDevice -> R.string.offline_wrongDevice
+            LicenseRepository.OfflineResult.Expired -> R.string.offline_expired
+            LicenseRepository.OfflineResult.Invalid -> R.string.offline_invalid
+        }
+        if (res == LicenseRepository.OfflineResult.Activated) _step.value = 4
+    }
+
     fun completeSetup(req: CompleteOnboardingRequest) = viewModelScope.launch {
         busy.value = true; error.value = null
         try {
@@ -104,7 +132,10 @@ fun OnboardingFlow(onDone: () -> Unit, vm: OnboardingViewModel = hiltViewModel()
                     when (s) {
                         0 -> LanguageStep(vm::chooseLanguage)
                         1 -> PrivacyStep(vm::acceptPrivacy)
-                        2 -> ActivationStep(vm.settings.serverUrl, busy, error, vm::activate)
+                        2 -> {
+                            ActivationStep(vm.settings.serverUrl, busy, error, vm::activate)
+                            OfflineActivationSection(vm)
+                        }
                         3 -> CompanyStep(busy, error, vm.settings.language, vm::completeSetup)
                         else -> DoneStep(onDone)
                     }
@@ -192,6 +223,65 @@ fun OnboardingFlow(onDone: () -> Unit, vm: OnboardingViewModel = hiltViewModel()
     }, enabled = !busy && name.isNotBlank() && email.contains('@') && password.length >= 10 && ownerName.isNotBlank(), modifier = Modifier.fillMaxWidth().height(48.dp)) {
         if (busy) CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp) else Text(stringResource(R.string.action_finish))
     }
+}
+@Composable private fun OfflineActivationSection(vm: OnboardingViewModel) {
+    val context = LocalContext.current
+    val offlineError by vm.offlineError.collectAsState()
+    var expanded by rememberSaveable { mutableStateOf(false) }
+    var code by rememberSaveable { mutableStateOf("") }
+    val openFile = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) {
+            val text = runCatching {
+                context.contentResolver.openInputStream(uri)?.use { it.readNBytesCompat(64 * 1024).toString(Charsets.UTF_8) }
+            }.getOrNull()
+            if (text != null) code = text.trim() else vm.offlineError.value = R.string.offline_invalid
+        }
+    }
+    Spacer(Modifier.height(20.dp))
+    HorizontalDivider()
+    TextButton(onClick = { expanded = !expanded }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.offline_title)) }
+    if (!expanded) return
+    if (!vm.offlineConfigured) {
+        Text(stringResource(R.string.offline_notConfigured), color = MaterialTheme.colorScheme.error)
+        return
+    }
+    Text(stringResource(R.string.offline_hint), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    Spacer(Modifier.height(8.dp))
+    Text(stringResource(R.string.offline_deviceCode), style = MaterialTheme.typography.labelLarge)
+    SelectionContainer {
+        Text(vm.deviceCode, fontFamily = FontFamily.Monospace, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(vertical = 4.dp))
+    }
+    val shareTitle = stringResource(R.string.offline_deviceCode)
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        OutlinedButton(onClick = {
+            (context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager).setPrimaryClip(ClipData.newPlainText(shareTitle, vm.deviceCode))
+        }) { Text(stringResource(R.string.offline_copy)) }
+        OutlinedButton(onClick = {
+            val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, vm.deviceCode)
+            context.startActivity(Intent.createChooser(send, shareTitle))
+        }) { Text(stringResource(R.string.offline_share)) }
+    }
+    Spacer(Modifier.height(8.dp))
+    OutlinedTextField(code, { code = it }, label = { Text(stringResource(R.string.offline_activationCode)) }, minLines = 3, maxLines = 6,
+        textStyle = LocalTextStyle.current.copy(fontFamily = FontFamily.Monospace), modifier = Modifier.fillMaxWidth())
+    offlineError?.let { Text(stringResource(it), color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(top = 8.dp)) }
+    Spacer(Modifier.height(8.dp))
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        OutlinedButton(onClick = { openFile.launch(arrayOf("text/plain", "application/octet-stream")) }) { Text(stringResource(R.string.offline_openFile)) }
+        Button(onClick = { vm.activateOffline(code) }, enabled = code.isNotBlank()) { Text(stringResource(R.string.offline_activate)) }
+    }
+}
+
+/** Reads at most [limit] bytes (InputStream.readNBytes needs API 33). */
+private fun java.io.InputStream.readNBytesCompat(limit: Int): ByteArray {
+    val out = java.io.ByteArrayOutputStream()
+    val buf = ByteArray(8192)
+    while (out.size() < limit) {
+        val n = read(buf, 0, minOf(buf.size, limit - out.size()))
+        if (n < 0) break
+        out.write(buf, 0, n)
+    }
+    return out.toByteArray()
 }
 
 @Composable private fun DoneStep(onDone: () -> Unit) {

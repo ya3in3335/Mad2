@@ -6,6 +6,7 @@ import com.veltrix.os.data.db.*
 import com.veltrix.os.data.security.DeviceIdentity
 import com.veltrix.os.data.security.LicenseState
 import com.veltrix.os.data.security.LicenseVerifier
+import com.veltrix.os.data.security.OfflineActivation
 import com.veltrix.os.data.security.SecureStore
 import java.security.MessageDigest
 import java.security.SecureRandom
@@ -79,9 +80,52 @@ class LicenseRepository @Inject constructor(private val api: ApiClient, private 
 
     val summary: LicenseSummary? get() = settings.licenseSummaryJson?.let { runCatching { api.json.decodeFromString(LicenseSummary.serializer(), it) }.getOrNull() }
 
+    /** Key compiled into the build: explicit CI pin, else licensing/vendor-public-key.pem. Required for offline activation. */
+    private val embeddedVendorKey: String get() = BuildConfig.VENDOR_PUBLIC_KEY.ifBlank { BuildConfig.VENDOR_PUBLIC_KEY_SPKI }
+    val offlineActivationConfigured: Boolean get() = embeddedVendorKey.isNotBlank()
+
+    /** This device's code for offline activation, grouped for display. */
+    val deviceCode: String get() = OfflineActivation.formatDeviceCode(
+        OfflineActivation.encodeDeviceCode(identity.installationId, identity.publicKeyThumbprint()))
+
+    /** True when the stored certificate is a vendor-issued offline license: it is never refreshed online. */
+    val isOfflineLicense: Boolean get() {
+        val cert = store.get(SecureStore.CERTIFICATE) ?: return false
+        val key = embeddedVendorKey.ifBlank { return false }
+        return LicenseVerifier.decodeAndVerify(cert, key)?.type == OfflineActivation.OFFLINE_TYPE
+    }
+
+    enum class OfflineResult { Activated, NotConfigured, Invalid, WrongDevice, Expired }
+
+    /** Server-less activation: verifies an owner-issued code against the embedded key and this device, then stores it like an online activation. */
+    fun activateOffline(text: String): OfflineResult {
+        val key = embeddedVendorKey.ifBlank { return OfflineResult.NotConfigured }
+        val cert = OfflineActivation.extractActivationCode(text) ?: return OfflineResult.Invalid
+        val (state, _) = LicenseVerifier.evaluate(cert, key, identity.installationId, identity.publicKeyThumbprint(), Instant.now().epochSecond, 0)
+        val c = when (state) {
+            is LicenseState.Valid -> state.cert
+            is LicenseState.Expired -> return OfflineResult.Expired
+            LicenseState.WrongDevice -> return OfflineResult.WrongDevice
+            else -> return OfflineResult.Invalid
+        }
+        if (c.status != "Active") return OfflineResult.Invalid
+        store.put(SecureStore.CERTIFICATE, cert)
+        settings.deviceId = null // no server seat: never send heartbeats for this license
+        settings.tenantId = c.tid
+        settings.tenantName = c.tenantName
+        settings.setupCompleted = true
+        settings.setupToken = null
+        val expires = Instant.ofEpochSecond(c.lexp ?: c.exp).toString()
+        settings.licenseSummaryJson = api.json.encodeToString(LicenseSummary.serializer(), LicenseSummary(c.lid, "OFFLINE", c.type, c.status, c.status,
+            c.plan, c.maxDev, 1, Instant.ofEpochSecond(c.iat).toString(), expires, 0, c.ent,
+            ((c.exp - Instant.now().epochSecond + 86399) / 86400).toInt()))
+        evaluate()
+        return OfflineResult.Activated
+    }
+
     fun evaluate(): LicenseState {
         val watermark = store.get(SecureStore.CLOCK_WATERMARK)?.toLongOrNull() ?: 0L
-        val vendorKey = BuildConfig.VENDOR_PUBLIC_KEY.ifBlank { store.get(SecureStore.VENDOR_KEY) ?: "" }
+        val vendorKey = embeddedVendorKey.ifBlank { store.get(SecureStore.VENDOR_KEY) ?: "" }
         val (state, newMark) = LicenseVerifier.evaluate(store.get(SecureStore.CERTIFICATE), vendorKey, identity.installationId,
             identity.publicKeyThumbprint(), Instant.now().epochSecond, watermark)
         if (newMark != watermark) store.put(SecureStore.CLOCK_WATERMARK, newMark.toString())
@@ -94,7 +138,7 @@ class LicenseRepository @Inject constructor(private val api: ApiClient, private 
 
     suspend fun activate(licenseKey: String): ActivateResponse {
         // Pin the vendor key on first activation unless one is compiled into the build (recommended for production).
-        if (BuildConfig.VENDOR_PUBLIC_KEY.isBlank() && store.get(SecureStore.VENDOR_KEY) == null) {
+        if (embeddedVendorKey.isBlank() && store.get(SecureStore.VENDOR_KEY) == null) {
             val key: PublicKeyResponse = api.get("/api/v1/licensing/public-key", auth = false)
             store.put(SecureStore.VENDOR_KEY, key.spki)
         }
@@ -115,6 +159,8 @@ class LicenseRepository @Inject constructor(private val api: ApiClient, private 
 
     /** Heartbeat: renews the offline certificate and learns about revocation/renewal. */
     suspend fun refresh(): LicenseState {
+        // Offline (vendor-issued) licenses are valid until their expiry without any server contact.
+        if (isOfflineLicense) return evaluate()
         val deviceId = settings.deviceId ?: return evaluate()
         try {
             val ch = challenge("refresh")

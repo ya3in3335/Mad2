@@ -207,4 +207,16 @@
     <string name="dlg_unsaved">You have unsaved changes.</string>
     <string name="help_docs">User guide</string>
     <string name="help_contact">Contact support</string>
+    <string name="offline_title">Offline activation (no server)</string>
+    <string name="offline_hint">Send this device code to your vendor. You will receive an activation code bound to this device only: paste it below or open the .txt file you received.</string>
+    <string name="offline_deviceCode">Device code</string>
+    <string name="offline_copy">Copy</string>
+    <string name="offline_share">Share</string>
+    <string name="offline_activationCode">Activation code</string>
+    <string name="offline_openFile">Open file…</string>
+    <string name="offline_activate">Activate offline</string>
+    <string name="offline_notConfigured">Offline activation is not configured in this build (no vendor public key).</string>
+    <string name="offline_invalid">This activation code is not valid. Check that it was copied completely.</string>
+    <string name="offline_wrongDevice">This activation code was issued for another device.</string>
+    <string name="offline_expired">This activation code has expired.</string>
 </resources>

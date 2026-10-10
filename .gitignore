@@ -29,6 +29,9 @@ captures/
 !.env.example
 *.pem
 !**/public/*.pem
+# Offline licensing: only the vendor PUBLIC key is commit-safe; private keys never are.
+!licensing/vendor-public-key.pem
+*private-key*.pem
 secrets/
 .veltrix-data/
 # OS

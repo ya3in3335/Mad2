@@ -68,6 +68,10 @@
   <Folder Name="/services/background-workers/">
     <Project Path="services/background-workers/Veltrix.Workers/Veltrix.Workers.csproj" />
   </Folder>
+  <Folder Name="/tools/" />
+  <Folder Name="/tools/license-issuer/">
+    <Project Path="tools/license-issuer/Veltrix.LicenseIssuer.csproj" />
+  </Folder>
   <Folder Name="/tests/" />
   <Folder Name="/tests/integration/">
     <Project Path="tests/integration/Veltrix.Api.IntegrationTests/Veltrix.Api.IntegrationTests.csproj" />
