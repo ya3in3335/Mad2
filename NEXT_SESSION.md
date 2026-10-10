@@ -8,4 +8,4 @@ Open:
 4. Release signing (needs secrets), Authenticode for Setup.exe.
 5. ✅ Single plan "full" (all features) — verified: backend 40/40, CC 31/31 + build, admin-android 22/22 (commit c517b7c).
 6. ✅ Offline device-bound licensing (tools/license-issuer) — commit 9026499.
-7. ⏳ Standalone no-server mode (local owner login, local data, encrypted local backup) — in progress in apps/android, apps/windows.
+7. ✅ Standalone mode done. Gaps: Win↔Android backup not interchangeable; Android re-login each start; no owner password-change UI; no auto backup.
