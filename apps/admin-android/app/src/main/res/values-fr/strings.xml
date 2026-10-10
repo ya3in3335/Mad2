@@ -127,7 +127,6 @@
     <string name="filter_any_connectivity">Toute connectivité</string>
     <string name="filter_any_severity">Toute gravité</string>
     <string name="form_err_days">Saisissez un nombre de jours valide.</string>
-    <string name="form_err_plan">Choisissez une formule.</string>
     <string name="form_err_reason">Un motif est requis.</string>
     <string name="form_err_seats">Saisissez un nombre de postes valide.</string>
     <string name="form_err_tenant">Choisissez un client.</string>
@@ -214,6 +213,7 @@
     <string name="plan_limits">%1$d appareils · %2$d utilisateurs · %3$d agences</string>
     <string name="plan_prices">%1$s / mois · %2$s / an</string>
     <string name="plan_trial">essai de %1$d jours</string>
+    <string name="plan_single_all_features">Toutes les fonctionnalités incluses — offre unique, tarifée par poste.</string>
     <string name="platform_android">Android</string>
     <string name="platform_other">Autre</string>
     <string name="platform_windows">Windows</string>

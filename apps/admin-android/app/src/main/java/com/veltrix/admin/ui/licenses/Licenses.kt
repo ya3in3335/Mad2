@@ -45,7 +45,6 @@ fun problemText(p: LicenseForms.Problem): String = stringResource(when (p) {
     LicenseForms.Problem.NoTenant -> R.string.form_err_tenant
     LicenseForms.Problem.BadSeats -> R.string.form_err_seats
     LicenseForms.Problem.BadDays -> R.string.form_err_days
-    LicenseForms.Problem.NoPlan -> R.string.form_err_plan
     LicenseForms.Problem.NoReason -> R.string.form_err_reason
 })
 
@@ -57,7 +56,6 @@ class LicensesViewModel @Inject constructor(private val repo: AdminRepository) :
     val state = _state.asStateFlow()
     val action = MutableStateFlow<ActionState>(ActionState.Idle)
     val tenantResults = MutableStateFlow<List<TenantSummary>>(emptyList())
-    val plans = MutableStateFlow<List<Plan>>(emptyList())
     /** Shown exactly once after issuance, then dropped from memory. */
     val issuedKey = MutableStateFlow<CreateLicenseResponse?>(null)
     private var job: Job? = null
@@ -70,7 +68,6 @@ class LicensesViewModel @Inject constructor(private val repo: AdminRepository) :
 
     fun prepareIssue() {
         action.value = ActionState.Idle
-        viewModelScope.launch { plans.value = attempt { repo.plans() }.getOrDefault(emptyList()).filter { it.isActive } }
         searchTenants("")
     }
     fun searchTenants(q: String) = viewModelScope.launch {
@@ -81,9 +78,9 @@ class LicensesViewModel @Inject constructor(private val repo: AdminRepository) :
         repo.issueDemo(IssueDemoLicenseRequest(tenantId, days, seats, notes?.ifBlank { null }))
     }
 
-    fun issueCommercial(tenantId: String, term: CommercialTerm, plan: String, seats: Int, notes: String?, onDone: () -> Unit) = issue(onDone) {
+    fun issueCommercial(tenantId: String, term: CommercialTerm, seats: Int, notes: String?, onDone: () -> Unit) = issue(onDone) {
         val start = Instant.now()
-        repo.issueCommercial(CreateLicenseRequest(tenantId, term.wireType, plan, seats, start.toString(), LicenseForms.expiry(term, start)?.toString(),
+        repo.issueCommercial(CreateLicenseRequest(tenantId, term.wireType, LicenseForms.FULL_PLAN, seats, start.toString(), LicenseForms.expiry(term, start)?.toString(),
             null, null, notes?.ifBlank { null }))
     }
 
@@ -124,20 +121,18 @@ fun LicensesScreen(onOpen: (String) -> Unit, vm: LicensesViewModel = hiltViewMod
 private fun IssueLicenseDialog(vm: LicensesViewModel, onDismiss: () -> Unit) {
     val action by vm.action.collectAsStateWithLifecycle()
     val tenants by vm.tenantResults.collectAsStateWithLifecycle()
-    val plans by vm.plans.collectAsStateWithLifecycle()
     var demo by remember { mutableStateOf(true) }
     var tenantQuery by remember { mutableStateOf("") }
     var tenantId by remember { mutableStateOf<String?>(null) }
     var days by remember { mutableStateOf("14") }
     var seats by remember { mutableStateOf("1") }
     var term by remember { mutableStateOf(CommercialTerm.Annual) }
-    var plan by remember { mutableStateOf<String?>(null) }
     var notes by remember { mutableStateOf("") }
-    val problem = if (demo) LicenseForms.validateDemo(tenantId, days, seats) else LicenseForms.validateCommercial(tenantId, plan, seats)
+    val problem = if (demo) LicenseForms.validateDemo(tenantId, days, seats) else LicenseForms.validateCommercial(tenantId, seats)
 
     FormDialog(stringResource(R.string.license_issue), action, onDismiss, confirmEnabled = problem == null, onConfirm = {
         if (demo) vm.issueDemo(tenantId!!, days.toInt(), seats.toInt(), notes, onDismiss)
-        else vm.issueCommercial(tenantId!!, term, plan!!, seats.toInt(), notes, onDismiss)
+        else vm.issueCommercial(tenantId!!, term, seats.toInt(), notes, onDismiss)
     }, confirmLabel = stringResource(R.string.action_issue)) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             FilterChip(demo, { demo = true }, label = { Text(stringResource(R.string.license_demo)) })
@@ -156,9 +151,8 @@ private fun IssueLicenseDialog(vm: LicensesViewModel, onDismiss: () -> Unit) {
         } else {
             Text(stringResource(R.string.field_term), style = MaterialTheme.typography.labelLarge)
             FlowRowChips(CommercialTerm.entries.map { it to it.wireType }, term) { term = it }
-            Text(stringResource(R.string.field_plan), style = MaterialTheme.typography.labelLarge)
-            if (plans.isEmpty()) Text(stringResource(R.string.state_empty), style = MaterialTheme.typography.bodySmall)
-            FlowRowChips(plans.map { it.code to "${it.name} (${it.code})" }, plan) { plan = it }
+            // Single plan: every commercial license is on "full" (all features); only term and seats vary.
+            Text(stringResource(R.string.plan_single_all_features), style = MaterialTheme.typography.bodySmall)
         }
         OutlinedTextField(seats, { seats = it.filter(Char::isDigit).take(4) }, label = { Text(stringResource(R.string.field_seats)) }, singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.fillMaxWidth())

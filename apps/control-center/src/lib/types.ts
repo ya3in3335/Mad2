@@ -361,7 +361,9 @@ export const FEATURES = [
   "api",
 ] as const;
 export const LICENSE_TYPES = ["Trial", "Monthly", "Quarterly", "Annual", "Perpetual", "Enterprise", "Custom"] as const;
-export const LICENSE_PLAN_CODES = ["trial", "starter", "professional", "enterprise", "custom"] as const;
+/** VELTRIX OS is sold as a single plan that includes every feature; "trial" is only used for demo licenses. */
+export const FULL_PLAN_CODE = "full";
+export const LICENSE_PLAN_CODES = [FULL_PLAN_CODE, "trial"] as const;
 export const TENANT_STATUSES = ["Pending", "Active", "Suspended", "Closed"] as const;
 export const SUBSCRIPTION_STATUSES = ["Trialing", "Active", "PastDue", "Cancelled", "Expired"] as const;
 export const BILLING_CYCLES = ["Monthly", "Annual", "Custom"] as const;

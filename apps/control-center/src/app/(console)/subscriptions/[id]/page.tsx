@@ -5,6 +5,7 @@ import { FormDialog } from "@/components/form-dialog";
 import { ApiError } from "@/components/server-ui";
 import { Card, DefinitionList, EmptyState, PageHeader, StatusBadge, TableWrap } from "@/components/ui";
 import { formatDate, formatDateTime, formatMoney, formatNumber } from "@/lib/format";
+import { singlePlan } from "@/lib/field-sets";
 import { enumOptions } from "@/lib/options";
 import { isGuid } from "@/lib/paging";
 import { apiGet } from "@/lib/server/api";
@@ -36,7 +37,7 @@ export default async function SubscriptionDetailPage({ params }: { params: Promi
   const s = subRes.data;
   const invRes = await apiGet<Paged<BillingInvoice>>(`${P}/invoices`, { tenantId: s.tenantId, pageSize: 50 });
   const invoices = invRes.ok ? invRes.data.items.filter((i) => i.subscriptionId === s.id) : [];
-  const plans = plansRes.ok ? plansRes.data.filter((p) => p.isActive) : [];
+  const plan = plansRes.ok ? singlePlan(plansRes.data) : undefined;
   const ended = s.status === "Cancelled" || s.status === "Expired";
 
   return (
@@ -54,15 +55,17 @@ export default async function SubscriptionDetailPage({ params }: { params: Promi
             <StatusBadge value={s.status} t={t} />
             {!ended ? (
               <>
-                {plans.length ? (
+                {plan ? (
+                  // Single plan: no tier upgrades/downgrades — only switch billing cycle (re-priced from the plan).
                   <FormDialog
-                    label={t("subs.changePlan")}
+                    label={t("subs.changeCycle")}
                     method="POST"
                     path={`${P}/subscriptions/${s.id}/plan`}
                     kind="subscription.plan"
+                    description={t("subs.changeCycleHelp")}
                     fields={[
-                      { name: "planCode", label: t("lic.plan"), type: "select", required: true, options: plans.map((p) => ({ value: p.code, label: `${p.name} (${p.code})` })), defaultValue: s.planCode },
-                      { name: "billingCycle", label: t("subs.cycle"), type: "select", options: enumOptions(BILLING_CYCLES, t), defaultValue: s.billingCycle },
+                      { name: "planCode", label: "", type: "hidden", defaultValue: plan.code },
+                      { name: "billingCycle", label: t("subs.cycle"), type: "select", required: true, options: enumOptions(BILLING_CYCLES, t), defaultValue: s.billingCycle },
                       { name: "prorateInvoice", label: t("subs.prorate"), type: "checkbox", wide: true, defaultValue: true },
                     ]}
                   />

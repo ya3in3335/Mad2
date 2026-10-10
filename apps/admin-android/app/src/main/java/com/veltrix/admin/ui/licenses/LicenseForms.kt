@@ -1,5 +1,6 @@
 package com.veltrix.admin.ui.licenses
 
+import com.veltrix.admin.data.api.Plan
 import java.time.Instant
 import java.time.ZoneOffset
 
@@ -13,7 +14,13 @@ object LicenseForms {
     const val MAX_DEMO_DAYS = 90
     const val MAX_SEATS = 1000
 
-    enum class Problem { NoTenant, BadSeats, BadDays, NoPlan, NoReason }
+    /** VELTRIX OS is sold as a single plan that includes every feature; seats are the commercial lever. */
+    const val FULL_PLAN = "full"
+
+    enum class Problem { NoTenant, BadSeats, BadDays, NoReason }
+
+    /** The single sellable plan: "full", falling back to the first active plan. */
+    fun singlePlan(plans: List<Plan>): Plan? = plans.firstOrNull { it.code == FULL_PLAN } ?: plans.firstOrNull { it.isActive }
 
     fun validateDemo(tenantId: String?, days: String, seats: String): Problem? = when {
         tenantId.isNullOrBlank() -> Problem.NoTenant
@@ -22,9 +29,8 @@ object LicenseForms {
         else -> null
     }
 
-    fun validateCommercial(tenantId: String?, planCode: String?, seats: String): Problem? = when {
+    fun validateCommercial(tenantId: String?, seats: String): Problem? = when {
         tenantId.isNullOrBlank() -> Problem.NoTenant
-        planCode.isNullOrBlank() -> Problem.NoPlan
         seats.toIntOrNull()?.let { it in 1..MAX_SEATS } != true -> Problem.BadSeats
         else -> null
     }

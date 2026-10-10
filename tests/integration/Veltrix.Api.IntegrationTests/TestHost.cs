@@ -138,7 +138,7 @@ public static class Scenario
         return act;
     }
 
-    public static async Task<TenantFixture> CreateTenantAsync(ApiFactory f, string name = "Alpha SARL", string plan = "enterprise", int devices = 3,
+    public static async Task<TenantFixture> CreateTenantAsync(ApiFactory f, string name = "Alpha SARL", string plan = "full", int devices = 3,
         string type = "Annual")
     {
         var admin = await PlatformAdminAsync(f);

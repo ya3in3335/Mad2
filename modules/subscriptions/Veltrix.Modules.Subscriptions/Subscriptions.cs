@@ -173,7 +173,7 @@ public sealed class SubscriptionService(DbContext db, ITenantContext ctx, IClock
         var p = id is { } pid ? await db.Set<SubscriptionPlan>().SingleOrDefaultAsync(x => x.Id == pid, ct) ?? throw new NotFoundException("plan.not_found", "Not found.")
             : db.Add(new SubscriptionPlan()).Entity;
         p.Code = code; p.Name = req.Name; p.Description = req.Description; p.MonthlyPrice = req.MonthlyPrice; p.AnnualPrice = req.AnnualPrice; p.Currency = req.Currency;
-        p.Features = string.Join(',', req.Features.Distinct()); p.MaxDevices = req.MaxDevices; p.MaxUsers = req.MaxUsers; p.MaxBranches = req.MaxBranches;
+        p.Features = string.Join(',', Features.All); // single plan: always every feature p.MaxDevices = req.MaxDevices; p.MaxUsers = req.MaxUsers; p.MaxBranches = req.MaxBranches;
         p.TrialDays = req.TrialDays; p.OfflineGraceDays = req.OfflineGraceDays; p.IsActive = req.IsActive; p.IsPublic = req.IsPublic;
         audit.Write(id is null ? "platform.plan_created" : "platform.plan_updated", nameof(SubscriptionPlan), p.Id.ToString(), req);
         await db.SaveChangesAsync(ct);
@@ -195,7 +195,7 @@ public sealed class SubscriptionService(DbContext db, ITenantContext ctx, IClock
         var end = trial ? now.AddDays(plan.TrialDays) : Advance(now, cycle);
         var price = req.CustomPrice ?? PriceFor(plan, cycle);
         var lic = await licenses.CreateAsync(new CreateLicenseRequest(req.TenantId, trial ? "Trial" : cycle == BillingCycle.Annual ? "Annual" : cycle == BillingCycle.Monthly ? "Monthly" : "Custom",
-            PlanDefaults.Plans.ContainsKey(plan.Code) ? plan.Code : "custom", seats, now, end, plan.OfflineGraceDays, plan.Features.Split(',', StringSplitOptions.RemoveEmptyEntries), $"Subscription {plan.Code}"), ct);
+            PlanDefaults.Full, seats, now, end, plan.OfflineGraceDays, Features.All, $"Subscription {plan.Code}"), ct);
         var sub = new Subscription
         {
             TenantId = req.TenantId, PlanCode = plan.Code, BillingCycle = cycle, Status = trial ? SubscriptionStatus.Trialing : SubscriptionStatus.PastDue,
@@ -268,7 +268,10 @@ public sealed class SubscriptionService(DbContext db, ITenantContext ctx, IClock
         return await InvoiceAsync(invoiceId, ct);
     }
 
-    /// <summary>Upgrade/downgrade. Entitlements and seats apply immediately; optional prorated invoice for the remaining period.</summary>
+    /// <summary>
+    /// Re-price / change billing cycle. There is a single plan (every feature), so this no longer moves between tiers; it re-applies the
+    /// plan's current price for the chosen cycle (e.g. Monthly → Annual). Optional prorated invoice when the price goes up.
+    /// </summary>
     public async Task<SubscriptionDto> ChangePlanAsync(Guid id, ChangePlanRequest req, CancellationToken ct)
     {
         await using var tx = await db.Database.BeginOrJoinAsync(ct);
@@ -281,14 +284,14 @@ public sealed class SubscriptionService(DbContext db, ITenantContext ctx, IClock
         if (req.ProrateInvoice && newPrice > oldPrice && sub.CurrentPeriodEnd > now)
         {
             var remaining = (decimal)(sub.CurrentPeriodEnd - now).TotalDays / Math.Max(1m, (decimal)(sub.CurrentPeriodEnd - sub.CurrentPeriodStart).TotalDays);
-            db.Add(NewInvoice(sub, now, sub.CurrentPeriodEnd, Money.Round((newPrice - oldPrice) * remaining), 0, $"Upgrade {sub.PlanCode} → {plan.Code} (prorated)", renewal: false));
+            db.Add(NewInvoice(sub, now, sub.CurrentPeriodEnd, Money.Round((newPrice - oldPrice) * remaining), 0, $"Plan change {sub.PlanCode} → {plan.Code} {cycle} (prorated)", renewal: false));
         }
-        History(sub, newPrice >= oldPrice ? "upgraded" : "downgraded", $"{sub.PlanCode} → {plan.Code}");
-        sub.PlanCode = plan.Code; sub.BillingCycle = cycle; sub.PeriodPrice = newPrice; sub.Seats = Math.Max(sub.Seats, plan.MaxDevices);
+        History(sub, "plan_changed", $"{sub.PlanCode} {sub.BillingCycle} → {plan.Code} {cycle}");
+        sub.PlanCode = plan.Code; sub.BillingCycle = cycle; sub.PeriodPrice = newPrice; 
         if (sub.LicenseId is { } lid)
         {
             var lic = await licenses.GetAsync(lid, ct);
-            await licenses.UpdateAsync(lid, new UpdateLicenseRequest(sub.Seats, lic.ExpiresAt, plan.OfflineGraceDays, plan.Features.Split(',', StringSplitOptions.RemoveEmptyEntries), lic.Notes), ct);
+            await licenses.UpdateAsync(lid, new UpdateLicenseRequest(sub.Seats, lic.ExpiresAt, plan.OfflineGraceDays, Features.All, lic.Notes), ct);
         }
         audit.Write("platform.subscription_plan_changed", nameof(Subscription), sub.Id.ToString(), req);
         await db.SaveChangesAsync(ct);

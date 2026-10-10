@@ -17,7 +17,7 @@ describe("buildRequest", () => {
     const ok = buildRequest("license.create", {
       tenantId: "3F2504E0-4F89-11D3-9A0C-0305E82C3301",
       type: "Annual",
-      planCode: "professional",
+      planCode: "full",
       maxDevices: "3",
       startsAt: "2026-01-01",
       expiresAt: "2026-12-31",

@@ -51,17 +51,19 @@ public static class Bootstrap
             await db.Database.MigrateAsync();
         }
 
-        // Plan templates (features/limits) so the vendor can start selling; prices are left at 0 and plans are private
-        // until the vendor sets real prices in the Control Center.
-        if (!await db.Set<Veltrix.Modules.Subscriptions.SubscriptionPlan>().AnyAsync())
+        // Single plan: VELTRIX OS is sold as ONE plan ("full") that includes every feature; the commercial lever is the device
+        // seat count. The price starts at 0 and the plan is private until the vendor sets real pricing in the Control Center.
+        // Legacy tier plans (if any) are deactivated by the SingleFullPlan migration; they are never re-seeded.
+        var plans = db.Set<Veltrix.Modules.Subscriptions.SubscriptionPlan>();
+        if (!await plans.AnyAsync(p => p.Code == Veltrix.Modules.Licensing.PlanDefaults.Full))
         {
-            foreach (var (code, def) in Veltrix.Modules.Licensing.PlanDefaults.Plans.Where(p => p.Key != "trial"))
-                db.Add(new Veltrix.Modules.Subscriptions.SubscriptionPlan
-                {
-                    Code = code, Name = char.ToUpperInvariant(code[0]) + code[1..], Description = "Template — set pricing before publishing.",
-                    Features = string.Join(',', def.Features), MaxDevices = def.MaxDevices, OfflineGraceDays = def.GraceDays, IsPublic = false,
-                    MaxUsers = def.MaxDevices * 5, MaxBranches = code == "starter" ? 1 : code == "professional" ? 5 : 100,
-                });
+            var def = Veltrix.Modules.Licensing.PlanDefaults.Plans[Veltrix.Modules.Licensing.PlanDefaults.Full];
+            db.Add(new Veltrix.Modules.Subscriptions.SubscriptionPlan
+            {
+                Code = Veltrix.Modules.Licensing.PlanDefaults.Full, Name = "VELTRIX OS", Description = "All features included — priced per device seat. Set pricing before publishing.",
+                Features = string.Join(',', def.Features), MaxDevices = def.MaxDevices, OfflineGraceDays = def.GraceDays, IsPublic = false,
+                MaxUsers = 1000, MaxBranches = 1000,
+            });
             await db.SaveChangesAsync();
         }
 

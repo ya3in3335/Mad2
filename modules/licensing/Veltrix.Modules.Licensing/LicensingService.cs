@@ -6,17 +6,21 @@ using Veltrix.SharedKernel;
 
 namespace Veltrix.Modules.Licensing;
 
+/// <summary>
+/// Single commercial plan: VELTRIX OS is sold as one plan ("full") that includes every feature. The commercial lever is the
+/// per-license device seat count (and the subscription price). "trial" is only used for demo licenses and also includes everything.
+/// </summary>
 public static class PlanDefaults
 {
+    public const string Full = "full";
+    public const string Trial = "trial";
+    public const int DefaultGraceDays = 14;
+
     public static readonly IReadOnlyDictionary<string, (string[] Features, int MaxDevices, int GraceDays)> Plans =
         new Dictionary<string, (string[], int, int)>
         {
-            ["trial"] = (Features.All.ToArray(), 2, 3),
-            ["starter"] = ([Features.Pos, Features.Inventory, Features.Crm, Features.Reports, Features.Mobile], 2, 7),
-            ["professional"] = ([Features.Pos, Features.Inventory, Features.Purchasing, Features.Crm, Features.Sales, Features.Accounting,
-                Features.Reports, Features.Mobile, Features.MultiBranch, Features.Intelligence], 5, 14),
-            ["enterprise"] = (Features.All.ToArray(), 25, 30),
-            ["custom"] = (Features.All.ToArray(), 10, 14),
+            [Trial] = (Features.All.ToArray(), 2, 3),
+            [Full] = (Features.All.ToArray(), 5, DefaultGraceDays),
         };
 }
 
@@ -276,7 +280,7 @@ public sealed class LicenseAdminService(DbContext db, ITenantContext ctx, IClock
             TenantId = req.TenantId, KeyHash = LicenseKeys.Hash(key), KeyHint = LicenseKeys.Hint(key), Type = type, PlanCode = plan,
             MaxDevices = req.MaxDevices, StartsAt = starts, ExpiresAt = type == LicenseType.Perpetual ? null : expires,
             OfflineGraceDays = req.OfflineGraceDays ?? defaults.GraceDays,
-            Entitlements = string.Join(',', (req.Entitlements is { Count: > 0 } ? req.Entitlements : defaults.Features).Distinct()),
+            Entitlements = string.Join(',', defaults.Features), // single plan: every license includes every feature
             Notes = req.Notes, Status = LicenseStatus.Active,
         };
         db.Set<License>().Add(license);
@@ -312,7 +316,7 @@ public sealed class LicenseAdminService(DbContext db, ITenantContext ctx, IClock
             .Require(req.OfflineGraceDays is >= 0 and <= 30, "offlineGraceDays", "Must be between 0 and 30.")
             .Require(req.Entitlements.All(Features.All.Contains), "entitlements", "Unknown feature.").ThrowIfInvalid();
         l.MaxDevices = req.MaxDevices; l.ExpiresAt = l.Type == LicenseType.Perpetual ? null : req.ExpiresAt;
-        l.OfflineGraceDays = req.OfflineGraceDays; l.Entitlements = string.Join(',', req.Entitlements.Distinct()); l.Notes = req.Notes;
+        l.OfflineGraceDays = req.OfflineGraceDays; l.Entitlements = string.Join(',', Features.All); l.Notes = req.Notes;
         AddEvent(l, null, "license.updated", $"devices={req.MaxDevices} expires={req.ExpiresAt:O}");
         audit.Write("platform.license_updated", nameof(License), l.Id.ToString(), req);
         await db.SaveChangesAsync(ct);
@@ -555,13 +559,16 @@ public sealed class LicenseTenantStatusProvider(DbContext db, IClock clock, IMem
             if (usable.Count > 0)
             {
                 var st = usable.All(l => l.Type == LicenseType.Trial) ? TenantAccessStatus.Trial : TenantAccessStatus.Active;
-                return new Snapshot(st, usable.SelectMany(l => l.EntitlementList).ToHashSet(), usable.Sum(l => l.MaxDevices));
+                return new Snapshot(st, AllFeatures(), usable.Sum(l => l.MaxDevices));
             }
             var grace = licenses.Where(l => l.Status == LicenseStatus.Active && l.ExpiresAt is { } x && x <= now && now < x.AddDays(RenewalGraceDays)).ToList();
-            if (grace.Count > 0) return new Snapshot(TenantAccessStatus.GracePeriod, grace.SelectMany(l => l.EntitlementList).ToHashSet(), grace.Sum(l => l.MaxDevices));
+            if (grace.Count > 0) return new Snapshot(TenantAccessStatus.GracePeriod, AllFeatures(), grace.Sum(l => l.MaxDevices));
             if (licenses.Any(l => l.Status == LicenseStatus.Suspended)) return new Snapshot(TenantAccessStatus.Suspended, [], 0);
-            return new Snapshot(TenantAccessStatus.Expired, licenses.SelectMany(l => l.EntitlementList).ToHashSet(), 0);
+            return new Snapshot(TenantAccessStatus.Expired, licenses.Count > 0 ? AllFeatures() : [], 0);
         }))!;
+
+    /// <summary>Single plan: any licensed tenant is entitled to every feature (read-only enforcement is driven by status, not features).</summary>
+    private static HashSet<string> AllFeatures() => [.. Features.All];
 
     public async Task<TenantAccessStatus> GetStatusAsync(Guid tenantId, CancellationToken ct = default) => (await LoadAsync(tenantId, ct)).Status;
 

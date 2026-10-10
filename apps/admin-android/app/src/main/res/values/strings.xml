@@ -128,7 +128,6 @@
     <string name="filter_any_connectivity">Any connectivity</string>
     <string name="filter_any_severity">Any severity</string>
     <string name="form_err_days">Enter a valid number of days.</string>
-    <string name="form_err_plan">Choose a plan.</string>
     <string name="form_err_reason">A reason is required.</string>
     <string name="form_err_seats">Enter a valid number of seats.</string>
     <string name="form_err_tenant">Choose a tenant.</string>
@@ -215,6 +214,7 @@
     <string name="plan_limits">%1$d devices · %2$d users · %3$d branches</string>
     <string name="plan_prices">%1$s / month · %2$s / year</string>
     <string name="plan_trial">%1$d-day trial</string>
+    <string name="plan_single_all_features">All features included — one plan, priced per device seat.</string>
     <string name="platform_android">Android</string>
     <string name="platform_other">Other</string>
     <string name="platform_windows">Windows</string>

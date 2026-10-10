@@ -62,4 +62,13 @@ class LogicTest {
         assertEquals(Instant.parse("2027-01-31T00:00:00Z"), LicenseForms.expiry(CommercialTerm.Annual, start))
         assertNull(LicenseForms.expiry(CommercialTerm.Perpetual, start))
     }
+
+    @Test fun singlePlanPrefersFullAndCommercialNeedsNoPlanChoice() {
+        val legacy = com.veltrix.admin.data.api.Plan("1", "professional", "Pro", isActive = false)
+        val full = com.veltrix.admin.data.api.Plan("2", "full", "VELTRIX OS")
+        assertEquals("full", LicenseForms.singlePlan(listOf(legacy, full))?.code)
+        assertNull(LicenseForms.singlePlan(listOf(legacy)))
+        assertNull(LicenseForms.validateCommercial("tenant", "3"))
+        assertEquals(Problem.NoTenant, LicenseForms.validateCommercial(null, "3"))
+    }
 }

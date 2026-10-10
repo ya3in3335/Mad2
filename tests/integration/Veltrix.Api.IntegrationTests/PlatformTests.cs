@@ -70,11 +70,11 @@ public sealed class PlatformTests(ApiFactory f) : IClassFixture<ApiFactory>
         var admin = await Scenario.PlatformAdminAsync(f);
         var tenant = await admin.PostAsync<CreateTenantResponse>("/api/v1/platform/tenants", new CreateTenantRequest("Sub Co", null, null, null, null, null));
         var plans = await admin.GetAsync<List<PlanDto>>("/api/v1/platform/plans");
-        Assert.Contains(plans, x => x.Code == "professional");
-        var pro = plans.Single(x => x.Code == "professional");
-        await admin.PutAsync<PlanDto>($"/api/v1/platform/plans/{pro.Id}", new UpsertPlanRequest("professional", "Professional", null, 9000m, 90000m, "DZD", pro.Features, 5, 25, 5, 14, 14, true, true));
+        var pro = Assert.Single(plans, x => x.IsActive);
+        Assert.Equal("full", pro.Code);
+        await admin.PutAsync<PlanDto>($"/api/v1/platform/plans/{pro.Id}", new UpsertPlanRequest("full", "VELTRIX OS", null, 9000m, 90000m, "DZD", pro.Features, 5, 25, 5, 14, 14, true, true));
 
-        var sub = await admin.PostAsync<SubscriptionDto>("/api/v1/platform/subscriptions", new CreateSubscriptionRequest(tenant.TenantId, "professional", "Monthly", 3, false, null));
+        var sub = await admin.PostAsync<SubscriptionDto>("/api/v1/platform/subscriptions", new CreateSubscriptionRequest(tenant.TenantId, "full", "Monthly", 3, false, null));
         Assert.Equal("PastDue", sub.Status);
         var invoices = await admin.GetAsync<PagedResult<BillingInvoiceDto>>($"/api/v1/platform/invoices?tenantId={tenant.TenantId}");
         var invoice = Assert.Single(invoices.Items);
@@ -88,8 +88,9 @@ public sealed class PlatformTests(ApiFactory f) : IClassFixture<ApiFactory>
         sub = await admin.GetAsync<SubscriptionDto>($"/api/v1/platform/subscriptions/{sub.Id}");
         Assert.Equal("Active", sub.Status);
 
-        sub = await admin.PostAsync<SubscriptionDto>($"/api/v1/platform/subscriptions/{sub.Id}/plan", new ChangePlanRequest("enterprise", null, true));
-        Assert.Equal("enterprise", sub.PlanCode);
+        sub = await admin.PostAsync<SubscriptionDto>($"/api/v1/platform/subscriptions/{sub.Id}/plan", new ChangePlanRequest("full", "Annual", true));
+        Assert.Equal("full", sub.PlanCode);
+        Assert.Equal("Annual", sub.BillingCycle);
         sub = await admin.PostAsync<SubscriptionDto>($"/api/v1/platform/subscriptions/{sub.Id}/seats", new ChangeSeatsRequest(30));
         var lic = await admin.GetAsync<Veltrix.Contracts.Licensing.LicenseDto>($"/api/v1/platform/licenses/{sub.LicenseId}");
         Assert.Equal(30, lic.MaxDevices);

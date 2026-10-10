@@ -84,7 +84,7 @@ public sealed class FoundationTests(ApiFactory f) : IClassFixture<ApiFactory>
         var admin = await Scenario.PlatformAdminAsync(f);
         var tenant = await admin.PostAsync<CreateTenantResponse>("/api/v1/platform/tenants", new CreateTenantRequest("Seat Co", null, null, null, null, null));
         var lic = await admin.PostAsync<CreateLicenseResponse>("/api/v1/platform/licenses",
-            new CreateLicenseRequest(tenant.TenantId, "Monthly", "starter", 1, null, null, null, null, null));
+            new CreateLicenseRequest(tenant.TenantId, "Monthly", "full", 1, null, null, null, null, null));
         var anon = f.CreateClient();
         using var d1 = new TestDevice();
         await Scenario.ActivateAsync(anon, d1, lic.LicenseKey);

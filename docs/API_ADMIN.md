@@ -56,6 +56,12 @@ release per platform/channel.
 
 ## 4. Subscriptions & payments (Reused)
 
+**Single plan.** VELTRIX OS is sold as one plan, code `full`, which includes every feature (`Features.All`). It is seeded at
+startup (price 0, private) and its price/limits are edited via `PUT /plans/{id}`; the `features` field is ignored and always
+stored as every feature. Legacy tier plans are deactivated (kept for history). The commercial lever is the seat count
+(`/subscriptions/{id}/seats`). Licenses accept plan codes `full` and `trial` (demo) only; any usable license entitles the
+tenant to all features. `/subscriptions/{id}/plan` only re-prices / switches billing cycle on the single plan.
+
 | Method | Route | Permission | Step-up | Request | Response |
 |---|---|---|---|---|---|
 | GET | `/api/v1/platform/plans` | `platform.subscriptions` | – | – | `PlanDto[]` |

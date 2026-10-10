@@ -127,7 +127,6 @@
     <string name="filter_any_connectivity">أي اتصال</string>
     <string name="filter_any_severity">أي خطورة</string>
     <string name="form_err_days">أدخل عدد أيام صالحًا.</string>
-    <string name="form_err_plan">اختر خطة.</string>
     <string name="form_err_reason">السبب مطلوب.</string>
     <string name="form_err_seats">أدخل عدد أجهزة صالحًا.</string>
     <string name="form_err_tenant">اختر مستأجرًا.</string>
@@ -214,6 +213,7 @@
     <string name="plan_limits">%1$d أجهزة · %2$d مستخدمين · %3$d فروع</string>
     <string name="plan_prices">%1$s / شهر · %2$s / سنة</string>
     <string name="plan_trial">تجربة %1$d يوم</string>
+    <string name="plan_single_all_features">جميع الميزات مضمنة — خطة واحدة بسعر لكل جهاز.</string>
     <string name="platform_android">أندرويد</string>
     <string name="platform_other">أخرى</string>
     <string name="platform_windows">ويندوز</string>

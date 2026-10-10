@@ -32,9 +32,9 @@ public sealed class OwnerDashboardTests(ApiFactory f) : IClassFixture<ApiFactory
 
         // Tenant B: registered only (pending), paid monthly subscription 9000, then a renewal invoice awaiting manual payment.
         var b = await admin.PostAsync<CreateTenantResponse>("/api/v1/platform/tenants", new CreateTenantRequest("Dash B", null, null, null, null, null));
-        var pro = (await admin.GetAsync<List<PlanDto>>("/api/v1/platform/plans")).Single(p => p.Code == "professional");
-        await admin.PutAsync<PlanDto>($"/api/v1/platform/plans/{pro.Id}", new UpsertPlanRequest("professional", "Professional", null, 9000m, 90000m, "DZD", pro.Features, 5, 25, 5, 14, 14, true, true));
-        var sub = await admin.PostAsync<SubscriptionDto>("/api/v1/platform/subscriptions", new CreateSubscriptionRequest(b.TenantId, "professional", "Monthly", 2, false, null));
+        var pro = (await admin.GetAsync<List<PlanDto>>("/api/v1/platform/plans")).Single(p => p.Code == "full");
+        await admin.PutAsync<PlanDto>($"/api/v1/platform/plans/{pro.Id}", new UpsertPlanRequest("full", "VELTRIX OS", null, 9000m, 90000m, "DZD", pro.Features, 5, 25, 5, 14, 14, true, true));
+        var sub = await admin.PostAsync<SubscriptionDto>("/api/v1/platform/subscriptions", new CreateSubscriptionRequest(b.TenantId, "full", "Monthly", 2, false, null));
         var inv = Assert.Single((await admin.GetAsync<PagedResult<BillingInvoiceDto>>($"/api/v1/platform/invoices?tenantId={b.TenantId}")).Items);
         Assert.Equal(HttpStatusCode.OK, (await StepUp.PostAsync(admin, $"/api/v1/platform/invoices/{inv.Id}/confirm-payment", new ConfirmPaymentRequest("bank_transfer", "VIR-1", null))).StatusCode);
         await admin.PostAsync<BillingInvoiceDto>($"/api/v1/platform/subscriptions/{sub.Id}/renewal-invoice", new IssueInvoiceRequest(null));

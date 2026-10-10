@@ -16,6 +16,7 @@ import com.veltrix.admin.data.api.*
 import com.veltrix.admin.data.repo.AdminRepository
 import com.veltrix.admin.ui.common.*
 import com.veltrix.admin.ui.licenses.FlowRowChips
+import com.veltrix.admin.ui.licenses.LicenseForms
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Instant
 import java.util.UUID
@@ -159,13 +160,14 @@ private fun SubscriptionsTab(vm: BillingViewModel) {
 private fun PlansTab(vm: BillingViewModel) {
     val state by vm.plans.collectAsStateWithLifecycle()
     LoadScreen(state, onRefresh = { vm.refreshPlans() }) { plans ->
-        if (plans.isEmpty()) item { EmptyState() }
-        plans.forEach { p ->
-            item(key = p.id) {
-                RowCard("${p.name} (${p.code})", stringResource(R.string.plan_prices, Formatters.money(p.monthlyPrice, p.currency), Formatters.money(p.annualPrice, p.currency)),
-                    status = if (p.isActive) "active" else "void",
-                    meta = stringResource(R.string.plan_limits, p.maxDevices, p.maxUsers, p.maxBranches) + if (p.trialDays > 0) " · " + stringResource(R.string.plan_trial, p.trialDays) else "")
-            }
+        // Single plan (all features): show only that plan; legacy tier plans are inactive and hidden. Price is edited in the Control Center.
+        val p = LicenseForms.singlePlan(plans)
+        if (p == null) item { EmptyState() }
+        else item(key = p.id) {
+            RowCard("${p.name} (${p.code})", stringResource(R.string.plan_prices, Formatters.money(p.monthlyPrice, p.currency), Formatters.money(p.annualPrice, p.currency)),
+                status = if (p.isActive) "active" else "void",
+                meta = stringResource(R.string.plan_limits, p.maxDevices, p.maxUsers, p.maxBranches) + (if (p.trialDays > 0) " · " + stringResource(R.string.plan_trial, p.trialDays) else "") +
+                    " · " + stringResource(R.string.plan_single_all_features))
         }
     }
 }

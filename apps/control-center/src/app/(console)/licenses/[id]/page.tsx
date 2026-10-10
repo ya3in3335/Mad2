@@ -6,12 +6,11 @@ import { ApiError } from "@/components/server-ui";
 import { Badge, Card, DefinitionList, EmptyState, PageHeader, StatusBadge, TableWrap } from "@/components/ui";
 import { reasonField } from "@/lib/field-sets";
 import { formatDate, formatDateTime, formatNumber, toDateInput } from "@/lib/format";
-import { enumOptions } from "@/lib/options";
 import { isGuid } from "@/lib/paging";
 import { apiGet } from "@/lib/server/api";
 import { getT } from "@/lib/server/i18n";
 import { humanize } from "@/lib/status";
-import { FEATURES, type Device, type License, type LicenseEvent, type Paged } from "@/lib/types";
+import { type Device, type License, type LicenseEvent, type Paged } from "@/lib/types";
 
 export const metadata: Metadata = { title: "License" };
 
@@ -62,7 +61,6 @@ export default async function LicenseDetailPage({ params }: { params: Promise<{ 
                     { name: "maxDevices", label: t("lic.seats"), type: "number", required: true, min: 1, max: 10000, defaultValue: String(l.maxDevices) },
                     { name: "offlineGraceDays", label: t("lic.graceDays"), type: "number", required: true, min: 0, max: 365, defaultValue: String(l.offlineGraceDays) },
                     { name: "expiresAt", label: t("lic.expires"), type: "date", defaultValue: toDateInput(l.expiresAt), help: t("lic.expiresHelp") },
-                    { name: "entitlements", label: t("lic.entitlements"), type: "checkboxes", options: enumOptions(FEATURES, t, "feature"), defaultValue: l.entitlements },
                     { name: "notes", label: t("common.notes"), type: "textarea", defaultValue: l.notes ?? "", maxLength: 2000 },
                   ]}
                 />
