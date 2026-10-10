@@ -37,8 +37,9 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
-      - uses: android-actions/setup-android@v3
+      - name: Android SDK (preinstalled on runner)
         if: steps.exists.outputs.ok == 'true'
+        run: echo "ANDROID_HOME=$ANDROID_HOME" && ls "$ANDROID_HOME/platforms"
       - uses: gradle/actions/setup-gradle@v4
         if: steps.exists.outputs.ok == 'true'
         with:
