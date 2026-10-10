@@ -4,5 +4,5 @@ Done ✅: backend (39 tests), Control Center (CI green), Windows app + Setup.exe
 Open:
 1. Confirm CI "Android" Admin artifact (run after 895f76c); update BUILD_STATUS.md.
 2. Control Center: add UI for licenses/demo, /seats, activation-failures, fleet, incidents, telegram (routes exist, see docs/API_ADMIN.md; extend lib/routes.ts allowlist).
-3. Step-up on legacy endpoints: /platform/devices/{id}/revoke, tenants/{id}/reactivate, licenses/{id}/reactivate.
+3. ✅ Step-up added to device revoke, tenant reactivate, license reactivate.
 4. Release signing (needs secrets), Authenticode for Setup.exe.

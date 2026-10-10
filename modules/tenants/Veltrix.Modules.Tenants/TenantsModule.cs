@@ -67,6 +67,6 @@ public sealed class TenantsModule : IModule
         {
             await svc.SetSuspendedAsync(id, false, null, ct);
             return Results.NoContent();
-        });
+        }).RequireStepUp();
     }
 }

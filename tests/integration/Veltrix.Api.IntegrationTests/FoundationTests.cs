@@ -109,7 +109,12 @@ public sealed class FoundationTests(ApiFactory f) : IClassFixture<ApiFactory>
     {
         var t = await Scenario.CreateTenantAsync(f);
         var admin = await Scenario.PlatformAdminAsync(f);
-        var r = await admin.PostAsJsonAsync($"/api/v1/platform/devices/{t.Device.DeviceId}/revoke", new RevokeDeviceRequest("lost"));
+        var url = $"/api/v1/platform/devices/{t.Device.DeviceId}/revoke";
+        var noStepUp = await admin.PostAsJsonAsync(url, new RevokeDeviceRequest("lost"));
+        Assert.NotEqual(HttpStatusCode.NoContent, noStepUp.StatusCode);
+        var req = new HttpRequestMessage(HttpMethod.Post, url) { Content = JsonContent.Create(new RevokeDeviceRequest("lost")) };
+        req.Headers.Add("X-Confirm-Password", ApiFactory.AdminPassword);
+        var r = await admin.SendAsync(req);
         Assert.Equal(HttpStatusCode.NoContent, r.StatusCode);
 
         var anon = f.CreateClient();

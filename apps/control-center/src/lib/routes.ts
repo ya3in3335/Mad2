@@ -35,7 +35,7 @@ export const API_RULES: readonly ApiRule[] = [
   // Tenants
   r("POST", `${P}/tenants`),
   r("POST", `${P}/tenants/${ID}/suspend`, true),
-  r("POST", `${P}/tenants/${ID}/reactivate`),
+  r("POST", `${P}/tenants/${ID}/reactivate`, true),
   // Platform administrators
   r("POST", `${P}/admins`, true),
   r("POST", `${P}/admins/${ID}/(disable|enable)`, true),
@@ -51,9 +51,9 @@ export const API_RULES: readonly ApiRule[] = [
   r("POST", `${P}/licenses`),
   r("PUT", `${P}/licenses/${ID}`),
   r("POST", `${P}/licenses/${ID}/extend`),
-  r("POST", `${P}/licenses/${ID}/reactivate`),
+  r("POST", `${P}/licenses/${ID}/reactivate`, true),
   r("POST", `${P}/licenses/${ID}/(suspend|revoke|transfer)`, true),
-  r("POST", `${P}/devices/${ID}/revoke`),
+  r("POST", `${P}/devices/${ID}/revoke`, true),
   // Subscriptions & billing
   r("POST", `${P}/plans`),
   r("PUT", `${P}/plans/${ID}`),
