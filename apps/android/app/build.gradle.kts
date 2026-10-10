@@ -56,6 +56,19 @@ android {
             versionNameSuffix = "-debug"
             resValue("string", "build_label", "DEBUG BUILD — not for production")
         }
+        // Shrunk, installable test build signed with the debug key — clearly labelled, never for production.
+        create("staging") {
+            initWith(getByName("debug"))
+            isDebuggable = false
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            applicationIdSuffix = ".test"
+            versionNameSuffix = "-test"
+            resValue("string", "build_label", "TEST BUILD — debug-signed, not for production")
+            signingConfig = signingConfigs.getByName("debug")
+            matchingFallbacks += listOf("release")
+        }
         release {
             isMinifyEnabled = true
             isShrinkResources = true
@@ -88,6 +101,7 @@ androidComponents {
         variant.outputs.forEach { output ->
             val suffix = when {
                 variant.buildType == "debug" -> "-debug"
+                variant.buildType == "staging" -> "-test"
                 !hasReleaseSigning -> "-unsigned"
                 else -> ""
             }
