@@ -5,6 +5,11 @@ on:
     paths: ["apps/windows/**", "tests/unit/**", "packages/contracts/**", "Directory.*.props", "global.json", ".github/workflows/windows.yml"]
   pull_request:
   workflow_dispatch:
+    inputs:
+      vendor_public_key:
+        description: "Optional base64 SPKI of the vendor license PUBLIC key (test builds); default uses licensing/vendor-public-key.pem"
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -23,7 +28,7 @@ jobs:
       - name: Unit tests
         run: dotnet test tests/unit/Veltrix.Desktop.Tests -c Release
       - name: Publish desktop app
-        run: dotnet publish apps/windows/Veltrix.Desktop/Veltrix.Desktop.csproj -c Release -r win-x64 --self-contained true -p:VeltrixVersion=${{ env.VELTRIX_VERSION }} -o publish
+        run: dotnet publish apps/windows/Veltrix.Desktop/Veltrix.Desktop.csproj -c Release -r win-x64 --self-contained true -p:VeltrixVersion=${{ env.VELTRIX_VERSION }} -p:VeltrixVendorPublicKey=${{ inputs.vendor_public_key }} -o publish
       - name: Install Inno Setup
         run: choco install innosetup --no-progress -y
       - name: Build installer
