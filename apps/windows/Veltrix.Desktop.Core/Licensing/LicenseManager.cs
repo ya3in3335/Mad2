@@ -130,9 +130,65 @@ public sealed class LicenseManager(ApiClient api, SecureStore store, AppSettings
         return res;
     }
 
-    /// <summary>Renews the certificate when the server is reachable. Returns false when offline (the grace period applies).</summary>
+    /// <summary>The vendor key compiled into this build (licensing/vendor-public-key.pem); required for offline activation.</summary>
+    public byte[]? EmbeddedVendorKey
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(pinnedVendorKeyBase64)) return null;
+            try { return Convert.FromBase64String(pinnedVendorKeyBase64.Trim()); }
+            catch (FormatException) { return null; }
+        }
+    }
+
+    public bool OfflineActivationConfigured => EmbeddedVendorKey is not null;
+
+    /// <summary>This device's code for offline activation, grouped for display.</summary>
+    public string DeviceCode => OfflineLicensing.FormatDeviceCode(OfflineLicensing.EncodeDeviceCode(identity.InstallationId, identity.Thumbprint));
+
+    /// <summary>True when the stored certificate is a vendor-issued offline license (never refreshed online).</summary>
+    public bool IsOfflineLicense =>
+        store.Get(SecureStore.Certificate) is { Length: > 0 } cert && VendorKey is { } key
+        && LicenseVerifier.ReadVerified(cert, key)?.Type == OfflineLicensing.OfflineType;
+
+    /// <summary>
+    /// Server-less activation: verifies an owner-issued certificate against the embedded vendor key and this device, then
+    /// stores it exactly like an online activation.
+    /// </summary>
+    public OfflineActivationResult ActivateOffline(string activationText)
+    {
+        if (EmbeddedVendorKey is not { } key) return OfflineActivationResult.NotConfigured;
+        var cert = OfflineLicensing.ExtractActivationCode(activationText);
+        if (cert is null) return OfflineActivationResult.Invalid;
+        var check = LicenseVerifier.Evaluate(cert, key, identity.InstallationId, identity.Thumbprint, time.GetUtcNow(), 0);
+        if (check.State == LicenseState.WrongDevice) return OfflineActivationResult.WrongDevice;
+        if (check.Payload is not { } p || check.State is LicenseState.InvalidSignature or LicenseState.Revoked or LicenseState.Suspended or LicenseState.ClockRollback)
+            return OfflineActivationResult.Invalid;
+        if (check.State is LicenseState.LicenseExpired or LicenseState.CertificateExpired) return OfflineActivationResult.Expired;
+
+        var summary = new LicenseSummaryDto(p.Lid, "OFFLINE", p.Type, p.Status, p.Status, p.Plan, p.MaxDev, 1, DateTimeOffset.FromUnixTimeSeconds(p.Iat),
+            DateTimeOffset.FromUnixTimeSeconds(p.Lexp ?? p.Exp), 0, p.Ent, check.DaysRemaining);
+        store.Set(SecureStore.Certificate, cert);
+        store.Set(SecureStore.LicenseSummary, JsonSerializer.Serialize(summary, Json));
+        store.Set(SecureStore.SetupToken, null);
+        settings.DeviceId = null; // no server seat: never send heartbeats for this license
+        settings.TenantId = p.Tid;
+        settings.TenantName = p.TenantName;
+        saveSettings();
+        api.DeviceId = null;
+        Evaluate();
+        return OfflineActivationResult.Activated;
+    }
+
+    /// <summary>Renews the certificate when the server is reachable. Returns false when offline (the grace period applies).
+    /// Offline (vendor-issued) licenses are only re-evaluated locally: they are valid until their expiry.</summary>
     public async Task<bool> RefreshAsync(CancellationToken ct = default)
     {
+        if (IsOfflineLicense)
+        {
+            Evaluate();
+            return true;
+        }
         if (settings.DeviceId is not { } deviceId || VendorKey is not { } key) return false;
         try
         {
@@ -182,4 +238,13 @@ public sealed class LicenseManager(ApiClient api, SecureStore store, AppSettings
         api.SendAsync<ChallengeResponse>(HttpMethod.Post, "/api/v1/licensing/challenge", new ChallengeRequest(identity.InstallationId, purpose), ct, authenticate: false);
 
     private sealed record PublicKeyResponse(string Algorithm, string Spki, string? Pem);
+}
+
+public enum OfflineActivationResult
+{
+    Activated,
+    NotConfigured,
+    Invalid,
+    WrongDevice,
+    Expired,
 }

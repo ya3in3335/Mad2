@@ -69,4 +69,14 @@
     <sys:String x:Key="dk.set.serverChangeConfirm">Change the server address? You may need to sign in again.</sys:String>
     <sys:String x:Key="dk.splash.skip">Click or press any key to skip</sys:String>
     <sys:String x:Key="dk.state.offlineData">Offline data</sys:String>
+    <sys:String x:Key="dk.offline.title">Offline activation (no server)</sys:String>
+    <sys:String x:Key="dk.offline.hint">Send this device code to your vendor. You will receive an activation code bound to this device only: paste it below or open the .txt file you received.</sys:String>
+    <sys:String x:Key="dk.offline.deviceCode">Device code</sys:String>
+    <sys:String x:Key="dk.offline.copy">Copy</sys:String>
+    <sys:String x:Key="dk.offline.activationCode">Activation code</sys:String>
+    <sys:String x:Key="dk.offline.openFile">Open file…</sys:String>
+    <sys:String x:Key="dk.offline.activate">Activate offline</sys:String>
+    <sys:String x:Key="dk.offline.fileFilter">Activation file (*.txt)</sys:String>
+    <sys:String x:Key="dk.offline.notConfigured">Offline activation is not configured in this build (no vendor public key).</sys:String>
+    <sys:String x:Key="dk.offline.invalid">This activation code is not valid. Check that it was copied completely.</sys:String>
 </ResourceDictionary>

@@ -128,6 +128,18 @@ public sealed class WpfPlatformUi(WpfLocalizer localizer) : IPlatformUi
         return dlg.ShowDialog(Application.Current.MainWindow) == true ? dlg.FileName : null;
     }
 
+    public string? PickOpenFile(string filter)
+    {
+        var dlg = new OpenFileDialog { Filter = filter, CheckFileExists = true, Multiselect = false };
+        return dlg.ShowDialog(Application.Current.MainWindow) == true ? dlg.FileName : null;
+    }
+
+    public void CopyToClipboard(string text)
+    {
+        try { Clipboard.SetText(text); }
+        catch (System.Runtime.InteropServices.ExternalException) { } // clipboard busy: the user can still select the text
+    }
+
     public bool Confirm(string message)
     {
         var owner = Application.Current.MainWindow;

@@ -33,6 +33,9 @@ public interface IPlatformUi
     bool PrintText(string title, string text, int widthChars);
     /// <summary>Asks for a destination file. Returns null when cancelled.</summary>
     string? PickSaveFile(string suggestedName, string filter);
+    /// <summary>Asks for a file to open. Returns null when cancelled.</summary>
+    string? PickOpenFile(string filter);
+    void CopyToClipboard(string text);
     bool Confirm(string message);
     bool SystemReducedMotion { get; }
 }

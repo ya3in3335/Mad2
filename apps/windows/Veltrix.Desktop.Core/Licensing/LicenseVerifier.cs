@@ -84,7 +84,8 @@ public static class LicenseVerifier
             "Suspended" => LicenseState.Suspended,
             "Expired" => LicenseState.LicenseExpired,
             _ when p.Lexp is { } lexp && t >= lexp => LicenseState.LicenseExpired,
-            _ when t >= p.Exp => LicenseState.CertificateExpired,
+            // An offline (vendor-issued) license cannot be renewed online: its certificate end is the license end.
+            _ when t >= p.Exp => p.Type == OfflineLicensing.OfflineType ? LicenseState.LicenseExpired : LicenseState.CertificateExpired,
             _ when days is { } d && d <= RenewalWarningDays => LicenseState.RenewSoon,
             _ => LicenseState.Valid,
         };

@@ -72,6 +72,31 @@
                     <ProgressBar IsIndeterminate="True"/>
                     <TextBlock Text="{DynamicResource onb.activating}" Style="{StaticResource Text.Caption}" HorizontalAlignment="Center" Margin="0,6,0,0"/>
                 </StackPanel>
+                <!-- Offline activation: no server; the owner issues a device-bound activation code from the device code. -->
+                <Expander Header="{DynamicResource dk.offline.title}" IsExpanded="{Binding ShowOffline}" Margin="0,20,0,0">
+                    <Border Style="{StaticResource Card}" Margin="0,8,0,0">
+                        <StackPanel>
+                            <TextBlock Text="{DynamicResource dk.offline.notConfigured}" Style="{StaticResource Text.Error}" TextWrapping="Wrap"
+                                       Visibility="{Binding OfflineConfigured, Converter={StaticResource InvBoolToVis}}"/>
+                            <TextBlock Text="{DynamicResource dk.offline.hint}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap"/>
+                            <TextBlock Text="{DynamicResource dk.offline.deviceCode}" Style="{StaticResource Text.Label}" Margin="0,10,0,4"/>
+                            <DockPanel>
+                                <Button DockPanel.Dock="Right" Content="{DynamicResource dk.offline.copy}" Command="{Binding CopyDeviceCodeCommand}" Margin="8,0,0,0"/>
+                                <TextBox Text="{Binding DeviceCode, Mode=OneWay}" IsReadOnly="True" FlowDirection="LeftToRight" FontFamily="{StaticResource Font.Mono}"
+                                         TextWrapping="Wrap" AutomationProperties.Name="{DynamicResource dk.offline.deviceCode}"/>
+                            </DockPanel>
+                            <TextBlock Text="{DynamicResource dk.offline.activationCode}" Style="{StaticResource Text.Label}" Margin="0,10,0,4"/>
+                            <TextBox Text="{Binding ActivationCode, UpdateSourceTrigger=PropertyChanged}" FlowDirection="LeftToRight" FontFamily="{StaticResource Font.Mono}"
+                                     TextWrapping="Wrap" AcceptsReturn="True" MinHeight="72" MaxHeight="160" VerticalScrollBarVisibility="Auto"
+                                     AutomationProperties.Name="{DynamicResource dk.offline.activationCode}"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                                <Button Content="{DynamicResource dk.offline.openFile}" Command="{Binding OpenActivationFileCommand}"/>
+                                <Button Content="{DynamicResource dk.offline.activate}" Command="{Binding ActivateOfflineCommand}" Style="{StaticResource Button.Primary}"
+                                        IsEnabled="{Binding OfflineConfigured}" Margin="8,0,0,0"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </Expander>
                 <TextBlock Text="{DynamicResource lic.recovery}" Style="{StaticResource Text.Caption}" Margin="0,20,0,0"/>
             </StackPanel>
         </ScrollViewer>

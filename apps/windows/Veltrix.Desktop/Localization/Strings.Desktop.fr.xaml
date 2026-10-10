@@ -69,4 +69,14 @@
     <sys:String x:Key="dk.set.serverChangeConfirm">Changer l'adresse du serveur ? Vous devrez peut-être vous reconnecter.</sys:String>
     <sys:String x:Key="dk.splash.skip">Cliquez ou appuyez sur une touche pour passer</sys:String>
     <sys:String x:Key="dk.state.offlineData">Données hors ligne</sys:String>
+    <sys:String x:Key="dk.offline.title">Activation hors ligne (sans serveur)</sys:String>
+    <sys:String x:Key="dk.offline.hint">Envoyez ce code appareil à votre fournisseur. Vous recevrez un code d'activation lié uniquement à cet appareil : collez-le ci-dessous ou ouvrez le fichier .txt reçu.</sys:String>
+    <sys:String x:Key="dk.offline.deviceCode">Code appareil</sys:String>
+    <sys:String x:Key="dk.offline.copy">Copier</sys:String>
+    <sys:String x:Key="dk.offline.activationCode">Code d'activation</sys:String>
+    <sys:String x:Key="dk.offline.openFile">Ouvrir un fichier…</sys:String>
+    <sys:String x:Key="dk.offline.activate">Activer hors ligne</sys:String>
+    <sys:String x:Key="dk.offline.fileFilter">Fichier d'activation (*.txt)</sys:String>
+    <sys:String x:Key="dk.offline.notConfigured">L'activation hors ligne n'est pas configurée dans cette version (aucune clé publique fournisseur).</sys:String>
+    <sys:String x:Key="dk.offline.invalid">Ce code d'activation n'est pas valide. Vérifiez qu'il a été copié en entier.</sys:String>
 </ResourceDictionary>

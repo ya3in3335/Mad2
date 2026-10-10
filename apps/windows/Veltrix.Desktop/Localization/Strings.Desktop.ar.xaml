@@ -69,4 +69,14 @@
     <sys:String x:Key="dk.set.serverChangeConfirm">تغيير عنوان الخادم؟ قد تحتاج إلى تسجيل الدخول من جديد.</sys:String>
     <sys:String x:Key="dk.splash.skip">انقر أو اضغط أي مفتاح للتخطي</sys:String>
     <sys:String x:Key="dk.state.offlineData">بيانات دون اتصال</sys:String>
+    <sys:String x:Key="dk.offline.title">التفعيل دون اتصال (بدون خادم)</sys:String>
+    <sys:String x:Key="dk.offline.hint">أرسل رمز الجهاز هذا إلى المورّد. ستتلقى رمز تفعيل مرتبطًا بهذا الجهاز فقط: الصقه أدناه أو افتح ملف ‎.txt‎ الذي استلمته.</sys:String>
+    <sys:String x:Key="dk.offline.deviceCode">رمز الجهاز</sys:String>
+    <sys:String x:Key="dk.offline.copy">نسخ</sys:String>
+    <sys:String x:Key="dk.offline.activationCode">رمز التفعيل</sys:String>
+    <sys:String x:Key="dk.offline.openFile">فتح ملف…</sys:String>
+    <sys:String x:Key="dk.offline.activate">تفعيل دون اتصال</sys:String>
+    <sys:String x:Key="dk.offline.fileFilter">ملف التفعيل (*.txt)</sys:String>
+    <sys:String x:Key="dk.offline.notConfigured">التفعيل دون اتصال غير مُهيأ في هذا الإصدار (لا يوجد مفتاح عام للمورّد).</sys:String>
+    <sys:String x:Key="dk.offline.invalid">رمز التفعيل هذا غير صالح. تحقق من نسخه بالكامل.</sys:String>
 </ResourceDictionary>

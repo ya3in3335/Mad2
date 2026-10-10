@@ -1,3 +1,4 @@
+using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Veltrix.Desktop.Core.Api;
@@ -20,6 +21,60 @@ public sealed partial class ActivationViewModel : ObservableObject
         var eval = s.License.Current;
         _licenseMessage = eval is null ? null : LicenseText.Describe(s.Loc, eval);
         _privacyAccepted = s.Settings.FirstLaunchDone;
+        OfflineConfigured = s.License.OfflineActivationConfigured;
+        DeviceCode = s.License.DeviceCode;
+    }
+
+    // ---- Offline activation (no server): device code → owner issues an activation code → paste or open it here ----
+    public bool OfflineConfigured { get; }
+    public string DeviceCode { get; }
+    [ObservableProperty] private string _activationCode = "";
+    [ObservableProperty] private bool _showOffline;
+
+    [RelayCommand]
+    public void CopyDeviceCode() => _s.Ui.CopyToClipboard(DeviceCode);
+
+    [RelayCommand]
+    public void OpenActivationFile()
+    {
+        var path = _s.Ui.PickOpenFile(_s.Loc.Get("dk.offline.fileFilter") + "|*.txt|*.*|*.*");
+        if (path is null) return;
+        try
+        {
+            var info = new FileInfo(path);
+            if (info.Length > 64 * 1024) { ErrorMessage = _s.Loc.Get("dk.offline.invalid"); return; }
+            ActivationCode = File.ReadAllText(path).Trim();
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            ErrorMessage = _s.Loc.Get("err.generic");
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanActivate))]
+    public async Task ActivateOfflineAsync()
+    {
+        ErrorMessage = null;
+        if (!PrivacyAccepted) { ErrorMessage = _s.Loc.Get("dk.activation.acceptRequired"); return; }
+        var result = _s.License.ActivateOffline(ActivationCode);
+        if (result != OfflineActivationResult.Activated)
+        {
+            ErrorMessage = _s.Loc.Get(result switch
+            {
+                OfflineActivationResult.NotConfigured => "dk.offline.notConfigured",
+                OfflineActivationResult.WrongDevice => "dk.license.wrongDevice",
+                OfflineActivationResult.Expired => "lic.expired",
+                _ => "dk.offline.invalid",
+            });
+            return;
+        }
+        _s.Settings.FirstLaunchDone = true;
+        _s.SaveSettings();
+        _s.Log.Info("Device activated offline");
+        Activated = true;
+        ActivationCode = "";
+        await Task.Delay(_s.ReducedMotion ? 150 : 900);
+        _app.Navigate(StartRoute.Login);
     }
 
     [ObservableProperty] private string _serverUrl;
@@ -27,7 +82,7 @@ public sealed partial class ActivationViewModel : ObservableObject
     [ObservableProperty] private bool _privacyAccepted;
     [ObservableProperty] private string? _licenseMessage;
     [ObservableProperty] private string? _errorMessage;
-    [ObservableProperty] [NotifyCanExecuteChangedFor(nameof(ActivateCommand))] private bool _isBusy;
+    [ObservableProperty] [NotifyCanExecuteChangedFor(nameof(ActivateCommand))] [NotifyCanExecuteChangedFor(nameof(ActivateOfflineCommand))] private bool _isBusy;
     [ObservableProperty] private bool _activated;
 
     public IReadOnlyList<LanguageOption> Languages { get; } = Core.Settings.Languages.Supported.Select(l => new LanguageOption(l.Code, l.NativeName)).ToList();

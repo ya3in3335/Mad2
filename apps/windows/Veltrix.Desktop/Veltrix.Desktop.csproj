@@ -18,6 +18,10 @@
     <!-- Optional: base64 SubjectPublicKeyInfo of the vendor license-signing key, pinned at build time
          (-p:VeltrixVendorPublicKey=MFkw...). When empty the key is trusted on first activation and stored encrypted. -->
     <VeltrixVendorPublicKey Condition="'$(VeltrixVendorPublicKey)' == ''"></VeltrixVendorPublicKey>
+    <!-- Otherwise embed the repository's public vendor key (licensing/vendor-public-key.pem, SPKI PEM) when present.
+         It enables offline activation; without it offline activation shows "not configured". Never a private key. -->
+    <VeltrixVendorPublicKeyFile>$(MSBuildThisFileDirectory)../../../licensing/vendor-public-key.pem</VeltrixVendorPublicKeyFile>
+    <VeltrixVendorPublicKey Condition="'$(VeltrixVendorPublicKey)' == '' And Exists('$(VeltrixVendorPublicKeyFile)')">$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.File]::ReadAllText('$(VeltrixVendorPublicKeyFile)')), '-----[A-Z ]+-----|\s', ''))</VeltrixVendorPublicKey>
   </PropertyGroup>
   <ItemGroup>
     <AssemblyMetadata Include="VeltrixVendorPublicKey" Value="$(VeltrixVendorPublicKey)" />
