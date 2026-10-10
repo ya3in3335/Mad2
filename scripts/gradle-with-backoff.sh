@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Runs a Gradle build in apps/android, retrying ONLY when a repository answers HTTP 429 (rate limit),
+# Runs a Gradle build in the current directory (if it has ./gradlew) or apps/android, retrying ONLY when a repository answers HTTP 429 (rate limit),
 # with exponential backoff (60s, 120s, 240s). Other failures (compile errors, tests) fail immediately.
 # Usage: scripts/gradle-with-backoff.sh assembleDebug [more tasks...]
 set -uo pipefail
-cd "$(dirname "$0")/../apps/android"
+[ -x ./gradlew ] || cd "$(dirname "$0")/../apps/android"
 delay=60
 for attempt in 1 2 3 4; do
   log=$(mktemp)
