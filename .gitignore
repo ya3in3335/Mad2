@@ -40,3 +40,8 @@ __pycache__/
 # Installer outputs
 artifacts/
 artifacts-out/
+
+# deployment secrets
+deploy/.env
+deploy/secrets/
+!.env.example

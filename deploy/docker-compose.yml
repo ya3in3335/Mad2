@@ -1,0 +1,53 @@
+# Usage: cp deploy/.env.example deploy/.env && edit secrets, then
+#   docker compose -f deploy/docker-compose.yml --env-file deploy/.env up -d --build
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: veltrix
+      POSTGRES_USER: veltrix
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U veltrix"]
+      interval: 5s
+      retries: 20
+
+  api:
+    build: { context: .., dockerfile: deploy/api.Dockerfile }
+    restart: unless-stopped
+    depends_on: { db: { condition: service_healthy } }
+    environment:
+      ConnectionStrings__Veltrix: Host=db;Database=veltrix;Username=veltrix;Password=${POSTGRES_PASSWORD}
+      Database__MigrateOnStartup: "true"
+      Auth__SigningKey: ${AUTH_SIGNING_KEY:?set AUTH_SIGNING_KEY}
+      Licensing__SigningKeyPath: /run/secrets/license_signing_key
+      Backup__Enabled: "true"
+      Backup__EncryptionKey: ${BACKUP_ENCRYPTION_KEY:?set BACKUP_ENCRYPTION_KEY}
+      Bootstrap__PlatformAdminEmail: ${BOOTSTRAP_ADMIN_EMAIL:-}
+      Bootstrap__PlatformAdminPassword: ${BOOTSTRAP_ADMIN_PASSWORD:-}
+      Cors__Origins__0: ${CONTROL_CENTER_ORIGIN:-}
+      Telegram__Enabled: ${TELEGRAM_ENABLED:-false}
+      Telegram__BotToken: ${TELEGRAM_BOT_TOKEN:-}
+      Telegram__WebhookSecret: ${TELEGRAM_WEBHOOK_SECRET:-}
+      Telegram__AllowedChatIds__0: ${TELEGRAM_ALLOWED_CHAT_ID:-}
+    secrets: [license_signing_key]
+    volumes: [apidata:/data]
+    ports: ["8080:8080"]
+
+  control-center:
+    build: { context: ../apps/control-center, dockerfile: ../../deploy/control-center.Dockerfile }
+    restart: unless-stopped
+    depends_on: [api]
+    environment:
+      VELTRIX_API_URL: http://api:8080
+    ports: ["3000:3000"]
+
+secrets:
+  license_signing_key:
+    file: ./secrets/license-signing-key.pem
+
+volumes:
+  pgdata:
+  apidata:
