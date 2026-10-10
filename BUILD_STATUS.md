@@ -10,8 +10,8 @@ Only results actually observed are recorded here. "Local" = Linux cloud dev cont
 | Windows installer | publish win-x64 + Inno Setup | CI "Windows" run #4 (windows-2022) | ✅ `VELTRIX-OS-Windows-0.1.4-Setup.exe` — https://github.com/ya3in3335/Mad2/actions/runs/38084589855 |
 | Android OS | testDebugUnitTest lintDebug assembleDebug assembleStaging | Local | ✅ 7 tests, lint clean, APKs built |
 | VELTRIX Admin | testDebugUnitTest lintDebug assembleDebug assembleStaging | Local | ✅ 21 tests, lint clean, APKs built |
-| Android OS (CI) | same | CI "Android" run #6 | ✅ artifact `VELTRIX-OS-Android-0.1.6` (debug + test APK + SHA256SUMS) — https://github.com/ya3in3335/Mad2/actions/runs/38085517693 |
-| VELTRIX Admin (CI) | same | CI "Android" | ⏳ run #6 built the wrong project (script bug, fixed in 895f76c); re-run pending |
+| Android OS (CI) | same | CI "Android" run #7 | ✅ `VELTRIX-OS-Android-0.1.7` — https://github.com/ya3in3335/Mad2/actions/runs/38086451289 |
+| VELTRIX Admin (CI) | same | CI "Android" run #7 | ✅ `VELTRIX-Admin-Android-0.1.7` — https://github.com/ya3in3335/Mad2/actions/runs/38086451289 |
 | Control Center | lint / typecheck / test / build | Local + CI "Control Center" run #3 | ✅ 23/23 tests, build OK |
 | Security | gitleaks + keystore check | CI "Security" | ⚠️ run #5 flagged 2 fake test tokens → allowlisted exact values in `.gitleaks.toml` |
 
