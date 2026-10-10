@@ -53,7 +53,7 @@ jobs:
         working-directory: ${{ matrix.project }}
         run: |
           chmod +x gradlew
-          bash "$GITHUB_WORKSPACE/scripts/gradle-with-backoff.sh" ./gradlew --no-daemon testDebugUnitTest lintDebug assembleDebug assembleStaging
+          bash "$GITHUB_WORKSPACE/scripts/gradle-with-backoff.sh" testDebugUnitTest lintDebug assembleDebug assembleStaging
       - name: Collect APKs
         if: steps.exists.outputs.ok == 'true'
         run: |
