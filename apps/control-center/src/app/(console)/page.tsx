@@ -6,13 +6,13 @@ import { Card, EmptyState, PageHeader } from "@/components/ui";
 import { formatMoney, formatNumber } from "@/lib/format";
 import { apiGet } from "@/lib/server/api";
 import { getT } from "@/lib/server/i18n";
-import type { PlatformDashboard } from "@/lib/types";
+import type { OwnerDashboard, PlatformDashboard } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
 export default async function DashboardPage() {
   const { t, locale } = await getT();
-  const res = await apiGet<PlatformDashboard>("/api/v1/platform/dashboard");
+  const [res, ownerRes] = await Promise.all([apiGet<PlatformDashboard>("/api/v1/platform/dashboard"), apiGet<OwnerDashboard>("/api/v1/platform/dashboard/admin")]);
   if (!res.ok) {
     return (
       <>
@@ -40,6 +40,42 @@ export default async function DashboardPage() {
         <Kpi label={t("dash.openSupport")} value={n(d.openSupportCases)} tone={d.openSupportCases > 0 ? "info" : "neutral"} href="/support" />
         <Kpi label={t("dash.securityAlerts")} value={n(d.securityAlerts7d)} tone={d.securityAlerts7d > 0 ? "danger" : "success"} href="/security" />
       </div>
+      {ownerRes.ok ? (
+        <section aria-label={t("dash.operations")} className="mt-6">
+          <h2 className="mb-3 text-sm font-semibold text-muted">{t("dash.operations")}</h2>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+            <Kpi
+              label={t("dash.devicesOnline")}
+              value={`${n(ownerRes.data.onlineDevices)} / ${n(ownerRes.data.registeredDevices)}`}
+              hint={t("dash.onlineWindow", { minutes: n(ownerRes.data.onlineWindowMinutes), android: n(ownerRes.data.androidInstallations), windows: n(ownerRes.data.windowsInstallations) })}
+              tone="success"
+              href="/fleet?online=true"
+            />
+            <Kpi label={t("dash.mrrLive")} value={money(ownerRes.data.monthlyRecurringRevenue)} hint={t("dash.activeSubscriptions", { count: n(ownerRes.data.activeSubscriptions) })} tone="violet" href="/subscriptions" />
+            <Kpi
+              label={t("dash.unresolvedErrors")}
+              value={n(ownerRes.data.unresolvedErrors)}
+              hint={t("dash.criticalErrors", { count: n(ownerRes.data.criticalUnresolvedErrors) })}
+              tone={ownerRes.data.criticalUnresolvedErrors > 0 ? "danger" : ownerRes.data.unresolvedErrors > 0 ? "warning" : "success"}
+              href="/incidents?status=unresolved"
+            />
+            <Kpi
+              label={t("dash.failedSyncs")}
+              value={n(ownerRes.data.failedSyncOperations24h)}
+              hint={t("dash.deviceFailedSyncs", { count: n(ownerRes.data.deviceReportedFailedSyncOperations) })}
+              tone={ownerRes.data.failedSyncOperations24h + ownerRes.data.deviceReportedFailedSyncOperations > 0 ? "warning" : "success"}
+              href="/incidents?category=sync"
+            />
+            <Kpi
+              label={t("dash.pendingPayments")}
+              value={n(ownerRes.data.pendingManualPayments)}
+              hint={money(ownerRes.data.pendingManualPaymentsAmount)}
+              tone={ownerRes.data.pendingManualPayments > 0 ? "warning" : "neutral"}
+              href="/invoices?status=Issued"
+            />
+          </div>
+        </section>
+      ) : null}
       <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
         <Card title={t("dash.revenueByMonth")}>
           {hasRevenue ? <BarChart data={d.revenueByMonth} locale={locale} label={t("dash.revenueByMonth")} formatValue={money} /> : <EmptyState title={t("dash.noRevenue")} />}

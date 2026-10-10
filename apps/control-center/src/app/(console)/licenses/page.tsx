@@ -4,7 +4,7 @@ import { FilterBar, FilterField } from "@/components/filter-bar";
 import { FormDialog } from "@/components/form-dialog";
 import { ApiError, Pagination } from "@/components/server-ui";
 import { Card, EmptyState, PageHeader, StatusBadge, TableWrap } from "@/components/ui";
-import { licenseCreateFields } from "@/lib/field-sets";
+import { licenseCreateFields, licenseDemoFields } from "@/lib/field-sets";
 import { daysUntil, formatDate, formatNumber } from "@/lib/format";
 import { isGuid, param, parsePage } from "@/lib/paging";
 import { apiGet } from "@/lib/server/api";
@@ -28,15 +28,28 @@ export default async function LicensesPage({ searchParams }: { searchParams: Pro
         title={t("nav.licensing")}
         description={t("lic.subtitle")}
         actions={
-          <FormDialog
-            label={t("lic.issue")}
-            variant="primary"
-            method="POST"
-            path="/api/v1/platform/licenses"
-            kind="license.create"
-            resultView="licenseKey"
-            fields={licenseCreateFields(t, tenantId || undefined)}
-          />
+          <>
+            <Link href="/licenses/failures" className="vx-btn vx-btn-secondary">
+              {t("lic.failures")}
+            </Link>
+            <FormDialog
+              label={t("lic.issueDemo")}
+              method="POST"
+              path="/api/v1/platform/licenses/demo"
+              kind="license.demo"
+              resultView="licenseKey"
+              fields={licenseDemoFields(t, tenantId || undefined)}
+            />
+            <FormDialog
+              label={t("lic.issue")}
+              variant="primary"
+              method="POST"
+              path="/api/v1/platform/licenses"
+              kind="license.create"
+              resultView="licenseKey"
+              fields={licenseCreateFields(t, tenantId || undefined)}
+            />
+          </>
         }
       />
       <Card bodyClassName="">

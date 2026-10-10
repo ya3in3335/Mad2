@@ -32,6 +32,12 @@ export const API_RULES: readonly ApiRule[] = [
   r("GET", `${P}/tenants/${ID}`),
   r("GET", `${P}/licenses/${ID}(/events)?`),
   r("GET", `${P}/subscriptions/${ID}(/history)?`),
+  r("GET", `${P}/dashboard/admin`),
+  r("GET", `${P}/licenses/activation-failures`),
+  r("GET", `${P}/fleet/devices(/${ID})?`),
+  r("GET", `${P}/incidents(/groups|/${ID})?`),
+  r("GET", `${P}/diagnostic-requests/${ID}`),
+  r("GET", `${P}/telegram/(status|deliveries)`),
   // Tenants
   r("POST", `${P}/tenants`),
   r("POST", `${P}/tenants/${ID}/suspend`, true),
@@ -49,6 +55,8 @@ export const API_RULES: readonly ApiRule[] = [
   r("PUT", `${P}/settings/[A-Za-z0-9._-]{1,100}`),
   // Licensing
   r("POST", `${P}/licenses`),
+  r("POST", `${P}/licenses/demo`),
+  r("POST", `${P}/licenses/${ID}/seats`),
   r("PUT", `${P}/licenses/${ID}`),
   r("POST", `${P}/licenses/${ID}/extend`),
   r("POST", `${P}/licenses/${ID}/reactivate`, true),
@@ -62,6 +70,14 @@ export const API_RULES: readonly ApiRule[] = [
   r("POST", `${P}/subscriptions/${ID}/cancel`, true),
   r("POST", `${P}/invoices/${ID}/confirm-payment`, true),
   r("POST", `${P}/invoices/${ID}/void`),
+  // Device fleet & diagnostics
+  r("POST", `${P}/fleet/devices/${ID}/(deactivate|replace|reassign)`, true),
+  r("POST", `${P}/fleet/devices/${ID}/diagnostic-requests`),
+  r("POST", `${P}/diagnostic-requests/${ID}/cancel`),
+  // Incidents
+  r("POST", `${P}/incidents/${ID}/status`),
+  // Telegram
+  r("POST", `${P}/telegram/test`, true),
   // Operations
   r("POST", `${P}/backups/run`, true),
   r("POST", `${P}/jobs/[a-z0-9-]{1,60}/run`),

@@ -22,6 +22,7 @@ export const NAV: readonly NavSection[] = [
     items: [
       { href: "/tenants", key: "nav.tenants", icon: "M4 21V7l8-4 8 4v14M9 21v-6h6v6M8 10h.01M12 10h.01M16 10h.01", permissions: ["platform.tenants"] },
       { href: "/licenses", key: "nav.licensing", icon: "M15 7a4 4 0 1 1-3.9 4.9L3 20v-3l2-2v-2h2l1.1-1.1A4 4 0 0 1 15 7z", permissions: ["platform.licenses"] },
+      { href: "/fleet", key: "nav.fleet", icon: "M7 2h10v20H7zM11 18h2M2 8h3v8H2zM19 8h3v8h-3z", permissions: ["platform.licenses"] },
       { href: "/devices", key: "nav.devices", icon: "M4 5h16v10H4zM2 19h20M9 15v4M15 15v4", permissions: ["platform.licenses"] },
       { href: "/subscriptions", key: "nav.subscriptions", icon: "M3 7h18v12H3zM3 11h18M7 15h4", permissions: ["platform.subscriptions"] },
       { href: "/plans", key: "nav.plans", icon: "M4 4h16v4H4zM4 10h16v4H4zM4 16h16v4H4z", permissions: ["platform.subscriptions"] },
@@ -41,6 +42,8 @@ export const NAV: readonly NavSection[] = [
     key: "nav.section.operations",
     items: [
       { href: "/health", key: "nav.health", icon: "M3 12h4l3-8 4 16 3-8h4", permissions: ["platform.config"] },
+      { href: "/incidents", key: "nav.incidents", icon: "M12 2l10 18H2zM12 9v5M12 17h.01", permissions: ["platform.support"] },
+      { href: "/telegram", key: "nav.telegram", icon: "M22 3L2 11l7 3 2 7 4-5 5 4z", permissions: ["platform.config"] },
       { href: "/releases", key: "nav.releases", icon: "M12 3v12m0 0l-4-4m4 4l4-4M4 17v4h16v-4", permissions: ["platform.releases"] },
       { href: "/announcements", key: "nav.announcements", icon: "M3 11v2l13 5V6zM16 8a4 4 0 0 1 0 8M7 13l1 6h3l-1-5", permissions: ["platform.config"] },
       { href: "/settings", key: "nav.settings", icon: "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.9 1.2V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 7 19.4l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.7 1.7 0 0 0 3 13.7H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.6 7l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.7 1.7 0 0 0 10.3 3V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 2.9 1.2l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0 1.2 2.9H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z", permissions: ["platform.config"] },

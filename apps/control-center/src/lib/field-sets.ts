@@ -20,6 +20,17 @@ export function licenseCreateFields(t: Translator, tenantId?: string): FieldSpec
   ];
 }
 
+export function licenseDemoFields(t: Translator, tenantId?: string): FieldSpec[] {
+  return [
+    tenantId
+      ? { name: "tenantId", label: "", type: "hidden", defaultValue: tenantId }
+      : { name: "tenantId", label: t("common.tenantId"), type: "text", required: true, ltr: true, wide: true, placeholder: "00000000-0000-0000-0000-000000000000", help: t("common.tenantIdHelp") },
+    { name: "days", label: t("lic.days"), type: "number", required: true, min: 1, max: 60, defaultValue: "14", help: t("lic.demoDaysHelp") },
+    { name: "maxDevices", label: t("lic.seats"), type: "number", required: true, min: 1, max: 10, defaultValue: "1" },
+    { name: "notes", label: t("common.notes"), type: "textarea", maxLength: 2000 },
+  ];
+}
+
 export function subscriptionCreateFields(t: Translator, plans: readonly Plan[], tenantId?: string): FieldSpec[] {
   return [
     tenantId

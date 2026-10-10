@@ -377,3 +377,195 @@ export const JOB_NAMES = [
   "scheduled-reports",
   "cleanup",
 ] as const;
+
+// ---------- Operations (fleet, incidents, diagnostics, owner dashboard, Telegram) ----------
+
+export const FLEET_PLATFORMS = ["android", "windows"] as const;
+export const FLEET_DEVICE_STATUSES = ["Active", "Revoked", "Replaced", "Released"] as const;
+export const INCIDENT_STATUSES = ["open", "acknowledged", "resolved"] as const;
+export const INCIDENT_STATUS_FILTERS = ["unresolved", "open", "acknowledged", "resolved"] as const;
+export const INCIDENT_SEVERITIES = ["info", "warning", "error", "critical"] as const;
+export const INCIDENT_CATEGORIES = [
+  "crash",
+  "api",
+  "sync",
+  "license",
+  "migration",
+  "backup",
+  "device_registration",
+  "version_incompat",
+  "auth_failures",
+  "outage",
+] as const;
+export const TELEGRAM_DELIVERY_STATUSES = ["pending", "sent", "failed", "skipped"] as const;
+
+export interface AdminDevice {
+  id: Guid;
+  tenantId: Guid;
+  tenantName: string | null;
+  licenseId: Guid;
+  platform: string;
+  deviceName: string;
+  appVersion: string;
+  osVersion: string | null;
+  status: string;
+  online: boolean;
+  activatedAt: IsoDate;
+  lastContactAt: IsoDate;
+  lastHeartbeatAt: IsoDate | null;
+  lastSyncAt: IsoDate | null;
+  pendingSyncOperations: number | null;
+  failedSyncOperations: number | null;
+}
+
+export interface DiagnosticRequest {
+  id: Guid;
+  deviceId: Guid;
+  tenantId: Guid;
+  status: string;
+  reason: string | null;
+  requestedAt: IsoDate;
+  expiresAt: IsoDate;
+  deliveredAt: IsoDate | null;
+  uploadedAt: IsoDate | null;
+  consentGranted: boolean;
+}
+
+export interface AdminDeviceDetail {
+  device: AdminDevice;
+  licensePlan: string | null;
+  licenseType: string | null;
+  licenseStatus: string | null;
+  revokedAt: IsoDate | null;
+  revokedReason: string | null;
+  replacedByDeviceId: Guid | null;
+  reportedErrors: number;
+  openIncidents: number;
+  history: LicenseEvent[];
+  diagnosticRequests: DiagnosticRequest[];
+  tenantDiagnosticsConsent: boolean;
+}
+
+export interface Incident {
+  id: Guid;
+  fingerprint: string;
+  tenantId: Guid | null;
+  tenantName: string | null;
+  source: string;
+  app: string;
+  appVersion: string;
+  platform: string;
+  category: string;
+  errorType: string;
+  severity: string;
+  status: string;
+  title: string;
+  occurrenceCount: number;
+  firstSeenAt: IsoDate;
+  lastSeenAt: IsoDate;
+  lastDeviceId: Guid | null;
+}
+
+export interface ErrorEvent {
+  id: Guid;
+  deviceId: Guid | null;
+  osVersion: string | null;
+  message: string;
+  context: string | null;
+  occurredAt: IsoDate;
+  receivedAt: IsoDate;
+}
+
+export interface IncidentDetail {
+  incident: Incident;
+  sampleStackTrace: string | null;
+  statusNote: string | null;
+  acknowledgedAt: IsoDate | null;
+  resolvedAt: IsoDate | null;
+  recentEvents: ErrorEvent[];
+  affectedDevices: number;
+}
+
+export interface IncidentGroup {
+  fingerprint: string;
+  category: string;
+  errorType: string;
+  title: string;
+  app: string;
+  maxSeverity: string;
+  incidents: number;
+  tenants: number;
+  occurrences: number;
+  openIncidents: number;
+  firstSeenAt: IsoDate;
+  lastSeenAt: IsoDate;
+}
+
+export interface ActivationFailure {
+  id: Guid;
+  tenantId: Guid | null;
+  licenseId: Guid | null;
+  code: string;
+  platform: string | null;
+  installationId: Guid | null;
+  ipAddress: string | null;
+  occurredAt: IsoDate;
+}
+
+export interface OwnerDashboard {
+  totalTenants: number;
+  activeTenants: number;
+  suspendedTenants: number;
+  totalCustomers: number;
+  activeSubscriptions: number;
+  trialingSubscriptions: number;
+  pastDueSubscriptions: number;
+  expiredSubscriptions: number;
+  activeLicenses: number;
+  suspendedLicenses: number;
+  expiringLicenses14d: number;
+  registeredDevices: number;
+  onlineDevices: number;
+  onlineWindowMinutes: number;
+  androidInstallations: number;
+  windowsInstallations: number;
+  monthlyRecurringRevenue: number;
+  pendingManualPayments: number;
+  pendingManualPaymentsAmount: number;
+  newSupportTickets: number;
+  openSupportTickets: number;
+  unresolvedErrors: number;
+  criticalUnresolvedErrors: number;
+  failedSyncOperations24h: number;
+  deviceReportedFailedSyncOperations: number;
+  backendHealth: string;
+  generatedAt: IsoDate;
+}
+
+export interface TelegramStatus {
+  enabled: boolean;
+  botTokenConfigured: boolean;
+  webhookSecretConfigured: boolean;
+  allowedChats: number;
+  pending: number;
+  failed: number;
+  sent24h: number;
+  skipped24h: number;
+  lastSentAt: IsoDate | null;
+  lastError: string | null;
+}
+
+export interface TelegramDelivery {
+  id: Guid;
+  type: string;
+  severity: string;
+  dedupKey: string | null;
+  chatId: number | null;
+  text: string;
+  status: string;
+  attempts: number;
+  createdAt: IsoDate;
+  nextAttemptAt: IsoDate | null;
+  sentAt: IsoDate | null;
+  lastError: string | null;
+}

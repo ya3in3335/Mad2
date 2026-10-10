@@ -27,6 +27,12 @@ const TONES: Record<string, Tone> = {
   // support
   open: "info",
   resolved: "success",
+  acknowledged: "warning",
+  unresolved: "warning",
+  delivered: "info",
+  uploaded: "success",
+  sent: "success",
+  skipped: "neutral",
   // severities
   info: "info",
   low: "info",

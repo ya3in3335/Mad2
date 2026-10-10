@@ -4,6 +4,7 @@
  * produce the exact JSON body expected by the VELTRIX API contract.
  */
 import { isGuid } from "./paging";
+import { INCIDENT_STATUSES } from "./types";
 
 export type FieldType = "hidden" | "text" | "email" | "password" | "url" | "textarea" | "number" | "select" | "checkbox" | "checkboxes" | "date" | "datetime";
 
@@ -177,6 +178,21 @@ const BUILDERS = {
     notes: r.str("notes", { max: 2000 }),
   }),
   "license.extend": (r: Reader) => ({ days: r.int("days", { required: true, min: 1, max: 3650 }), reason: r.str("reason", { max: 500 }) }),
+  "license.demo": (r: Reader) => ({
+    tenantId: r.guid("tenantId", { required: true }),
+    days: r.int("days", { required: true, min: 1, max: 60 }),
+    maxDevices: r.int("maxDevices", { required: true, min: 1, max: 10 }),
+    notes: r.str("notes", { max: 2000 }),
+  }),
+  "license.seats": (r: Reader) => ({ maxDevices: r.int("maxDevices", { required: true, min: 1, max: 10_000 }), reason: r.str("reason", { required: true, max: 500 }) }),
+  "device.reassign": (r: Reader) => ({ targetLicenseId: r.guid("targetLicenseId", { required: true }), reason: r.str("reason", { required: true, max: 500 }) }),
+  "diagnostic.request": (r: Reader) => ({ reason: r.str("reason", { max: 500 }), expiresInHours: r.int("expiresInHours", { min: 1, max: 168 }) }),
+  "incident.status": (r: Reader) => {
+    const status = r.str("status", { required: true });
+    if (status !== null && !(INCIDENT_STATUSES as readonly string[]).includes(status)) r.errors.status = "form.required";
+    return { status, note: r.str("note", { max: 1000 }) };
+  },
+  "telegram.test": (r: Reader) => ({ text: r.str("text", { max: 1000 }) }),
   "license.transfer": (r: Reader) => ({ targetTenantId: r.guid("targetTenantId", { required: true }), reason: r.str("reason", { required: true, max: 500 }) }),
   "plan.upsert": (r: Reader) => ({
     code: r.str("code", { required: true, max: 50 }),

@@ -67,6 +67,17 @@ export default async function LicenseDetailPage({ params }: { params: Promise<{ 
                   ]}
                 />
                 <FormDialog
+                  label={t("lic.changeSeats")}
+                  method="POST"
+                  path={`${P}/licenses/${l.id}/seats`}
+                  kind="license.seats"
+                  description={t("lic.changeSeatsHelp", { active: formatNumber(l.activeDevices, locale) })}
+                  fields={[
+                    { name: "maxDevices", label: t("lic.seats"), type: "number", required: true, min: Math.max(1, l.activeDevices), max: 10000, defaultValue: String(l.maxDevices) },
+                    reasonField(t),
+                  ]}
+                />
+                <FormDialog
                   label={t("lic.extend")}
                   method="POST"
                   path={`${P}/licenses/${l.id}/extend`}

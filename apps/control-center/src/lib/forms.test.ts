@@ -114,3 +114,41 @@ describe("form helpers", () => {
     expect(isFormKind("nope")).toBe(false);
   });
 });
+
+describe("operations form builders", () => {
+  const TENANT = "3F2504E0-4F89-11D3-9A0C-0305E82C3301";
+
+  it("builds a demo license request within the 1-60 days / 1-10 devices bounds", () => {
+    expect(buildRequest("license.demo", { tenantId: TENANT, days: "14", maxDevices: "2", notes: "" })).toEqual({
+      ok: true,
+      body: { tenantId: TENANT.toLowerCase(), days: 14, maxDevices: 2, notes: null },
+    });
+    const bad = buildRequest("license.demo", { tenantId: "nope", days: "61", maxDevices: "11" });
+    expect(bad.ok).toBe(false);
+    if (!bad.ok) expect(bad.errors).toEqual({ tenantId: "form.invalidId", days: "form.outOfRange", maxDevices: "form.outOfRange" });
+  });
+
+  it("requires a reason when changing license seats", () => {
+    expect(buildRequest("license.seats", { maxDevices: "5", reason: " upgrade " })).toEqual({ ok: true, body: { maxDevices: 5, reason: "upgrade" } });
+    const bad = buildRequest("license.seats", { maxDevices: "0", reason: "" });
+    expect(bad.ok).toBe(false);
+    if (!bad.ok) expect(bad.errors).toEqual({ maxDevices: "form.outOfRange", reason: "form.required" });
+  });
+
+  it("validates the target license when reassigning a device", () => {
+    const ok = buildRequest("device.reassign", { targetLicenseId: TENANT, reason: "moved" });
+    expect(ok).toEqual({ ok: true, body: { targetLicenseId: TENANT.toLowerCase(), reason: "moved" } });
+    expect(buildRequest("device.reassign", { targetLicenseId: "x", reason: "moved" }).ok).toBe(false);
+  });
+
+  it("only accepts known incident statuses", () => {
+    expect(buildRequest("incident.status", { status: "resolved", note: "" })).toEqual({ ok: true, body: { status: "resolved", note: null } });
+    expect(buildRequest("incident.status", { status: "deleted" }).ok).toBe(false);
+  });
+
+  it("builds diagnostic and telegram test requests with optional fields", () => {
+    expect(buildRequest("diagnostic.request", { reason: "", expiresInHours: "24" })).toEqual({ ok: true, body: { reason: null, expiresInHours: 24 } });
+    expect(buildRequest("diagnostic.request", { expiresInHours: "500" }).ok).toBe(false);
+    expect(buildRequest("telegram.test", { text: "" })).toEqual({ ok: true, body: { text: null } });
+  });
+});
