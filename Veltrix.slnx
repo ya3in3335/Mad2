@@ -1,0 +1,27 @@
+<Solution>
+  <Folder Name="/modules/" />
+  <Folder Name="/modules/identity/">
+    <Project Path="modules/identity/Veltrix.Modules.Identity/Veltrix.Modules.Identity.csproj" />
+  </Folder>
+  <Folder Name="/modules/licensing/">
+    <Project Path="modules/licensing/Veltrix.Modules.Licensing/Veltrix.Modules.Licensing.csproj" />
+  </Folder>
+  <Folder Name="/modules/shared-kernel/">
+    <Project Path="modules/shared-kernel/Veltrix.SharedKernel/Veltrix.SharedKernel.csproj" />
+  </Folder>
+  <Folder Name="/modules/tenants/">
+    <Project Path="modules/tenants/Veltrix.Modules.Tenants/Veltrix.Modules.Tenants.csproj" />
+  </Folder>
+  <Folder Name="/packages/" />
+  <Folder Name="/packages/contracts/">
+    <Project Path="packages/contracts/Veltrix.Contracts/Veltrix.Contracts.csproj" />
+  </Folder>
+  <Folder Name="/services/" />
+  <Folder Name="/services/api/">
+    <Project Path="services/api/Veltrix.Api/Veltrix.Api.csproj" />
+  </Folder>
+  <Folder Name="/tests/" />
+  <Folder Name="/tests/integration/">
+    <Project Path="tests/integration/Veltrix.Api.IntegrationTests/Veltrix.Api.IntegrationTests.csproj" />
+  </Folder>
+</Solution>

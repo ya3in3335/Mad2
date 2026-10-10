@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>Veltrix.Contracts</RootNamespace>
+    <Description>Wire contracts (DTOs) shared by the API, Windows client and contract tests.</Description>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>Veltrix.Api</RootNamespace>
+    <UserSecretsId>veltrix-api-dev</UserSecretsId>
+    <InvariantGlobalization>false</InvariantGlobalization>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+    <PackageReference Include="Scalar.AspNetCore" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../modules/shared-kernel/Veltrix.SharedKernel/Veltrix.SharedKernel.csproj" />
+    <ProjectReference Include="../../../modules/identity/Veltrix.Modules.Identity/Veltrix.Modules.Identity.csproj" />
+    <ProjectReference Include="../../../modules/tenants/Veltrix.Modules.Tenants/Veltrix.Modules.Tenants.csproj" />
+    <ProjectReference Include="../../../modules/licensing/Veltrix.Modules.Licensing/Veltrix.Modules.Licensing.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Veltrix.Api.Tests" />
+  </ItemGroup>
+</Project>

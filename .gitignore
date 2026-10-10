@@ -1,0 +1,41 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+TestResults/
+*.trx
+publish/
+# Node
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+# Android / Gradle
+.gradle/
+build/
+local.properties
+*.keystore
+*.jks
+captures/
+.idea/
+*.iml
+.kotlin/
+# Secrets & local data
+.env
+.env.*
+!.env.example
+*.pem
+!**/public/*.pem
+secrets/
+.veltrix-data/
+# OS
+.DS_Store
+Thumbs.db
+# Python
+__pycache__/
+.venv/
+# Installer outputs
+artifacts/
