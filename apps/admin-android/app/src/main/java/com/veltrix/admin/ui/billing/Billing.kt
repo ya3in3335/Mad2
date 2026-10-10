@@ -1,5 +1,6 @@
 package com.veltrix.admin.ui.billing
 
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -90,6 +91,7 @@ class BillingViewModel @Inject constructor(private val repo: AdminRepository) : 
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BillingScreen(vm: BillingViewModel = hiltViewModel()) {
     val tab by vm.tab.collectAsStateWithLifecycle()

@@ -2,7 +2,7 @@ package com.veltrix.admin.data.api
 
 /**
  * Every server route used by the admin app, in one place (relative to the configured server URL).
- * Source of truth: docs/API_ADMIN.md and the module endpoint maps under modules/**.
+ * Source of truth: docs/API_ADMIN.md and the module endpoint maps under modules/.
  */
 object ApiRoutes {
     // Identity (modules/identity)
