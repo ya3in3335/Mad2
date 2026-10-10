@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copied from apps/android (generated from packages/design-tokens/tokens.json). -->
+<resources>
+    <color name="veltrix_dark_background">#07111F</color>
+    <color name="veltrix_dark_surface">#0D1D33</color>
+    <color name="veltrix_dark_surfaceRaised">#132845</color>
+    <color name="veltrix_dark_border">#1E3557</color>
+    <color name="veltrix_dark_textPrimary">#F5F8FF</color>
+    <color name="veltrix_dark_textSecondary">#A3B3CB</color>
+    <color name="veltrix_dark_primary">#3478FF</color>
+    <color name="veltrix_dark_primaryButton">#2563EB</color>
+    <color name="veltrix_dark_accent">#00D9FF</color>
+    <color name="veltrix_dark_violet">#765BFF</color>
+    <color name="veltrix_dark_success">#17C78B</color>
+    <color name="veltrix_dark_warning">#FFB547</color>
+    <color name="veltrix_dark_danger">#F35C6E</color>
+    <color name="veltrix_dark_focus">#00D9FF</color>
+    <color name="veltrix_light_background">#F5F8FF</color>
+    <color name="veltrix_light_surface">#FFFFFF</color>
+    <color name="veltrix_light_surfaceRaised">#EEF3FC</color>
+    <color name="veltrix_light_border">#D5DEEC</color>
+    <color name="veltrix_light_textPrimary">#07111F</color>
+    <color name="veltrix_light_textSecondary">#4A5B76</color>
+    <color name="veltrix_light_primary">#2563EB</color>
+    <color name="veltrix_light_primaryButton">#2563EB</color>
+    <color name="veltrix_light_accent">#0091B3</color>
+    <color name="veltrix_light_violet">#6447F0</color>
+    <color name="veltrix_light_success">#0E8F63</color>
+    <color name="veltrix_light_warning">#A86400</color>
+    <color name="veltrix_light_danger">#C9354A</color>
+    <color name="veltrix_light_focus">#2563EB</color>
+    <color name="veltrix_navy">#07111F</color>
+</resources>
