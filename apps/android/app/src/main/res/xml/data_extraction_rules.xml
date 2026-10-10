@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Device keys, license certificates and the local business database must never be backed up or transferred
+     to another device (they are device-bound). Users back up through the server / export instead. -->
+<data-extraction-rules>
+    <cloud-backup><exclude domain="root" /><exclude domain="database" /><exclude domain="sharedpref" /><exclude domain="file" /></cloud-backup>
+    <device-transfer><exclude domain="root" /><exclude domain="database" /><exclude domain="sharedpref" /><exclude domain="file" /></device-transfer>
+</data-extraction-rules>

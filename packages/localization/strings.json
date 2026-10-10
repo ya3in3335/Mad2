@@ -1,0 +1,1032 @@
+{
+ "app.name": {
+  "en": "VELTRIX OS",
+  "fr": "VELTRIX OS",
+  "ar": "VELTRIX OS"
+ },
+ "app.slogan": {
+  "en": "Powering Business Intelligence.",
+  "fr": "Propulser l'intelligence des affaires.",
+  "ar": "نُشغّل ذكاء الأعمال."
+ },
+ "app.initializing": {
+  "en": "Initializing…",
+  "fr": "Initialisation…",
+  "ar": "جارٍ التهيئة…"
+ },
+ "app.offline": {
+  "en": "Offline",
+  "fr": "Hors ligne",
+  "ar": "غير متصل"
+ },
+ "app.online": {
+  "en": "Online",
+  "fr": "En ligne",
+  "ar": "متصل"
+ },
+ "app.version": {
+  "en": "Version",
+  "fr": "Version",
+  "ar": "الإصدار"
+ },
+ "nav.dashboard": {
+  "en": "Dashboard",
+  "fr": "Tableau de bord",
+  "ar": "لوحة القيادة"
+ },
+ "nav.pos": {
+  "en": "Point of Sale",
+  "fr": "Point de vente",
+  "ar": "نقطة البيع"
+ },
+ "nav.products": {
+  "en": "Products",
+  "fr": "Produits",
+  "ar": "المنتجات"
+ },
+ "nav.inventory": {
+  "en": "Inventory",
+  "fr": "Stock",
+  "ar": "المخزون"
+ },
+ "nav.warehouses": {
+  "en": "Warehouses",
+  "fr": "Entrepôts",
+  "ar": "المستودعات"
+ },
+ "nav.purchasing": {
+  "en": "Purchasing",
+  "fr": "Achats",
+  "ar": "المشتريات"
+ },
+ "nav.suppliers": {
+  "en": "Suppliers",
+  "fr": "Fournisseurs",
+  "ar": "الموردون"
+ },
+ "nav.sales": {
+  "en": "Sales",
+  "fr": "Ventes",
+  "ar": "المبيعات"
+ },
+ "nav.customers": {
+  "en": "Customers",
+  "fr": "Clients",
+  "ar": "الزبائن"
+ },
+ "nav.accounting": {
+  "en": "Accounting",
+  "fr": "Comptabilité",
+  "ar": "المحاسبة"
+ },
+ "nav.expenses": {
+  "en": "Expenses",
+  "fr": "Dépenses",
+  "ar": "المصاريف"
+ },
+ "nav.employees": {
+  "en": "Employees",
+  "fr": "Employés",
+  "ar": "الموظفون"
+ },
+ "nav.reports": {
+  "en": "Reports",
+  "fr": "Rapports",
+  "ar": "التقارير"
+ },
+ "nav.notifications": {
+  "en": "Notifications",
+  "fr": "Notifications",
+  "ar": "الإشعارات"
+ },
+ "nav.devices": {
+  "en": "Devices",
+  "fr": "Appareils",
+  "ar": "الأجهزة"
+ },
+ "nav.licensing": {
+  "en": "Licensing",
+  "fr": "Licence",
+  "ar": "الترخيص"
+ },
+ "nav.settings": {
+  "en": "Settings",
+  "fr": "Paramètres",
+  "ar": "الإعدادات"
+ },
+ "nav.help": {
+  "en": "Help & Support",
+  "fr": "Aide et support",
+  "ar": "المساعدة والدعم"
+ },
+ "nav.orders": {
+  "en": "Orders",
+  "fr": "Commandes",
+  "ar": "الطلبيات"
+ },
+ "nav.profile": {
+  "en": "Profile",
+  "fr": "Profil",
+  "ar": "الملف الشخصي"
+ },
+ "nav.branch": {
+  "en": "Branch",
+  "fr": "Agence",
+  "ar": "الفرع"
+ },
+ "nav.scanner": {
+  "en": "Scan barcode",
+  "fr": "Scanner un code-barres",
+  "ar": "مسح الرمز الشريطي"
+ },
+ "nav.search": {
+  "en": "Search… (Ctrl+K)",
+  "fr": "Rechercher… (Ctrl+K)",
+  "ar": "بحث… (Ctrl+K)"
+ },
+ "action.save": {
+  "en": "Save",
+  "fr": "Enregistrer",
+  "ar": "حفظ"
+ },
+ "action.cancel": {
+  "en": "Cancel",
+  "fr": "Annuler",
+  "ar": "إلغاء"
+ },
+ "action.confirm": {
+  "en": "Confirm",
+  "fr": "Confirmer",
+  "ar": "تأكيد"
+ },
+ "action.delete": {
+  "en": "Delete",
+  "fr": "Supprimer",
+  "ar": "حذف"
+ },
+ "action.edit": {
+  "en": "Edit",
+  "fr": "Modifier",
+  "ar": "تعديل"
+ },
+ "action.add": {
+  "en": "Add",
+  "fr": "Ajouter",
+  "ar": "إضافة"
+ },
+ "action.new": {
+  "en": "New",
+  "fr": "Nouveau",
+  "ar": "جديد"
+ },
+ "action.close": {
+  "en": "Close",
+  "fr": "Fermer",
+  "ar": "إغلاق"
+ },
+ "action.back": {
+  "en": "Back",
+  "fr": "Retour",
+  "ar": "رجوع"
+ },
+ "action.next": {
+  "en": "Next",
+  "fr": "Suivant",
+  "ar": "التالي"
+ },
+ "action.finish": {
+  "en": "Finish",
+  "fr": "Terminer",
+  "ar": "إنهاء"
+ },
+ "action.retry": {
+  "en": "Retry",
+  "fr": "Réessayer",
+  "ar": "إعادة المحاولة"
+ },
+ "action.refresh": {
+  "en": "Refresh",
+  "fr": "Actualiser",
+  "ar": "تحديث"
+ },
+ "action.search": {
+  "en": "Search",
+  "fr": "Rechercher",
+  "ar": "بحث"
+ },
+ "action.filter": {
+  "en": "Filter",
+  "fr": "Filtrer",
+  "ar": "تصفية"
+ },
+ "action.export": {
+  "en": "Export",
+  "fr": "Exporter",
+  "ar": "تصدير"
+ },
+ "action.import": {
+  "en": "Import",
+  "fr": "Importer",
+  "ar": "استيراد"
+ },
+ "action.print": {
+  "en": "Print",
+  "fr": "Imprimer",
+  "ar": "طباعة"
+ },
+ "action.signIn": {
+  "en": "Sign in",
+  "fr": "Se connecter",
+  "ar": "تسجيل الدخول"
+ },
+ "action.signOut": {
+  "en": "Sign out",
+  "fr": "Se déconnecter",
+  "ar": "تسجيل الخروج"
+ },
+ "action.sync": {
+  "en": "Synchronize",
+  "fr": "Synchroniser",
+  "ar": "مزامنة"
+ },
+ "action.approve": {
+  "en": "Approve",
+  "fr": "Approuver",
+  "ar": "موافقة"
+ },
+ "action.reject": {
+  "en": "Reject",
+  "fr": "Rejeter",
+  "ar": "رفض"
+ },
+ "auth.title": {
+  "en": "Sign in to VELTRIX OS",
+  "fr": "Connexion à VELTRIX OS",
+  "ar": "تسجيل الدخول إلى VELTRIX OS"
+ },
+ "auth.email": {
+  "en": "Email",
+  "fr": "E-mail",
+  "ar": "البريد الإلكتروني"
+ },
+ "auth.password": {
+  "en": "Password",
+  "fr": "Mot de passe",
+  "ar": "كلمة المرور"
+ },
+ "auth.mfaCode": {
+  "en": "Verification code",
+  "fr": "Code de vérification",
+  "ar": "رمز التحقق"
+ },
+ "auth.forgot": {
+  "en": "Forgot password?",
+  "fr": "Mot de passe oublié ?",
+  "ar": "نسيت كلمة المرور؟"
+ },
+ "auth.invalid": {
+  "en": "Invalid email or password.",
+  "fr": "E-mail ou mot de passe incorrect.",
+  "ar": "البريد الإلكتروني أو كلمة المرور غير صحيحة."
+ },
+ "auth.lockedOut": {
+  "en": "Account temporarily locked. Try again later.",
+  "fr": "Compte temporairement verrouillé. Réessayez plus tard.",
+  "ar": "الحساب مقفل مؤقتًا. حاول لاحقًا."
+ },
+ "auth.offlineLogin": {
+  "en": "Offline sign-in (last verified session)",
+  "fr": "Connexion hors ligne (dernière session vérifiée)",
+  "ar": "تسجيل دخول دون اتصال (آخر جلسة موثقة)"
+ },
+ "auth.biometric": {
+  "en": "Confirm with biometrics",
+  "fr": "Confirmer par biométrie",
+  "ar": "التأكيد بالبصمة"
+ },
+ "onb.welcome": {
+  "en": "Welcome to VELTRIX OS",
+  "fr": "Bienvenue dans VELTRIX OS",
+  "ar": "مرحبًا بك في VELTRIX OS"
+ },
+ "onb.language": {
+  "en": "Choose your language",
+  "fr": "Choisissez votre langue",
+  "ar": "اختر لغتك"
+ },
+ "onb.privacyTitle": {
+  "en": "Licensing and privacy",
+  "fr": "Licence et confidentialité",
+  "ar": "الترخيص والخصوصية"
+ },
+ "onb.privacyBody": {
+  "en": "To protect your license, VELTRIX OS creates a random installation identifier and a cryptographic key stored securely on this device. A one-way hash of limited device characteristics (no IMEI, MAC or serial numbers are sent) is used to recognise this device after a reinstall. Your business data stays yours and is never deleted when a license expires.",
+  "fr": "Pour protéger votre licence, VELTRIX OS crée un identifiant d'installation aléatoire et une clé cryptographique stockée de manière sécurisée sur cet appareil. Une empreinte à sens unique de caractéristiques limitées de l'appareil (aucun IMEI, adresse MAC ou numéro de série n'est envoyé) permet de reconnaître cet appareil après une réinstallation. Vos données vous appartiennent et ne sont jamais supprimées à l'expiration d'une licence.",
+  "ar": "لحماية ترخيصك، ينشئ VELTRIX OS معرّف تثبيت عشوائيًا ومفتاحًا تشفيريًا محفوظًا بأمان على هذا الجهاز. تُستخدم بصمة أحادية الاتجاه لخصائص محدودة من الجهاز (لا يتم إرسال IMEI أو عنوان MAC أو الأرقام التسلسلية) للتعرف على الجهاز بعد إعادة التثبيت. بياناتك ملك لك ولا تُحذف أبدًا عند انتهاء الترخيص."
+ },
+ "onb.accept": {
+  "en": "I have read and accept",
+  "fr": "J'ai lu et j'accepte",
+  "ar": "قرأت وأوافق"
+ },
+ "onb.server": {
+  "en": "Server address",
+  "fr": "Adresse du serveur",
+  "ar": "عنوان الخادم"
+ },
+ "onb.licenseKey": {
+  "en": "License key",
+  "fr": "Clé de licence",
+  "ar": "مفتاح الترخيص"
+ },
+ "onb.activate": {
+  "en": "Activate",
+  "fr": "Activer",
+  "ar": "تفعيل"
+ },
+ "onb.activating": {
+  "en": "Activating this device…",
+  "fr": "Activation de cet appareil…",
+  "ar": "جارٍ تفعيل هذا الجهاز…"
+ },
+ "onb.activated": {
+  "en": "Device activated",
+  "fr": "Appareil activé",
+  "ar": "تم تفعيل الجهاز"
+ },
+ "onb.company": {
+  "en": "Company information",
+  "fr": "Informations de l'entreprise",
+  "ar": "معلومات الشركة"
+ },
+ "onb.companyName": {
+  "en": "Company name",
+  "fr": "Raison sociale",
+  "ar": "اسم الشركة"
+ },
+ "onb.taxId": {
+  "en": "Tax ID (NIF)",
+  "fr": "NIF",
+  "ar": "رقم التعريف الجبائي (NIF)"
+ },
+ "onb.rc": {
+  "en": "Trade register (RC)",
+  "fr": "Registre du commerce (RC)",
+  "ar": "السجل التجاري"
+ },
+ "onb.address": {
+  "en": "Address",
+  "fr": "Adresse",
+  "ar": "العنوان"
+ },
+ "onb.wilaya": {
+  "en": "Wilaya",
+  "fr": "Wilaya",
+  "ar": "الولاية"
+ },
+ "onb.currencyTax": {
+  "en": "Currency and taxes",
+  "fr": "Devise et taxes",
+  "ar": "العملة والضرائب"
+ },
+ "onb.currency": {
+  "en": "Currency",
+  "fr": "Devise",
+  "ar": "العملة"
+ },
+ "onb.algeriaTax": {
+  "en": "Load Algerian VAT template (19% / 9%) — to be verified by your accountant",
+  "fr": "Charger le modèle TVA algérien (19 % / 9 %) — à vérifier par votre comptable",
+  "ar": "تحميل نموذج الرسم على القيمة المضافة الجزائري (19٪ / 9٪) — يجب التحقق منه من طرف محاسبك"
+ },
+ "onb.admin": {
+  "en": "First administrator",
+  "fr": "Premier administrateur",
+  "ar": "المسؤول الأول"
+ },
+ "onb.fullName": {
+  "en": "Full name",
+  "fr": "Nom complet",
+  "ar": "الاسم الكامل"
+ },
+ "onb.headOffice": {
+  "en": "Head office name",
+  "fr": "Nom du siège",
+  "ar": "اسم المقر الرئيسي"
+ },
+ "onb.done": {
+  "en": "Setup complete",
+  "fr": "Configuration terminée",
+  "ar": "اكتمل الإعداد"
+ },
+ "onb.resume": {
+  "en": "Setup was interrupted. Continue where you left off.",
+  "fr": "La configuration a été interrompue. Reprenez où vous en étiez.",
+  "ar": "توقف الإعداد. تابع من حيث توقفت."
+ },
+ "lic.plan": {
+  "en": "Current plan",
+  "fr": "Offre actuelle",
+  "ar": "الباقة الحالية"
+ },
+ "lic.expires": {
+  "en": "Expires",
+  "fr": "Expire le",
+  "ar": "ينتهي في"
+ },
+ "lic.status": {
+  "en": "Status",
+  "fr": "Statut",
+  "ar": "الحالة"
+ },
+ "lic.seats": {
+  "en": "Device seats",
+  "fr": "Postes",
+  "ar": "المقاعد"
+ },
+ "lic.remaining": {
+  "en": "Remaining seats",
+  "fr": "Postes restants",
+  "ar": "المقاعد المتبقية"
+ },
+ "lic.offlineUntil": {
+  "en": "Offline authorization valid until",
+  "fr": "Autorisation hors ligne valide jusqu'au",
+  "ar": "التفويض دون اتصال صالح حتى"
+ },
+ "lic.renewSoon": {
+  "en": "Your license expires in {0} day(s). Contact your vendor to renew.",
+  "fr": "Votre licence expire dans {0} jour(s). Contactez votre fournisseur pour la renouveler.",
+  "ar": "ينتهي ترخيصك خلال {0} يوم. اتصل بالمورّد للتجديد."
+ },
+ "lic.expired": {
+  "en": "License expired — your data is available read-only. Renew to continue selling.",
+  "fr": "Licence expirée — vos données restent consultables. Renouvelez pour continuer à vendre.",
+  "ar": "انتهى الترخيص — بياناتك متاحة للقراءة فقط. جدّد لمتابعة البيع."
+ },
+ "lic.revoked": {
+  "en": "This device's activation was revoked by your administrator.",
+  "fr": "L'activation de cet appareil a été révoquée par votre administrateur.",
+  "ar": "ألغى المسؤول تفعيل هذا الجهاز."
+ },
+ "lic.seatsExhausted": {
+  "en": "All device seats are in use. Release a device or ask your administrator.",
+  "fr": "Tous les postes sont utilisés. Libérez un appareil ou contactez votre administrateur.",
+  "ar": "جميع المقاعد مستخدمة. حرر جهازًا أو اتصل بالمسؤول."
+ },
+ "lic.clockRollback": {
+  "en": "The system clock appears to have been moved backwards. Connect to the internet to re-validate the license.",
+  "fr": "L'horloge système semble avoir été reculée. Connectez-vous à Internet pour revalider la licence.",
+  "ar": "يبدو أن ساعة النظام أُرجعت إلى الخلف. اتصل بالإنترنت لإعادة التحقق من الترخيص."
+ },
+ "lic.recovery": {
+  "en": "Lost access? Your administrator can revoke the old device from Devices, then activate this one with the same key.",
+  "fr": "Accès perdu ? Votre administrateur peut révoquer l'ancien appareil dans Appareils, puis activer celui-ci avec la même clé.",
+  "ar": "فقدت الوصول؟ يمكن للمسؤول إلغاء الجهاز القديم من قسم الأجهزة ثم تفعيل هذا الجهاز بنفس المفتاح."
+ },
+ "lic.release": {
+  "en": "Release this device",
+  "fr": "Libérer cet appareil",
+  "ar": "تحرير هذا الجهاز"
+ },
+ "pos.cart": {
+  "en": "Cart",
+  "fr": "Panier",
+  "ar": "السلة"
+ },
+ "pos.scanHint": {
+  "en": "Scan or type a barcode / SKU",
+  "fr": "Scannez ou saisissez un code-barres / SKU",
+  "ar": "امسح أو اكتب الرمز الشريطي / الرمز"
+ },
+ "pos.qty": {
+  "en": "Qty",
+  "fr": "Qté",
+  "ar": "الكمية"
+ },
+ "pos.price": {
+  "en": "Price",
+  "fr": "Prix",
+  "ar": "السعر"
+ },
+ "pos.discount": {
+  "en": "Discount",
+  "fr": "Remise",
+  "ar": "خصم"
+ },
+ "pos.subtotal": {
+  "en": "Subtotal",
+  "fr": "Sous-total",
+  "ar": "المجموع الفرعي"
+ },
+ "pos.tax": {
+  "en": "Tax",
+  "fr": "TVA",
+  "ar": "الضريبة"
+ },
+ "pos.total": {
+  "en": "Total",
+  "fr": "Total",
+  "ar": "المجموع"
+ },
+ "pos.pay": {
+  "en": "Pay",
+  "fr": "Encaisser",
+  "ar": "دفع"
+ },
+ "pos.cash": {
+  "en": "Cash",
+  "fr": "Espèces",
+  "ar": "نقدًا"
+ },
+ "pos.card": {
+  "en": "Card",
+  "fr": "Carte",
+  "ar": "بطاقة"
+ },
+ "pos.onAccount": {
+  "en": "On account",
+  "fr": "En compte",
+  "ar": "على الحساب"
+ },
+ "pos.tendered": {
+  "en": "Amount tendered",
+  "fr": "Montant reçu",
+  "ar": "المبلغ المستلم"
+ },
+ "pos.change": {
+  "en": "Change",
+  "fr": "Rendu",
+  "ar": "الباقي"
+ },
+ "pos.suspend": {
+  "en": "Park sale",
+  "fr": "Mettre en attente",
+  "ar": "تعليق البيع"
+ },
+ "pos.resume": {
+  "en": "Resume parked sale",
+  "fr": "Reprendre une vente",
+  "ar": "استئناف بيع معلق"
+ },
+ "pos.customer": {
+  "en": "Customer",
+  "fr": "Client",
+  "ar": "الزبون"
+ },
+ "pos.walkIn": {
+  "en": "Walk-in customer",
+  "fr": "Client de passage",
+  "ar": "زبون عابر"
+ },
+ "pos.saleComplete": {
+  "en": "Sale completed",
+  "fr": "Vente enregistrée",
+  "ar": "تم البيع"
+ },
+ "pos.savedOffline": {
+  "en": "Saved offline — will sync automatically",
+  "fr": "Enregistré hors ligne — synchronisation automatique",
+  "ar": "حُفظ دون اتصال — ستتم المزامنة تلقائيًا"
+ },
+ "pos.openShift": {
+  "en": "Open shift",
+  "fr": "Ouvrir la caisse",
+  "ar": "فتح الوردية"
+ },
+ "pos.closeShift": {
+  "en": "Close shift",
+  "fr": "Clôturer la caisse",
+  "ar": "إغلاق الوردية"
+ },
+ "pos.openingFloat": {
+  "en": "Opening float",
+  "fr": "Fond de caisse",
+  "ar": "رصيد الافتتاح"
+ },
+ "pos.countedCash": {
+  "en": "Counted cash",
+  "fr": "Espèces comptées",
+  "ar": "النقد المعدود"
+ },
+ "pos.expectedCash": {
+  "en": "Expected cash",
+  "fr": "Espèces attendues",
+  "ar": "النقد المتوقع"
+ },
+ "pos.variance": {
+  "en": "Variance",
+  "fr": "Écart",
+  "ar": "الفرق"
+ },
+ "pos.refund": {
+  "en": "Refund",
+  "fr": "Rembourser",
+  "ar": "استرجاع"
+ },
+ "pos.void": {
+  "en": "Void sale",
+  "fr": "Annuler la vente",
+  "ar": "إلغاء البيع"
+ },
+ "pos.reprint": {
+  "en": "Reprint receipt",
+  "fr": "Réimprimer le ticket",
+  "ar": "إعادة طباعة الوصل"
+ },
+ "pos.cardNotice": {
+  "en": "Card payments are recorded only; process them on your bank terminal.",
+  "fr": "Les paiements par carte sont seulement enregistrés ; traitez-les sur votre TPE.",
+  "ar": "يتم تسجيل الدفع بالبطاقة فقط؛ عالجه على جهاز الدفع البنكي."
+ },
+ "cat.sku": {
+  "en": "SKU",
+  "fr": "Référence",
+  "ar": "الرمز"
+ },
+ "cat.name": {
+  "en": "Name",
+  "fr": "Désignation",
+  "ar": "الاسم"
+ },
+ "cat.category": {
+  "en": "Category",
+  "fr": "Catégorie",
+  "ar": "الفئة"
+ },
+ "cat.barcode": {
+  "en": "Barcode",
+  "fr": "Code-barres",
+  "ar": "الرمز الشريطي"
+ },
+ "cat.salePrice": {
+  "en": "Sale price",
+  "fr": "Prix de vente",
+  "ar": "سعر البيع"
+ },
+ "cat.costPrice": {
+  "en": "Cost price",
+  "fr": "Prix de revient",
+  "ar": "سعر التكلفة"
+ },
+ "cat.stock": {
+  "en": "Stock",
+  "fr": "Stock",
+  "ar": "المخزون"
+ },
+ "inv.onHand": {
+  "en": "On hand",
+  "fr": "En stock",
+  "ar": "المتوفر"
+ },
+ "inv.available": {
+  "en": "Available",
+  "fr": "Disponible",
+  "ar": "المتاح"
+ },
+ "inv.lowStock": {
+  "en": "Low stock",
+  "fr": "Stock bas",
+  "ar": "مخزون منخفض"
+ },
+ "inv.adjust": {
+  "en": "Adjust stock",
+  "fr": "Ajuster le stock",
+  "ar": "تسوية المخزون"
+ },
+ "inv.transfer": {
+  "en": "Transfer",
+  "fr": "Transfert",
+  "ar": "تحويل"
+ },
+ "inv.count": {
+  "en": "Physical count",
+  "fr": "Inventaire physique",
+  "ar": "الجرد الفعلي"
+ },
+ "inv.movements": {
+  "en": "Movement history",
+  "fr": "Historique des mouvements",
+  "ar": "سجل الحركات"
+ },
+ "inv.valuation": {
+  "en": "Valuation",
+  "fr": "Valorisation",
+  "ar": "التقييم"
+ },
+ "crm.phone": {
+  "en": "Phone",
+  "fr": "Téléphone",
+  "ar": "الهاتف"
+ },
+ "crm.balance": {
+  "en": "Balance",
+  "fr": "Solde",
+  "ar": "الرصيد"
+ },
+ "crm.creditLimit": {
+  "en": "Credit limit",
+  "fr": "Plafond de crédit",
+  "ar": "حد الائتمان"
+ },
+ "crm.loyalty": {
+  "en": "Loyalty points",
+  "fr": "Points fidélité",
+  "ar": "نقاط الولاء"
+ },
+ "crm.consent": {
+  "en": "Agrees to marketing messages",
+  "fr": "Accepte les messages commerciaux",
+  "ar": "يوافق على الرسائل التسويقية"
+ },
+ "sales.quotation": {
+  "en": "Quotation",
+  "fr": "Devis",
+  "ar": "عرض سعر"
+ },
+ "sales.order": {
+  "en": "Sales order",
+  "fr": "Bon de commande",
+  "ar": "طلبية"
+ },
+ "sales.invoice": {
+  "en": "Invoice",
+  "fr": "Facture",
+  "ar": "فاتورة"
+ },
+ "sales.creditNote": {
+  "en": "Credit note",
+  "fr": "Avoir",
+  "ar": "إشعار دائن"
+ },
+ "sales.outstanding": {
+  "en": "Outstanding",
+  "fr": "Reste à payer",
+  "ar": "المتبقي"
+ },
+ "acc.trialBalance": {
+  "en": "Trial balance",
+  "fr": "Balance",
+  "ar": "ميزان المراجعة"
+ },
+ "acc.pnl": {
+  "en": "Profit and loss",
+  "fr": "Compte de résultat",
+  "ar": "حساب النتائج"
+ },
+ "acc.balanceSheet": {
+  "en": "Balance sheet",
+  "fr": "Bilan",
+  "ar": "الميزانية"
+ },
+ "acc.cashFlow": {
+  "en": "Cash flow",
+  "fr": "Flux de trésorerie",
+  "ar": "التدفقات النقدية"
+ },
+ "acc.journal": {
+  "en": "Journal",
+  "fr": "Journal",
+  "ar": "اليومية"
+ },
+ "acc.reviewNotice": {
+  "en": "Tax rates and the chart of accounts are templates; have them validated by a qualified accountant.",
+  "fr": "Les taux de taxe et le plan comptable sont des modèles ; faites-les valider par un comptable qualifié.",
+  "ar": "معدلات الضرائب ومخطط الحسابات نماذج؛ يجب اعتمادها من طرف محاسب مؤهل."
+ },
+ "rep.salesToday": {
+  "en": "Sales today",
+  "fr": "Ventes du jour",
+  "ar": "مبيعات اليوم"
+ },
+ "rep.salesMonth": {
+  "en": "Sales this month",
+  "fr": "Ventes du mois",
+  "ar": "مبيعات الشهر"
+ },
+ "rep.margin": {
+  "en": "Gross margin",
+  "fr": "Marge brute",
+  "ar": "الهامش الإجمالي"
+ },
+ "rep.receivables": {
+  "en": "Receivables",
+  "fr": "Créances clients",
+  "ar": "المستحقات"
+ },
+ "rep.transactions": {
+  "en": "Transactions",
+  "fr": "Transactions",
+  "ar": "المعاملات"
+ },
+ "rep.topProducts": {
+  "en": "Top products",
+  "fr": "Meilleurs produits",
+  "ar": "أفضل المنتجات"
+ },
+ "rep.from": {
+  "en": "From",
+  "fr": "Du",
+  "ar": "من"
+ },
+ "rep.to": {
+  "en": "To",
+  "fr": "Au",
+  "ar": "إلى"
+ },
+ "rep.forecastDisclaimer": {
+  "en": "Forecasts are statistical estimates, not guarantees.",
+  "fr": "Les prévisions sont des estimations statistiques, pas des garanties.",
+  "ar": "التوقعات تقديرات إحصائية وليست ضمانات."
+ },
+ "hr.checkIn": {
+  "en": "Check in",
+  "fr": "Pointer l'arrivée",
+  "ar": "تسجيل الحضور"
+ },
+ "hr.checkOut": {
+  "en": "Check out",
+  "fr": "Pointer le départ",
+  "ar": "تسجيل الانصراف"
+ },
+ "hr.leave": {
+  "en": "Leave requests",
+  "fr": "Demandes de congé",
+  "ar": "طلبات العطل"
+ },
+ "hr.payslips": {
+  "en": "Payslips",
+  "fr": "Bulletins de paie",
+  "ar": "كشوف الرواتب"
+ },
+ "sync.pending": {
+  "en": "{0} change(s) waiting to sync",
+  "fr": "{0} modification(s) en attente de synchronisation",
+  "ar": "{0} تغيير بانتظار المزامنة"
+ },
+ "sync.done": {
+  "en": "All changes synchronized",
+  "fr": "Toutes les modifications sont synchronisées",
+  "ar": "تمت مزامنة جميع التغييرات"
+ },
+ "sync.error": {
+  "en": "Some changes need attention",
+  "fr": "Certaines modifications nécessitent votre attention",
+  "ar": "بعض التغييرات تحتاج إلى مراجعة"
+ },
+ "sync.lastSync": {
+  "en": "Last sync",
+  "fr": "Dernière synchronisation",
+  "ar": "آخر مزامنة"
+ },
+ "notif.empty": {
+  "en": "You're all caught up",
+  "fr": "Vous êtes à jour",
+  "ar": "لا توجد إشعارات جديدة"
+ },
+ "notif.markAllRead": {
+  "en": "Mark all as read",
+  "fr": "Tout marquer comme lu",
+  "ar": "تعليم الكل كمقروء"
+ },
+ "set.language": {
+  "en": "Language",
+  "fr": "Langue",
+  "ar": "اللغة"
+ },
+ "set.theme": {
+  "en": "Theme",
+  "fr": "Thème",
+  "ar": "المظهر"
+ },
+ "set.themeDark": {
+  "en": "Dark",
+  "fr": "Sombre",
+  "ar": "داكن"
+ },
+ "set.themeLight": {
+  "en": "Light",
+  "fr": "Clair",
+  "ar": "فاتح"
+ },
+ "set.printer": {
+  "en": "Receipt printer",
+  "fr": "Imprimante ticket",
+  "ar": "طابعة الوصولات"
+ },
+ "set.testPrint": {
+  "en": "Test print",
+  "fr": "Impression test",
+  "ar": "طباعة تجريبية"
+ },
+ "set.scanner": {
+  "en": "Barcode scanner",
+  "fr": "Lecteur de codes-barres",
+  "ar": "قارئ الرموز الشريطية"
+ },
+ "set.backup": {
+  "en": "Backup",
+  "fr": "Sauvegarde",
+  "ar": "النسخ الاحتياطي"
+ },
+ "set.backupNow": {
+  "en": "Back up now",
+  "fr": "Sauvegarder maintenant",
+  "ar": "نسخ احتياطي الآن"
+ },
+ "set.restore": {
+  "en": "Restore",
+  "fr": "Restaurer",
+  "ar": "استعادة"
+ },
+ "set.reducedMotion": {
+  "en": "Reduce motion",
+  "fr": "Réduire les animations",
+  "ar": "تقليل الحركة"
+ },
+ "set.diagnostics": {
+  "en": "Export diagnostics",
+  "fr": "Exporter les diagnostics",
+  "ar": "تصدير التشخيص"
+ },
+ "set.updates": {
+  "en": "Updates",
+  "fr": "Mises à jour",
+  "ar": "التحديثات"
+ },
+ "set.security": {
+  "en": "Security",
+  "fr": "Sécurité",
+  "ar": "الأمان"
+ },
+ "set.sessions": {
+  "en": "Active sessions",
+  "fr": "Sessions actives",
+  "ar": "الجلسات النشطة"
+ },
+ "set.changePassword": {
+  "en": "Change password",
+  "fr": "Changer le mot de passe",
+  "ar": "تغيير كلمة المرور"
+ },
+ "state.loading": {
+  "en": "Loading…",
+  "fr": "Chargement…",
+  "ar": "جارٍ التحميل…"
+ },
+ "state.empty": {
+  "en": "Nothing here yet",
+  "fr": "Rien pour le moment",
+  "ar": "لا يوجد شيء بعد"
+ },
+ "err.generic": {
+  "en": "Something went wrong. Please try again.",
+  "fr": "Une erreur est survenue. Veuillez réessayer.",
+  "ar": "حدث خطأ. يرجى المحاولة مرة أخرى."
+ },
+ "err.network": {
+  "en": "Cannot reach the server. Working offline.",
+  "fr": "Serveur injoignable. Mode hors ligne.",
+  "ar": "تعذر الوصول إلى الخادم. العمل دون اتصال."
+ },
+ "err.required": {
+  "en": "This field is required.",
+  "fr": "Ce champ est obligatoire.",
+  "ar": "هذا الحقل مطلوب."
+ },
+ "err.invalidEmail": {
+  "en": "Enter a valid email address.",
+  "fr": "Saisissez une adresse e-mail valide.",
+  "ar": "أدخل بريدًا إلكترونيًا صالحًا."
+ },
+ "err.permission": {
+  "en": "You do not have permission for this action.",
+  "fr": "Vous n'avez pas l'autorisation pour cette action.",
+  "ar": "ليست لديك صلاحية لهذا الإجراء."
+ },
+ "err.passwordPolicy": {
+  "en": "Use at least 10 characters with three of: uppercase, lowercase, digits, symbols.",
+  "fr": "Au moins 10 caractères avec trois types parmi : majuscules, minuscules, chiffres, symboles.",
+  "ar": "10 أحرف على الأقل مع ثلاثة من: أحرف كبيرة، صغيرة، أرقام، رموز."
+ },
+ "dlg.confirmDelete": {
+  "en": "Are you sure? This cannot be undone.",
+  "fr": "Êtes-vous sûr ? Cette action est irréversible.",
+  "ar": "هل أنت متأكد؟ لا يمكن التراجع عن هذا الإجراء."
+ },
+ "dlg.unsaved": {
+  "en": "You have unsaved changes.",
+  "fr": "Vous avez des modifications non enregistrées.",
+  "ar": "لديك تغييرات غير محفوظة."
+ },
+ "help.docs": {
+  "en": "User guide",
+  "fr": "Guide utilisateur",
+  "ar": "دليل المستخدم"
+ },
+ "help.contact": {
+  "en": "Contact support",
+  "fr": "Contacter le support",
+  "ar": "الاتصال بالدعم"
+ }
+}
