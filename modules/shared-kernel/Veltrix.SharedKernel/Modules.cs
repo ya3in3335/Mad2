@@ -58,3 +58,19 @@ public static class FeatureEndpointExtensions
         return builder;
     }
 }
+
+/// <summary>Resolves display names of business parties (customers, suppliers, employees) for financial reports.</summary>
+public interface IPartyDirectory
+{
+    string PartyType { get; }
+    Task<IReadOnlyDictionary<Guid, string>> NamesAsync(IReadOnlyCollection<Guid> ids, CancellationToken ct = default);
+}
+
+public enum NotificationSeverity { Info, Success, Warning, Critical }
+
+/// <summary>Publishes in-app notifications (and optional external channels) to users holding a permission.</summary>
+public interface INotificationPublisher
+{
+    void Publish(Guid tenantId, string type, string title, string body, NotificationSeverity severity = NotificationSeverity.Info,
+        string? requiredPermission = null, Guid? userId = null, string? link = null, string? dedupeKey = null);
+}

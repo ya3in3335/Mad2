@@ -11,7 +11,7 @@ public static class HostServices
 {
     public static void Register(IServiceCollection services, IConfiguration config)
     {
-        services.AddScoped<IPasswordResetNotifier, LoggingPasswordResetNotifier>();
+        services.AddSingleton<IFileStorage>(sp => new LocalFileStorage(config["Storage:Root"] ?? Path.Combine(config["Veltrix:DataDirectory"] ?? Path.Combine(AppContext.BaseDirectory, ".veltrix-data"), "files")));
     }
 
     public static void MapEndpoints(IEndpointRouteBuilder app) { }
@@ -34,12 +34,40 @@ public sealed class BasicTenantStatusProvider(CompanyStatusReader reader, IMemor
     public void Invalidate(Guid tenantId) => cache.Remove("tenant-status:" + tenantId);
 }
 
-/// <summary>Fallback when email is not configured: records that a reset was requested without logging the token.</summary>
-public sealed class LoggingPasswordResetNotifier(ILogger<LoggingPasswordResetNotifier> logger) : IPasswordResetNotifier
+/// <summary>Local filesystem storage. Paths are generated server-side (never from client file names) and confined to the root.</summary>
+public sealed class LocalFileStorage(string root) : IFileStorage
 {
-    public Task SendResetAsync(User user, string token, CancellationToken ct)
+    private readonly string _root = Path.GetFullPath(root);
+
+    public async Task<string> SaveAsync(Guid tenantId, string category, string extension, Stream content, CancellationToken ct = default)
     {
-        logger.LogWarning("Password reset requested for user {UserId} but no email channel is configured; an administrator must reset the password.", user.Id);
+        if (category.Any(c => !char.IsLetterOrDigit(c) && c != '-')) throw new ArgumentException("Invalid category.");
+        if (extension is not (".png" or ".jpg" or ".webp" or ".pdf" or ".bak" or ".json")) throw new ArgumentException("Invalid extension.");
+        var relative = Path.Combine(tenantId.ToString("N"), category, Guid.NewGuid().ToString("N") + extension);
+        var full = Resolve(relative);
+        Directory.CreateDirectory(Path.GetDirectoryName(full)!);
+        await using var fs = File.Create(full);
+        await content.CopyToAsync(fs, ct);
+        return relative.Replace('\\', '/');
+    }
+
+    public Task<Stream?> OpenAsync(string path, CancellationToken ct = default)
+    {
+        var full = Resolve(path);
+        return Task.FromResult<Stream?>(File.Exists(full) ? File.OpenRead(full) : null);
+    }
+
+    public Task DeleteAsync(string path, CancellationToken ct = default)
+    {
+        var full = Resolve(path);
+        if (File.Exists(full)) File.Delete(full);
         return Task.CompletedTask;
+    }
+
+    private string Resolve(string relative)
+    {
+        var full = Path.GetFullPath(Path.Combine(_root, relative));
+        if (!full.StartsWith(_root + Path.DirectorySeparatorChar, StringComparison.Ordinal)) throw new UnauthorizedAccessException("Path escapes storage root.");
+        return full;
     }
 }

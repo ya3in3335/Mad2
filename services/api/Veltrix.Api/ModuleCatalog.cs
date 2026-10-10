@@ -10,5 +10,11 @@ public static class ModuleCatalog
         new Veltrix.Modules.Tenants.TenantsModule(),
         new Veltrix.Modules.Identity.IdentityModule(),
         new Veltrix.Modules.Licensing.LicensingModule(),
+        new Veltrix.Modules.Notifications.NotificationsModule(),
+        new Veltrix.Modules.Catalog.CatalogModule(),
+        new Veltrix.Modules.Accounting.AccountingModule(),
+        new Veltrix.Modules.Inventory.InventoryModule(),
+        new Veltrix.Modules.Crm.CrmModule(),
+        new Veltrix.Modules.Pos.PosModule(),
     ];
 }

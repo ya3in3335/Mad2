@@ -37,7 +37,7 @@ public sealed class OnboardingService(
         // Execute as the tenant so tenant-owned entities receive the correct TenantId.
         ctx.RunAs(company.Id);
 
-        await using var tx = await db.Database.BeginTransactionAsync(ct);
+        await using var tx = await db.Database.BeginOrJoinAsync(ct);
         company.Name = req.CompanyName.Trim(); company.LegalName = req.LegalName; company.TaxId = req.TaxId;
         company.TradeRegisterNo = req.TradeRegisterNo; company.Address = req.Address; company.City = req.City; company.Wilaya = req.Wilaya;
         company.Phone = req.Phone; company.Currency = req.Currency.ToUpperInvariant(); company.Locale = req.Locale;

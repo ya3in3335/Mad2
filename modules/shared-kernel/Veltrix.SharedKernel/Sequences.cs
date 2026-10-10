@@ -35,6 +35,15 @@ public static class DocumentTypes
     public const string JournalEntry = "journal_entry";
     public const string StockTransfer = "stock_transfer";
     public const string StockCount = "stock_count";
+    public const string StockAdjustment = "stock_adjustment";
+    public const string PosReturn = "pos_return";
+    public const string SupplierInvoice = "supplier_invoice";
+    public const string PurchaseReturn = "purchase_return";
+    public const string BillingInvoice = "billing_invoice";
+    public const string PayrollRun = "payroll_run";
+    public const string Customer = "customer";
+    public const string Supplier = "supplier";
+    public const string Employee = "employee";
     public const string Expense = "expense";
     public const string Payslip = "payslip";
 
@@ -43,6 +52,6 @@ public static class DocumentTypes
         [PosReceipt] = "TK", [SalesInvoice] = "FA", [CreditNote] = "AV", [Quotation] = "DV", [SalesOrder] = "BC",
         [DeliveryNote] = "BL", [PurchaseOrder] = "BCF", [GoodsReceipt] = "BR", [PurchaseRequest] = "DA",
         [SupplierPayment] = "RF", [CustomerPayment] = "RC", [JournalEntry] = "JE", [StockTransfer] = "TR",
-        [StockCount] = "INV", [Expense] = "DEP", [Payslip] = "BP",
+        [StockCount] = "INV", [StockAdjustment] = "ADJ", [PosReturn] = "RT", [SupplierInvoice] = "FF", [PurchaseReturn] = "RF-RET", [BillingInvoice] = "VLX", [PayrollRun] = "PAY", [Customer] = "CL", [Supplier] = "FR", [Employee] = "EMP", [Expense] = "DEP", [Payslip] = "BP",
     };
 }

@@ -20,6 +20,12 @@
     <ProjectReference Include="../../../modules/identity/Veltrix.Modules.Identity/Veltrix.Modules.Identity.csproj" />
     <ProjectReference Include="../../../modules/tenants/Veltrix.Modules.Tenants/Veltrix.Modules.Tenants.csproj" />
     <ProjectReference Include="../../../modules/licensing/Veltrix.Modules.Licensing/Veltrix.Modules.Licensing.csproj" />
+    <ProjectReference Include="../../../modules/catalog/Veltrix.Modules.Catalog/Veltrix.Modules.Catalog.csproj" />
+    <ProjectReference Include="../../../modules/accounting/Veltrix.Modules.Accounting/Veltrix.Modules.Accounting.csproj" />
+    <ProjectReference Include="../../../modules/inventory/Veltrix.Modules.Inventory/Veltrix.Modules.Inventory.csproj" />
+    <ProjectReference Include="../../../modules/crm/Veltrix.Modules.Crm/Veltrix.Modules.Crm.csproj" />
+    <ProjectReference Include="../../../modules/pos/Veltrix.Modules.Pos/Veltrix.Modules.Pos.csproj" />
+    <ProjectReference Include="../../../modules/notifications/Veltrix.Modules.Notifications/Veltrix.Modules.Notifications.csproj" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Veltrix.Api.Tests" />

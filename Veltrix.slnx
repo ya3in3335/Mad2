@@ -1,10 +1,28 @@
 <Solution>
   <Folder Name="/modules/" />
+  <Folder Name="/modules/accounting/">
+    <Project Path="modules/accounting/Veltrix.Modules.Accounting/Veltrix.Modules.Accounting.csproj" />
+  </Folder>
+  <Folder Name="/modules/catalog/">
+    <Project Path="modules/catalog/Veltrix.Modules.Catalog/Veltrix.Modules.Catalog.csproj" />
+  </Folder>
+  <Folder Name="/modules/crm/">
+    <Project Path="modules/crm/Veltrix.Modules.Crm/Veltrix.Modules.Crm.csproj" />
+  </Folder>
   <Folder Name="/modules/identity/">
     <Project Path="modules/identity/Veltrix.Modules.Identity/Veltrix.Modules.Identity.csproj" />
   </Folder>
+  <Folder Name="/modules/inventory/">
+    <Project Path="modules/inventory/Veltrix.Modules.Inventory/Veltrix.Modules.Inventory.csproj" />
+  </Folder>
   <Folder Name="/modules/licensing/">
     <Project Path="modules/licensing/Veltrix.Modules.Licensing/Veltrix.Modules.Licensing.csproj" />
+  </Folder>
+  <Folder Name="/modules/notifications/">
+    <Project Path="modules/notifications/Veltrix.Modules.Notifications/Veltrix.Modules.Notifications.csproj" />
+  </Folder>
+  <Folder Name="/modules/pos/">
+    <Project Path="modules/pos/Veltrix.Modules.Pos/Veltrix.Modules.Pos.csproj" />
   </Folder>
   <Folder Name="/modules/shared-kernel/">
     <Project Path="modules/shared-kernel/Veltrix.SharedKernel/Veltrix.SharedKernel.csproj" />
