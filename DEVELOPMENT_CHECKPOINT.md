@@ -34,7 +34,8 @@ Parallel agents write into their directories; the lead commits after validation.
 - No deployed backend server → apps need a server URL supplied by the operator.
 - Telegram bot token must be provided as a server secret (`Telegram__BotToken`).
 
-## Exact next action
+## Exact next action (updated session 2)
+0. Check CI "Android" run for both APKs; write apps/admin-android/README.md, ADMIN_GUIDE.md, LICENSE_ACTIVATION_GUIDE.md, TEST_RESULTS.md.
 1. Integrate agent outputs, run all builds/tests, commit + push.
 2. Create `apps/admin-android` (VELTRIX Admin) against `docs/API_ADMIN.md`.
 3. Check the first GitHub Actions runs and fix failures.
