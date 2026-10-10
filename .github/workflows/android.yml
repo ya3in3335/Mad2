@@ -1,0 +1,71 @@
+name: Android
+
+on:
+  push:
+    paths: ["apps/android/**", "apps/admin-android/**", "scripts/gradle-with-backoff.sh", ".github/workflows/android.yml"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  apk:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - project: apps/android
+            name: VELTRIX OS
+            artifact: VELTRIX-OS-Android
+          - project: apps/admin-android
+            name: VELTRIX Admin
+            artifact: VELTRIX-Admin-Android
+    name: ${{ matrix.name }} APK
+    runs-on: ubuntu-24.04
+    env:
+      VELTRIX_VERSION: 0.1.${{ github.run_number }}
+      VELTRIX_BUILD_NUMBER: ${{ github.run_number }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check project exists
+        id: exists
+        run: |
+          if [ -f "${{ matrix.project }}/settings.gradle.kts" ]; then echo "ok=true" >> "$GITHUB_OUTPUT"; else echo "ok=false" >> "$GITHUB_OUTPUT"; fi
+      - uses: actions/setup-java@v4
+        if: steps.exists.outputs.ok == 'true'
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: android-actions/setup-android@v3
+        if: steps.exists.outputs.ok == 'true'
+      - uses: gradle/actions/setup-gradle@v4
+        if: steps.exists.outputs.ok == 'true'
+        with:
+          gradle-version: wrapper
+          cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/ccr-c065d702-4m28p8' }}
+      - name: Validate Gradle wrapper
+        if: steps.exists.outputs.ok == 'true'
+        uses: gradle/actions/wrapper-validation@v4
+      - name: Unit tests, lint, debug + test APKs
+        if: steps.exists.outputs.ok == 'true'
+        working-directory: ${{ matrix.project }}
+        run: |
+          chmod +x gradlew
+          bash "$GITHUB_WORKSPACE/scripts/gradle-with-backoff.sh" ./gradlew --no-daemon testDebugUnitTest lintDebug assembleDebug assembleStaging
+      - name: Collect APKs
+        if: steps.exists.outputs.ok == 'true'
+        run: |
+          mkdir -p out
+          find "${{ matrix.project }}/app/build/outputs/apk" -name '*.apk' -exec cp {} out/ \;
+          (cd out && sha256sum *.apk > SHA256SUMS.txt && ls -la)
+      - uses: actions/upload-artifact@v4
+        if: steps.exists.outputs.ok == 'true'
+        with:
+          name: ${{ matrix.artifact }}-${{ env.VELTRIX_VERSION }}
+          path: out/
+      - uses: actions/upload-artifact@v4
+        if: always() && steps.exists.outputs.ok == 'true'
+        with:
+          name: ${{ matrix.artifact }}-reports
+          path: ${{ matrix.project }}/app/build/reports

@@ -1,0 +1,40 @@
+name: Windows
+
+on:
+  push:
+    paths: ["apps/windows/**", "tests/unit/**", "packages/contracts/**", "Directory.*.props", "global.json", ".github/workflows/windows.yml"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  installer:
+    runs-on: windows-2022
+    env:
+      VELTRIX_VERSION: 0.1.${{ github.run_number }}
+      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Unit tests
+        run: dotnet test tests/unit/Veltrix.Desktop.Tests -c Release
+      - name: Publish desktop app
+        run: dotnet publish apps/windows/Veltrix.Desktop/Veltrix.Desktop.csproj -c Release -r win-x64 --self-contained true -p:VeltrixVersion=${{ env.VELTRIX_VERSION }} -o publish
+      - name: Install Inno Setup
+        run: choco install innosetup --no-progress -y
+      - name: Build installer
+        shell: pwsh
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          & $iscc "/DAppVersion=$env:VELTRIX_VERSION" "/DPublishDir=$env:GITHUB_WORKSPACE\publish" "/O$env:GITHUB_WORKSPACE\out" apps\windows\installer\VeltrixOS.iss
+          if ($LASTEXITCODE -ne 0) { throw "ISCC failed" }
+          Get-FileHash out\*.exe -Algorithm SHA256 | ForEach-Object { "$($_.Hash.ToLower())  $(Split-Path $_.Path -Leaf)" } | Out-File out\SHA256SUMS.txt -Encoding ascii
+          Get-ChildItem out
+      - uses: actions/upload-artifact@v4
+        with:
+          name: VELTRIX-OS-Windows-${{ env.VELTRIX_VERSION }}-Setup
+          path: out/

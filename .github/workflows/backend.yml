@@ -1,0 +1,54 @@
+name: Backend
+
+on:
+  push:
+    paths: ["modules/**", "services/**", "packages/contracts/**", "tests/integration/**", "Directory.*.props", "global.json", "Veltrix.slnx", ".github/workflows/backend.yml"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-test:
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+      VELTRIX_TEST_PG: "Host=localhost;Port=5432;Username=postgres;Password=postgres"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('Directory.Packages.props', '**/*.csproj') }}
+      - name: Install pg_dump client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Build API
+        run: dotnet build services/api/Veltrix.Api -c Release
+      - name: Integration tests
+        run: dotnet test tests/integration/Veltrix.Api.IntegrationTests -c Release --logger "trx;LogFileName=integration.trx" --results-directory test-results
+      - name: Vulnerable package audit
+        run: dotnet list services/api/Veltrix.Api package --vulnerable --include-transitive
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backend-test-results
+          path: test-results
+      - name: Publish API
+        run: dotnet publish services/api/Veltrix.Api -c Release -o publish/api
+      - uses: actions/upload-artifact@v4
+        with:
+          name: veltrix-api
+          path: publish/api
