@@ -5,16 +5,16 @@
         WindowStartupLocation="CenterScreen" Background="Transparent" ShowInTaskbar="True" Icon="/Assets/veltrix.ico"
         FontFamily="{StaticResource Font.Ui}" Focusable="True">
     <!-- Startup sequence per branding/motion/MOTION_SPEC.md (vector paths + storyboards, no video). -->
-    <Border x:Name="Root" CornerRadius="16" Background="#07111F" BorderBrush="#1E3557" BorderThickness="1" ClipToBounds="True">
+    <Border x:Name="Root" CornerRadius="16" Background="#07080B" BorderBrush="#33E6E9F0" BorderThickness="1" ClipToBounds="True">
         <Grid>
-            <!-- Motion graphics: slow aurora glow (blue/purple) drifting behind the logo. -->
+            <!-- Motion graphics: slow silver aurora glow drifting behind the logo. -->
             <Canvas x:Name="Aurora" IsHitTestVisible="False" ClipToBounds="True" Opacity="0">
                 <Ellipse x:Name="AuroraBlue" Width="520" Height="420" Canvas.Left="-120" Canvas.Top="-80" RenderTransformOrigin="0.5,0.5">
-                    <Ellipse.Fill><RadialGradientBrush><GradientStop Color="#553478FF" Offset="0"/><GradientStop Color="#003478FF" Offset="1"/></RadialGradientBrush></Ellipse.Fill>
+                    <Ellipse.Fill><RadialGradientBrush><GradientStop Color="#40E6E9F0" Offset="0"/><GradientStop Color="#00E6E9F0" Offset="1"/></RadialGradientBrush></Ellipse.Fill>
                     <Ellipse.RenderTransform><TranslateTransform/></Ellipse.RenderTransform>
                 </Ellipse>
                 <Ellipse x:Name="AuroraPurple" Width="560" Height="460" Canvas.Left="260" Canvas.Top="220" RenderTransformOrigin="0.5,0.5">
-                    <Ellipse.Fill><RadialGradientBrush><GradientStop Color="#44765BFF" Offset="0"/><GradientStop Color="#00765BFF" Offset="1"/></RadialGradientBrush></Ellipse.Fill>
+                    <Ellipse.Fill><RadialGradientBrush><GradientStop Color="#3A8A90A0" Offset="0"/><GradientStop Color="#008A90A0" Offset="1"/></RadialGradientBrush></Ellipse.Fill>
                     <Ellipse.RenderTransform><TranslateTransform/></Ellipse.RenderTransform>
                 </Ellipse>
             </Canvas>
@@ -23,25 +23,25 @@
                 <Canvas Width="512" Height="700">
                     <Canvas.Resources>
                         <LinearGradientBrush x:Key="LeftGrad" StartPoint="84,104" EndPoint="260,432" MappingMode="Absolute">
-                            <GradientStop Color="#3478FF" Offset="0"/>
-                            <GradientStop Color="#00D9FF" Offset="1"/>
+                            <GradientStop Color="#F2F4F8" Offset="0"/>
+                            <GradientStop Color="#A9AFBD" Offset="1"/>
                         </LinearGradientBrush>
                         <LinearGradientBrush x:Key="RightGrad" StartPoint="428,104" EndPoint="300,336" MappingMode="Absolute">
-                            <GradientStop Color="#765BFF" Offset="0"/>
-                            <GradientStop Color="#3478FF" Offset="1"/>
+                            <GradientStop Color="#C8CDD8" Offset="0"/>
+                            <GradientStop Color="#6E7484" Offset="1"/>
                         </LinearGradientBrush>
                     </Canvas.Resources>
                     <!-- Motion graphics: orbital rings rotating in opposite directions around the symbol. -->
-                    <Ellipse x:Name="RingOuter" Canvas.Left="36" Canvas.Top="48" Width="440" Height="440" Stroke="#3300D9FF" StrokeThickness="2"
+                    <Ellipse x:Name="RingOuter" Canvas.Left="36" Canvas.Top="48" Width="440" Height="440" Stroke="#59E6E9F0" StrokeThickness="2"
                              StrokeDashArray="18 10" RenderTransformOrigin="0.5,0.5" Opacity="0">
                         <Ellipse.RenderTransform><RotateTransform/></Ellipse.RenderTransform>
                     </Ellipse>
-                    <Ellipse x:Name="RingInner" Canvas.Left="86" Canvas.Top="98" Width="340" Height="340" Stroke="#44765BFF" StrokeThickness="1.5"
+                    <Ellipse x:Name="RingInner" Canvas.Left="86" Canvas.Top="98" Width="340" Height="340" Stroke="#4D9AA0AF" StrokeThickness="1.5"
                              StrokeDashArray="4 8" RenderTransformOrigin="0.5,0.5" Opacity="0">
                         <Ellipse.RenderTransform><RotateTransform/></Ellipse.RenderTransform>
                     </Ellipse>
                     <!-- Energy pulse expanding from the core node once it lights up. -->
-                    <Ellipse x:Name="Pulse" Canvas.Left="270" Canvas.Top="354" Width="60" Height="60" Stroke="#00D9FF" StrokeThickness="2"
+                    <Ellipse x:Name="Pulse" Canvas.Left="270" Canvas.Top="354" Width="60" Height="60" Stroke="#E6E9F0" StrokeThickness="2"
                              RenderTransformOrigin="0.5,0.5" Opacity="0">
                         <Ellipse.RenderTransform><ScaleTransform/></Ellipse.RenderTransform>
                     </Ellipse>
@@ -51,17 +51,17 @@
                     <Path x:Name="RightBlade" Data="M 428 104 L 346 104 L 282 268 L 322 336 Z" Fill="{StaticResource RightGrad}">
                         <Path.RenderTransform><TranslateTransform/></Path.RenderTransform>
                     </Path>
-                    <Path x:Name="Trace" Data="M 156 156 L 226 316" Stroke="#F5F8FF" StrokeThickness="6" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                    <Path x:Name="Trace" Data="M 156 156 L 226 316" Stroke="#F2F4F8" StrokeThickness="6" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
                           StrokeDashCap="Round" StrokeDashArray="30 100" StrokeDashOffset="0" Opacity="0.85"/>
-                    <Ellipse x:Name="Node1" Canvas.Left="147" Canvas.Top="147" Width="18" Height="18" Fill="#F5F8FF" RenderTransformOrigin="0.5,0.5">
+                    <Ellipse x:Name="Node1" Canvas.Left="147" Canvas.Top="147" Width="18" Height="18" Fill="#F2F4F8" RenderTransformOrigin="0.5,0.5">
                         <Ellipse.RenderTransform><ScaleTransform/></Ellipse.RenderTransform>
                     </Ellipse>
-                    <Ellipse x:Name="Node2" Canvas.Left="217" Canvas.Top="307" Width="18" Height="18" Fill="#F5F8FF" RenderTransformOrigin="0.5,0.5">
+                    <Ellipse x:Name="Node2" Canvas.Left="217" Canvas.Top="307" Width="18" Height="18" Fill="#F2F4F8" RenderTransformOrigin="0.5,0.5">
                         <Ellipse.RenderTransform><ScaleTransform/></Ellipse.RenderTransform>
                     </Ellipse>
-                    <Ellipse x:Name="Core" Canvas.Left="286" Canvas.Top="370" Width="28" Height="28" Fill="#00D9FF" RenderTransformOrigin="0.5,0.5">
+                    <Ellipse x:Name="Core" Canvas.Left="286" Canvas.Top="370" Width="28" Height="28" Fill="#F2F4F8" RenderTransformOrigin="0.5,0.5">
                         <Ellipse.RenderTransform><ScaleTransform/></Ellipse.RenderTransform>
-                        <Ellipse.Effect><DropShadowEffect x:Name="CoreGlow" Color="#00D9FF" ShadowDepth="0" BlurRadius="0" Opacity="0.9"/></Ellipse.Effect>
+                        <Ellipse.Effect><DropShadowEffect x:Name="CoreGlow" Color="#FFFFFF" ShadowDepth="0" BlurRadius="0" Opacity="0.9"/></Ellipse.Effect>
                     </Ellipse>
 
                     <!-- Wordmark: geometric capitals (never re-typed in a font) -->
@@ -74,7 +74,7 @@
                         </Canvas.RenderTransform>
                         <Canvas.Resources>
                             <Style TargetType="Path">
-                                <Setter Property="Stroke" Value="#F5F8FF"/>
+                                <Setter Property="Stroke" Value="#F2F4F8"/>
                                 <Setter Property="StrokeThickness" Value="13"/>
                                 <Setter Property="StrokeStartLineCap" Value="Square"/>
                                 <Setter Property="StrokeEndLineCap" Value="Square"/>
@@ -89,10 +89,10 @@
                         <Path Canvas.Left="344" Data="M7 100 V7 H38 A22 22 0 0 1 38 57 H7 M34 57 L57 93"/>
                         <Path Canvas.Left="430" Data="M7 7 V93"/>
                         <Path Canvas.Left="466" Data="M7 7 L63 93 M63 7 L7 93"/>
-                        <Path Canvas.Left="592" Data="M40 7 A33 43 0 1 1 39.9 7 Z" Stroke="#00D9FF"/>
-                        <Path Canvas.Left="694" Data="M55 7 H24 A17 18 0 0 0 24 50 H38 A17 18 0 0 1 38 93 H7" Stroke="#00D9FF"/>
+                        <Path Canvas.Left="592" Data="M40 7 A33 43 0 1 1 39.9 7 Z" Stroke="#C8CDD8"/>
+                        <Path Canvas.Left="694" Data="M55 7 H24 A17 18 0 0 0 24 50 H38 A17 18 0 0 1 38 93 H7" Stroke="#C8CDD8"/>
                     </Canvas>
-                    <TextBlock x:Name="Tagline" Canvas.Top="650" Width="512" TextAlignment="Center" FontSize="22" Foreground="#A3B3CB"
+                    <TextBlock x:Name="Tagline" Canvas.Top="650" Width="512" TextAlignment="Center" FontSize="22" Foreground="#ABB2C0"
                                Text="{DynamicResource app.slogan}"/>
                     <!-- Light sweep across the symbol and wordmark (brand reveal). -->
                     <Rectangle x:Name="Sweep" Canvas.Left="-200" Canvas.Top="80" Width="140" Height="620" Opacity="0" IsHitTestVisible="False">
@@ -106,8 +106,8 @@
                 </Canvas>
             </Viewbox>
             <ProgressBar x:Name="Progress" VerticalAlignment="Bottom" Margin="120,0,120,36" IsIndeterminate="True" Visibility="Collapsed"
-                         Foreground="#00D9FF" Background="Transparent" Height="2"/>
-            <TextBlock x:Name="SkipHint" Text="{DynamicResource dk.splash.skip}" Foreground="#A3B3CB" Opacity="0.6" FontSize="11"
+                         Foreground="#E6E9F0" Background="Transparent" Height="2"/>
+            <TextBlock x:Name="SkipHint" Text="{DynamicResource dk.splash.skip}" Foreground="#ABB2C0" Opacity="0.6" FontSize="11"
                        HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,16,10"/>
         </Grid>
     </Border>

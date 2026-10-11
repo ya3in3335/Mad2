@@ -13,11 +13,11 @@
                     <Canvas Width="512" Height="512">
                         <Path Data="{StaticResource Logo.LeftBlade}" Fill="{StaticResource Brush.BladeLeft}"/>
                         <Path Data="{StaticResource Logo.RightBlade}" Fill="{StaticResource Brush.BladeRight}"/>
-                        <Ellipse Canvas.Left="286" Canvas.Top="370" Width="28" Height="28" Fill="#00D9FF"/>
+                        <Ellipse Canvas.Left="286" Canvas.Top="370" Width="28" Height="28" Fill="#E6E9F0"/>
                     </Canvas>
                 </Viewbox>
-                <TextBlock Text="VELTRIX OS" FontSize="30" FontWeight="SemiBold" Foreground="#F5F8FF" HorizontalAlignment="Center" Margin="0,8,0,0"/>
-                <TextBlock Text="{DynamicResource app.slogan}" Foreground="#A3B3CB" HorizontalAlignment="Center" Margin="0,6,0,0"/>
+                <TextBlock Text="VELTRIX OS" FontSize="30" FontWeight="SemiBold" Foreground="#F2F4F8" HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                <TextBlock Text="{DynamicResource app.slogan}" Foreground="#ABB2C0" HorizontalAlignment="Center" Margin="0,6,0,0"/>
             </StackPanel>
         </Border>
 

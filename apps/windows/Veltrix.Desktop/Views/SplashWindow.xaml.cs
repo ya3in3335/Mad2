@@ -156,12 +156,12 @@ public partial class SplashWindow : Window
 
     private void BuildParticles()
     {
-        // 14 faint cyan particles (opacity ≤ 0.35) drifting upwards; GPU-composited transforms only.
+        // 14 faint silver particles (opacity ≤ 0.35) drifting upwards; GPU-composited transforms only.
         _particles = new Storyboard { RepeatBehavior = RepeatBehavior.Forever };
         var rnd = new Random(7);
         for (var i = 0; i < 14; i++)
         {
-            var dot = new Ellipse { Width = 3, Height = 3, Fill = new SolidColorBrush(Color.FromRgb(0x00, 0xD9, 0xFF)), Opacity = 0.15 + rnd.NextDouble() * 0.2 };
+            var dot = new Ellipse { Width = 3, Height = 3, Fill = new SolidColorBrush(i % 3 == 0 ? Color.FromRgb(0x8A, 0x90, 0xA0) : Color.FromRgb(0xE6, 0xE9, 0xF0)), Opacity = 0.15 + rnd.NextDouble() * 0.2 };
             var t = new TranslateTransform();
             dot.RenderTransform = t;
             Canvas.SetLeft(dot, (i * 97 % 640) + rnd.Next(0, 30));

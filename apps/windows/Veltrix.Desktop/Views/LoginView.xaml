@@ -9,7 +9,7 @@
                     <Canvas Width="512" Height="512">
                         <Path Data="{StaticResource Logo.LeftBlade}" Fill="{StaticResource Brush.BladeLeft}"/>
                         <Path Data="{StaticResource Logo.RightBlade}" Fill="{StaticResource Brush.BladeRight}"/>
-                        <Ellipse Canvas.Left="286" Canvas.Top="370" Width="28" Height="28" Fill="#00D9FF"/>
+                        <Ellipse Canvas.Left="286" Canvas.Top="370" Width="28" Height="28" Fill="#E6E9F0"/>
                     </Canvas>
                 </Viewbox>
                 <TextBlock Text="{DynamicResource auth.title}" Style="{StaticResource Text.Title}" HorizontalAlignment="Center" Margin="0,12,0,0" FontSize="20"/>

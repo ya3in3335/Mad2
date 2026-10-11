@@ -16,32 +16,42 @@
     <c:EqualsConverter x:Key="Equals"/>
     <c:EqualsZeroToVisibilityConverter x:Key="EqualsZeroToVis"/>
     <c:NotNullToBoolConverter x:Key="NotNullToBool"/>
+    <c:UpperCaseConverter x:Key="ToUpper"/>
 
     <!-- Typography: Segoe UI Variable (Windows 11) → Segoe UI (has Arabic) → Noto Sans Arabic / Tahoma. WPF falls back per character. -->
     <FontFamily x:Key="Font.Ui">Segoe UI Variable Text, Segoe UI, Noto Sans Arabic, Tahoma, Segoe UI Symbol</FontFamily>
     <FontFamily x:Key="Font.Display">Segoe UI Variable Display, Segoe UI, Noto Sans Arabic, Tahoma, Segoe UI Symbol</FontFamily>
     <FontFamily x:Key="Font.Mono">Cascadia Mono, Consolas, Courier New</FontFamily>
     <FontFamily x:Key="Font.Icons">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
-    <CornerRadius x:Key="Radius.Control">8</CornerRadius>
-    <CornerRadius x:Key="Radius.Card">12</CornerRadius>
-    <CornerRadius x:Key="Radius.Large">16</CornerRadius>
+    <CornerRadius x:Key="Radius.Control">10</CornerRadius>
+    <CornerRadius x:Key="Radius.Card">16</CornerRadius>
+    <CornerRadius x:Key="Radius.Large">20</CornerRadius>
     <sys:Double x:Key="Size.Body">14</sys:Double>
     <Duration x:Key="Motion.Fast">0:0:0.12</Duration>
 
     <!-- Brand gradients (blades of the symbol) -->
     <LinearGradientBrush x:Key="Brush.BladeLeft" StartPoint="0,0" EndPoint="1,1">
-        <GradientStop Color="#3478FF" Offset="0"/>
-        <GradientStop Color="#00D9FF" Offset="1"/>
+        <GradientStop Color="#F2F4F8" Offset="0"/>
+        <GradientStop Color="#A9AFBD" Offset="1"/>
     </LinearGradientBrush>
     <LinearGradientBrush x:Key="Brush.BladeRight" StartPoint="1,0" EndPoint="0,1">
-        <GradientStop Color="#765BFF" Offset="0"/>
-        <GradientStop Color="#3478FF" Offset="1"/>
+        <GradientStop Color="#C8CDD8" Offset="0"/>
+        <GradientStop Color="#6E7484" Offset="1"/>
     </LinearGradientBrush>
-    <LinearGradientBrush x:Key="Brush.Hero" StartPoint="0,0" EndPoint="1,1">
-        <GradientStop Color="#07111F" Offset="0"/>
-        <GradientStop Color="#0D1D33" Offset="0.6"/>
-        <GradientStop Color="#1B1650" Offset="1"/>
-    </LinearGradientBrush>
+    <!-- Hero (login/welcome): near-black canvas with static silver aurora glows -->
+    <DrawingBrush x:Key="Brush.Hero" Stretch="Fill">
+        <DrawingBrush.Drawing>
+            <DrawingGroup>
+                <GeometryDrawing Brush="#07080B"><GeometryDrawing.Geometry><RectangleGeometry Rect="0,0,1,1"/></GeometryDrawing.Geometry></GeometryDrawing>
+                <GeometryDrawing><GeometryDrawing.Geometry><RectangleGeometry Rect="0,0,1,1"/></GeometryDrawing.Geometry>
+                    <GeometryDrawing.Brush><RadialGradientBrush Center="0.15,0.1" GradientOrigin="0.15,0.1" RadiusX="0.6" RadiusY="0.6"><GradientStop Color="#26E6E9F0" Offset="0"/><GradientStop Color="#00E6E9F0" Offset="1"/></RadialGradientBrush></GeometryDrawing.Brush>
+                </GeometryDrawing>
+                <GeometryDrawing><GeometryDrawing.Geometry><RectangleGeometry Rect="0,0,1,1"/></GeometryDrawing.Geometry>
+                    <GeometryDrawing.Brush><RadialGradientBrush Center="0.9,0.95" GradientOrigin="0.9,0.95" RadiusX="0.65" RadiusY="0.65"><GradientStop Color="#228A90A0" Offset="0"/><GradientStop Color="#008A90A0" Offset="1"/></RadialGradientBrush></GeometryDrawing.Brush>
+                </GeometryDrawing>
+            </DrawingGroup>
+        </DrawingBrush.Drawing>
+    </DrawingBrush>
 
     <!-- Navigation icons (24×24 grid, stroked) -->
     <Geometry x:Key="Icon.Dashboard">M3,3 H10 V12 H3 Z M14,3 H21 V8 H14 Z M14,12 H21 V21 H14 Z M3,16 H10 V21 H3 Z</Geometry>
@@ -102,8 +112,8 @@
             <Setter.Value>
                 <ControlTemplate>
                     <Grid Margin="-3">
-                        <Rectangle RadiusX="10" RadiusY="10" StrokeThickness="4" Stroke="{DynamicResource Brush.focusRing}"/>
-                        <Rectangle Margin="1" RadiusX="9" RadiusY="9" StrokeThickness="2" Stroke="{DynamicResource Brush.focus}"/>
+                        <Rectangle RadiusX="12" RadiusY="12" StrokeThickness="4" Stroke="{DynamicResource Brush.focusRing}"/>
+                        <Rectangle Margin="1" RadiusX="11" RadiusY="11" StrokeThickness="2" Stroke="{DynamicResource Brush.focus}"/>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
@@ -112,7 +122,7 @@
 
     <!-- Windows -->
     <Style x:Key="AppWindow" TargetType="Window">
-        <Setter Property="Background" Value="{DynamicResource Brush.background}"/>
+        <Setter Property="Background" Value="{DynamicResource Brush.backdrop}"/>
         <Setter Property="Foreground" Value="{DynamicResource Brush.textPrimary}"/>
         <Setter Property="FontFamily" Value="{StaticResource Font.Ui}"/>
         <Setter Property="FontSize" Value="{StaticResource Size.Body}"/>
@@ -181,9 +191,12 @@
         <Setter Property="Padding" Value="18"/>
         <Setter Property="SnapsToDevicePixels" Value="True"/>
     </Style>
-    <!-- Elevation layer: a child-less border placed behind a Card (same Grid cell) so text keeps ClearType. -->
+    <!-- Glow layer: a child-less, hollow border placed behind a Card (same Grid cell) so text keeps ClearType
+         and the glass stays see-through; its edge carries the soft neon outer glow. -->
     <Style x:Key="Card.Shadow" TargetType="Border">
-        <Setter Property="Background" Value="{DynamicResource Brush.surface}"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource Brush.cardBorder}"/>
+        <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="CornerRadius" Value="{StaticResource Radius.Card}"/>
         <Setter Property="Effect" Value="{DynamicResource Shadow.Card}"/>
         <Setter Property="IsHitTestVisible" Value="False"/>
@@ -220,7 +233,7 @@
         <Grid x:Name="Root" RenderTransformOrigin="0.5,0.5" SnapsToDevicePixels="True">
             <Grid.RenderTransform><ScaleTransform x:Name="Scale"/></Grid.RenderTransform>
             <Border x:Name="Glow" CornerRadius="{StaticResource Radius.Control}" Background="{TemplateBinding Background}" Visibility="Collapsed"
-                    Effect="{DynamicResource Shadow.Primary}"/>
+                    Opacity="0" Effect="{DynamicResource Shadow.Primary}"/>
             <Border x:Name="Bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
                     BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{StaticResource Radius.Control}"/>
             <Border x:Name="Hover" CornerRadius="{StaticResource Radius.Control}" Background="{DynamicResource Brush.overlayHover}" Opacity="0"/>
@@ -231,12 +244,18 @@
             <Trigger Property="IsMouseOver" Value="True">
                 <Trigger.EnterActions>
                     <BeginStoryboard>
-                        <Storyboard><DoubleAnimation Storyboard.TargetName="Hover" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.12"/></Storyboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetName="Hover" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.12"/>
+                            <DoubleAnimation Storyboard.TargetName="Glow" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.12"/>
+                        </Storyboard>
                     </BeginStoryboard>
                 </Trigger.EnterActions>
                 <Trigger.ExitActions>
                     <BeginStoryboard>
-                        <Storyboard><DoubleAnimation Storyboard.TargetName="Hover" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.12"/></Storyboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetName="Hover" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.12"/>
+                            <DoubleAnimation Storyboard.TargetName="Glow" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.12"/>
+                        </Storyboard>
                     </BeginStoryboard>
                 </Trigger.ExitActions>
             </Trigger>
@@ -273,7 +292,7 @@
     <!-- Secondary (default) -->
     <Style TargetType="Button">
         <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>
-        <Setter Property="Background" Value="{DynamicResource Brush.surfaceRaised}"/>
+        <Setter Property="Background" Value="{DynamicResource Brush.glass}"/>
         <Setter Property="Foreground" Value="{DynamicResource Brush.textPrimary}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource Brush.borderStrong}"/>
         <Setter Property="BorderThickness" Value="1"/>
@@ -286,8 +305,8 @@
     <Style x:Key="Button.Secondary" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}"/>
     <Style x:Key="Button.Primary" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
         <Setter Property="Background" Value="{DynamicResource Brush.primaryGradient}"/>
-        <Setter Property="BorderBrush" Value="#33FFFFFF"/>
-        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="BorderBrush" Value="#40FFFFFF"/>
+        <Setter Property="Foreground" Value="{DynamicResource Brush.onPrimary}"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="Tag" Value="Glow"/>
     </Style>
@@ -296,9 +315,10 @@
         <Setter Property="Foreground" Value="{DynamicResource Brush.danger}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource Brush.dangerBorder}"/>
     </Style>
+    <!-- Ghost: clear glass with a neon (silver) edge -->
     <Style x:Key="Button.Ghost" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
         <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource Brush.ghostBorder}"/>
         <Setter Property="Padding" Value="8,4"/>
         <Setter Property="MinHeight" Value="28"/>
         <Setter Property="FontWeight" Value="Normal"/>
@@ -308,6 +328,7 @@
         <Setter Property="Width" Value="36"/>
         <Setter Property="Height" Value="36"/>
         <Setter Property="Padding" Value="0"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
         <Setter Property="FontFamily" Value="{StaticResource Font.Icons}"/>
         <Setter Property="FontSize" Value="16"/>
         <Setter Property="Foreground" Value="{DynamicResource Brush.textSecondary}"/>
@@ -333,11 +354,13 @@
             <Setter.Value>
                 <ControlTemplate TargetType="TextBox">
                     <Grid>
-                        <Border x:Name="Glow" Margin="-3" CornerRadius="11" BorderThickness="3" BorderBrush="{DynamicResource Brush.focusRing}" Opacity="0"/>
+                        <Border x:Name="Glow" Margin="-3" CornerRadius="13" BorderThickness="3" BorderBrush="{DynamicResource Brush.focusRing}" Opacity="0"/>
                         <Border x:Name="Bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{StaticResource Radius.Control}">
                             <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                         </Border>
+                        <Rectangle x:Name="Underline" Height="2" Margin="8,0" RadiusX="1" RadiusY="1" VerticalAlignment="Bottom" IsHitTestVisible="False"
+                                   Fill="{DynamicResource Brush.focus}" Effect="{DynamicResource Shadow.Glow}" Opacity="0"/>
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
@@ -346,6 +369,7 @@
                         <Trigger Property="IsKeyboardFocused" Value="True">
                             <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource Brush.focus}"/>
                             <Setter TargetName="Glow" Property="Opacity" Value="1"/>
+                            <Setter TargetName="Underline" Property="Opacity" Value="1"/>
                         </Trigger>
                         <Trigger Property="IsReadOnly" Value="True">
                             <Setter TargetName="Bd" Property="Background" Value="Transparent"/>
@@ -373,11 +397,13 @@
             <Setter.Value>
                 <ControlTemplate TargetType="PasswordBox">
                     <Grid>
-                        <Border x:Name="Glow" Margin="-3" CornerRadius="11" BorderThickness="3" BorderBrush="{DynamicResource Brush.focusRing}" Opacity="0"/>
+                        <Border x:Name="Glow" Margin="-3" CornerRadius="13" BorderThickness="3" BorderBrush="{DynamicResource Brush.focusRing}" Opacity="0"/>
                         <Border x:Name="Bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{StaticResource Radius.Control}">
                             <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                         </Border>
+                        <Rectangle x:Name="Underline" Height="2" Margin="8,0" RadiusX="1" RadiusY="1" VerticalAlignment="Bottom" IsHitTestVisible="False"
+                                   Fill="{DynamicResource Brush.focus}" Effect="{DynamicResource Shadow.Glow}" Opacity="0"/>
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
@@ -386,6 +412,7 @@
                         <Trigger Property="IsKeyboardFocused" Value="True">
                             <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource Brush.focus}"/>
                             <Setter TargetName="Glow" Property="Opacity" Value="1"/>
+                            <Setter TargetName="Underline" Property="Opacity" Value="1"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="Bd" Property="Opacity" Value="0.5"/>
@@ -413,9 +440,9 @@
                         <Grid Width="20" Height="20" VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
                             <Border x:Name="Box" CornerRadius="6" BorderThickness="1.5" BorderBrush="{DynamicResource Brush.borderStrong}" Background="{DynamicResource Brush.surfaceSunken}"/>
                             <Border x:Name="Fill" CornerRadius="6" Background="{DynamicResource Brush.primaryGradient}" Opacity="0"/>
-                            <Path x:Name="Mark" Data="M5,10.5 L8.5,14 L15,6.5" Stroke="White" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                            <Path x:Name="Mark" Data="M5,10.5 L8.5,14 L15,6.5" Stroke="{DynamicResource Brush.onPrimary}" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
                                   StrokeLineJoin="Round" Opacity="0" FlowDirection="LeftToRight"/>
-                            <Path x:Name="Dash" Data="M6,10 H14" Stroke="White" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Visibility="Collapsed"/>
+                            <Path x:Name="Dash" Data="M6,10 H14" Stroke="{DynamicResource Brush.onPrimary}" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Visibility="Collapsed"/>
                         </Grid>
                         <ContentPresenter x:Name="Content" Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" RecognizesAccessKey="True"/>
                     </Grid>
@@ -474,7 +501,7 @@
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="Knob" Property="Fill" Value="White"/>
+                            <Setter TargetName="Knob" Property="Fill" Value="{DynamicResource Brush.onPrimary}"/>
                             <Trigger.EnterActions>
                                 <BeginStoryboard>
                                     <Storyboard>
@@ -593,14 +620,14 @@
             <Setter.Value>
                 <ControlTemplate TargetType="ComboBox">
                     <Grid>
-                        <Border x:Name="Glow" Margin="-3" CornerRadius="11" BorderThickness="3" BorderBrush="{DynamicResource Brush.focusRing}" Opacity="0"/>
+                        <Border x:Name="Glow" Margin="-3" CornerRadius="13" BorderThickness="3" BorderBrush="{DynamicResource Brush.focusRing}" Opacity="0"/>
                         <ToggleButton x:Name="Toggle" Focusable="False" ClickMode="Press"
                                       IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
                             <ToggleButton.Template>
                                 <ControlTemplate TargetType="ToggleButton">
                                     <Border x:Name="Box" Background="{Binding Background, RelativeSource={RelativeSource AncestorType=ComboBox}}"
                                             BorderBrush="{Binding BorderBrush, RelativeSource={RelativeSource AncestorType=ComboBox}}"
-                                            BorderThickness="1" CornerRadius="8">
+                                            BorderThickness="1" CornerRadius="10">
                                         <Path x:Name="Chevron" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,13,0" Data="M0,0 L4.5,4.5 L9,0"
                                               Stroke="{DynamicResource Brush.textSecondary}" StrokeThickness="1.6" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
                                               RenderTransformOrigin="0.5,0.5">
@@ -625,8 +652,8 @@
                         <Popup x:Name="PART_Popup" Placement="Bottom" AllowsTransparency="True" Focusable="False" PopupAnimation="Fade"
                                IsOpen="{TemplateBinding IsDropDownOpen}" VerticalOffset="4">
                             <Grid Margin="8,0,8,12" MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}">
-                                <Border CornerRadius="10" Background="{DynamicResource Brush.surface}" Effect="{DynamicResource Shadow.Popup}"/>
-                                <Border Background="{DynamicResource Brush.surface}" BorderBrush="{DynamicResource Brush.borderStrong}" BorderThickness="1" CornerRadius="10"
+                                <Border CornerRadius="12" Background="{DynamicResource Brush.surface}" Effect="{DynamicResource Shadow.Popup}"/>
+                                <Border Background="{DynamicResource Brush.surface}" BorderBrush="{DynamicResource Brush.borderStrong}" BorderThickness="1" CornerRadius="12"
                                         Padding="0,4" MaxHeight="{TemplateBinding MaxDropDownHeight}">
                                     <ScrollViewer>
                                         <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained"/>
@@ -679,7 +706,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="DatePicker">
                     <Grid>
-                        <Border x:Name="Glow" Margin="-3" CornerRadius="11" BorderThickness="3" BorderBrush="{DynamicResource Brush.focusRing}" Opacity="0"/>
+                        <Border x:Name="Glow" Margin="-3" CornerRadius="13" BorderThickness="3" BorderBrush="{DynamicResource Brush.focusRing}" Opacity="0"/>
                         <Border x:Name="Bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{StaticResource Radius.Control}" Padding="{TemplateBinding Padding}">
                             <Grid x:Name="PART_Root">
@@ -694,6 +721,8 @@
                                 <Popup x:Name="PART_Popup" PlacementTarget="{Binding ElementName=PART_TextBox}" Placement="Bottom" StaysOpen="False" AllowsTransparency="True"/>
                             </Grid>
                         </Border>
+                        <Rectangle x:Name="Underline" Height="2" Margin="8,0" RadiusX="1" RadiusY="1" VerticalAlignment="Bottom" IsHitTestVisible="False"
+                                   Fill="{DynamicResource Brush.focus}" Effect="{DynamicResource Shadow.Glow}" Opacity="0"/>
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
@@ -702,6 +731,7 @@
                         <Trigger Property="IsKeyboardFocusWithin" Value="True">
                             <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource Brush.focus}"/>
                             <Setter TargetName="Glow" Property="Opacity" Value="1"/>
+                            <Setter TargetName="Underline" Property="Opacity" Value="1"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Opacity" Value="0.5"/>
@@ -815,7 +845,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="ListBoxItem">
                     <Grid Margin="0,1">
-                        <Border x:Name="Bd" Background="Transparent" BorderBrush="Transparent" BorderThickness="1" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                        <Border x:Name="Bd" Background="Transparent" BorderBrush="Transparent" BorderThickness="1" CornerRadius="10" Padding="{TemplateBinding Padding}">
                             <ContentPresenter/>
                         </Border>
                         <Rectangle x:Name="Bar" Width="3" RadiusX="1.5" RadiusY="1.5" Margin="0,8" HorizontalAlignment="Left" Fill="{DynamicResource Brush.accentBar}" Opacity="0"/>
@@ -855,8 +885,8 @@
             <Setter.Value>
                 <ControlTemplate TargetType="ListBoxItem">
                     <Grid Margin="0,2" Background="Transparent">
-                        <Border x:Name="Bg" CornerRadius="10" Background="Transparent" BorderBrush="Transparent" BorderThickness="1"/>
-                        <Border x:Name="Active" CornerRadius="10" Background="{DynamicResource Brush.navActive}" Opacity="0"/>
+                        <Border x:Name="Bg" CornerRadius="12" Background="Transparent" BorderBrush="Transparent" BorderThickness="1"/>
+                        <Border x:Name="Active" CornerRadius="12" Background="{DynamicResource Brush.navActive}" Opacity="0"/>
                         <Rectangle x:Name="Bar" Width="3" RadiusX="1.5" RadiusY="1.5" Margin="0,9" HorizontalAlignment="Left"
                                    Fill="{DynamicResource Brush.accentBar}" Effect="{DynamicResource Shadow.Glow}" Opacity="0"/>
                         <ContentPresenter Margin="{TemplateBinding Padding}"/>
@@ -897,9 +927,9 @@
 
     <!-- DataGrid: rounded frame, airy rows, subtle zebra, hover, accent-tinted selection with leading bar -->
     <Style TargetType="DataGrid">
-        <Setter Property="Background" Value="{DynamicResource Brush.surface}"/>
+        <Setter Property="Background" Value="{DynamicResource Brush.card}"/>
         <Setter Property="Foreground" Value="{DynamicResource Brush.textPrimary}"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource Brush.border}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource Brush.cardBorder}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="RowBackground" Value="Transparent"/>
         <Setter Property="AlternatingRowBackground" Value="{DynamicResource Brush.rowAlt}"/>
@@ -976,8 +1006,8 @@
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Foreground" Value="{DynamicResource Brush.textSecondary}"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
-        <Setter Property="FontSize" Value="12"/>
-        <Setter Property="Padding" Value="12,10"/>
+        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="Padding" Value="12,11"/>
         <Setter Property="BorderBrush" Value="{DynamicResource Brush.border}"/>
         <Setter Property="BorderThickness" Value="0,0,0,1"/>
         <Setter Property="HorizontalContentAlignment" Value="Left"/>
@@ -990,7 +1020,14 @@
                             <DockPanel>
                                 <Path x:Name="Sort" DockPanel.Dock="Right" Margin="6,0,0,0" VerticalAlignment="Center" Width="8" Height="5" Stretch="Uniform"
                                       Stroke="{DynamicResource Brush.accent}" StrokeThickness="1.6" Data="M0,0 L4,4 L8,0" Visibility="Collapsed"/>
-                                <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" RecognizesAccessKey="True"/>
+                                <!-- String headers render uppercase with wide tracking feel (small caps size, semibold). -->
+                                <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" RecognizesAccessKey="True">
+                                    <ContentPresenter.Resources>
+                                        <DataTemplate DataType="{x:Type sys:String}">
+                                            <TextBlock Text="{Binding Converter={StaticResource ToUpper}}" TextTrimming="CharacterEllipsis"/>
+                                        </DataTemplate>
+                                    </ContentPresenter.Resources>
+                                </ContentPresenter>
                             </DockPanel>
                         </Border>
                         <Thumb x:Name="PART_LeftHeaderGripper" HorizontalAlignment="Left" Style="{StaticResource DataGrid.Gripper}"/>
@@ -1037,7 +1074,7 @@
                                                    Visibility="{Binding HeadersVisibility, ConverterParameter={x:Static DataGridHeadersVisibility.Row}, Converter={x:Static DataGrid.HeadersVisibilityConverter}, RelativeSource={RelativeSource AncestorType=DataGrid}}"/>
                             </p:SelectiveScrollingGrid>
                         </Border>
-                        <Rectangle x:Name="Bar" Width="3" Margin="0,6" RadiusX="1.5" RadiusY="1.5" HorizontalAlignment="Left" Fill="{DynamicResource Brush.accentBar}" Visibility="Hidden"/>
+                        <Rectangle x:Name="Bar" Width="3" Margin="0,5" RadiusX="1.5" RadiusY="1.5" HorizontalAlignment="Left" Fill="{DynamicResource Brush.accentBar}" Visibility="Hidden"/>
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsSelected" Value="True">
@@ -1114,17 +1151,11 @@
             <Setter.Value>
                 <ControlTemplate TargetType="TabItem">
                     <Grid Margin="0,0,4,-1">
-                        <Border x:Name="Bd" Padding="16,9" Margin="0,0,0,3" CornerRadius="8" Background="Transparent">
+                        <Border x:Name="Bd" Padding="16,9" Margin="0,0,0,3" CornerRadius="10" Background="Transparent">
                             <ContentPresenter ContentSource="Header" RecognizesAccessKey="True"/>
                         </Border>
-                        <Rectangle x:Name="Indicator" Height="3" RadiusX="1.5" RadiusY="1.5" VerticalAlignment="Bottom" Margin="10,0" Opacity="0">
-                            <Rectangle.Fill>
-                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                    <GradientStop Color="#3478FF" Offset="0"/>
-                                    <GradientStop Color="#00D9FF" Offset="1"/>
-                                </LinearGradientBrush>
-                            </Rectangle.Fill>
-                        </Rectangle>
+                        <Rectangle x:Name="Indicator" Height="3" RadiusX="1.5" RadiusY="1.5" VerticalAlignment="Bottom" Margin="10,0" Opacity="0"
+                                   Fill="{DynamicResource Brush.primaryGradient}"/>
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
@@ -1157,13 +1188,13 @@
 
     <Style TargetType="ProgressBar">
         <Setter Property="Height" Value="3"/>
-        <Setter Property="Foreground" Value="{DynamicResource Brush.accent}"/>
+        <Setter Property="Foreground" Value="{DynamicResource Brush.primary}"/>
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="0"/>
     </Style>
 
     <Style TargetType="ToolTip">
-        <Setter Property="Background" Value="{DynamicResource Brush.surfaceRaised}"/>
+        <Setter Property="Background" Value="{DynamicResource Brush.surface}"/>
         <Setter Property="Foreground" Value="{DynamicResource Brush.textPrimary}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource Brush.borderStrong}"/>
         <Setter Property="FontSize" Value="12"/>
@@ -1172,8 +1203,8 @@
             <Setter.Value>
                 <ControlTemplate TargetType="ToolTip">
                     <Grid Margin="6,2,6,10" MaxWidth="360">
-                        <Border CornerRadius="8" Background="{TemplateBinding Background}" Effect="{DynamicResource Shadow.Popup}"/>
-                        <Border CornerRadius="8" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" Padding="10,6">
+                        <Border CornerRadius="10" Background="{TemplateBinding Background}" Effect="{DynamicResource Shadow.Popup}"/>
+                        <Border CornerRadius="10" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" Padding="10,6">
                             <ContentPresenter>
                                 <ContentPresenter.Resources>
                                     <Style TargetType="TextBlock"><Setter Property="TextWrapping" Value="Wrap"/></Style>

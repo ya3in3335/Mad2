@@ -20,7 +20,7 @@
                         <Canvas Width="512" Height="512">
                             <Path Data="{StaticResource Logo.LeftBlade}" Fill="{StaticResource Brush.BladeLeft}"/>
                             <Path Data="{StaticResource Logo.RightBlade}" Fill="{StaticResource Brush.BladeRight}"/>
-                            <Ellipse Canvas.Left="286" Canvas.Top="370" Width="28" Height="28" Fill="#00D9FF"/>
+                            <Ellipse Canvas.Left="286" Canvas.Top="370" Width="28" Height="28" Fill="{DynamicResource Brush.primary}"/>
                         </Canvas>
                     </Viewbox>
                     <StackPanel x:Name="BrandText" Grid.Column="1" Margin="10,0,6,0" VerticalAlignment="Center">
@@ -60,7 +60,8 @@
                                             <Setter Property="Foreground" Value="{DynamicResource Brush.textSecondary}"/>
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
-                                                    <Setter Property="Foreground" Value="{DynamicResource Brush.accent}"/>
+                                                    <Setter Property="Foreground" Value="{DynamicResource Brush.primary}"/>
+                                                    <Setter Property="Effect" Value="{DynamicResource Shadow.Glow}"/>
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
