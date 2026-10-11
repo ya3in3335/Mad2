@@ -1,35 +1,30 @@
 # VELTRIX Admin (Android)
 
-Owner-only mobile command center for the VELTRIX platform. It is a thin client: every number and every action comes from the VELTRIX backend (`/api/v1/platform/**`), which enforces authorization, step-up confirmation and audit logging. The app has no licensing database, no signing keys, no Telegram token and no built-in account.
+Standalone, **offline** owner tool: it issues VELTRIX OS activation codes on the owner's phone. There is no server, no account, no login and no `INTERNET` permission. It replaces `tools/license-issuer` for day-to-day use and produces byte-for-byte compatible codes (same payload, ES256 DER signature, `base64url(JSON).base64url(signature)`).
 
 - Package: `com.veltrix.admin` · minSdk 26 · targetSdk 36
-- Stack: Kotlin, Jetpack Compose (Material 3), MVVM + StateFlow, Hilt, Retrofit/OkHttp, Navigation Compose, AndroidX Biometric
+- Stack: Kotlin, Jetpack Compose (Material 3), Hilt, kotlinx.serialization, AndroidX Biometric, Android Keystore
 - Languages: Arabic (RTL), French, English
 
 ## Build
 ```bash
 cd apps/admin-android
-bash ../../scripts/gradle-with-backoff.sh testDebugUnitTest lintDebug assembleDebug assembleStaging
+bash ../../scripts/gradle-with-backoff.sh testDebugUnitTest lintDebug assembleDebug
 ```
-Outputs:
-- `app/build/outputs/apk/debug/VELTRIX-Admin-Android-<version>-debug.apk`
-- `app/build/outputs/apk/staging/VELTRIX-Admin-Android-<version>-test.apk` (minified, debug-signed — for testing only)
+Output: `app/build/outputs/apk/debug/VELTRIX-Admin-Android-<version>-debug.apk` (`assembleStaging` gives a minified, debug-signed test APK). Release signing comes only from CI environment variables.
 
-A release APK is signed only when the signing environment variables are provided by CI secrets; none are stored in the repository.
+## Use
+1. Open the app: biometric / screen-lock prompt (required; a phone without a screen lock cannot use the app).
+2. **Create signing key** (first run): EC P-256 generated inside the Android Keystore (alias `veltrix_vendor_sign_v1`, StrongBox when available, non-exportable, user authentication required for each use).
+3. **Public key** tab: copy/share the base64 SPKI or PEM and put it in `licensing/vendor-public-key.pem`, then rebuild the VELTRIX OS apps. Apps built with another key reject this phone's codes.
+4. **Issue** tab: paste the shop's device code (64 chars, spaces ignored), shop name, duration (30/90/365/custom days), optional note → confirm with biometrics → copy, share as text, or save as `.txt`. Codes grant plan `full`, all features, 1 device.
+5. **History** tab: search past issues; **Renew** re-issues for the same device with a new duration.
 
-## First launch
-1. Install the APK (allow "install unknown apps" for the file manager/browser you use).
-2. Enter the server address (HTTPS required; debug builds also accept `http://10.0.2.2` for the emulator).
-3. Sign in with a **platform administrator** account, then enter the authenticator (TOTP) code if MFA is enabled. Accounts without platform permissions are refused by the server.
-4. Optionally enable biometric unlock in Settings.
+## Key loss
+The private key never leaves the phone and has **no backup**. If the phone is lost or reset, or the screen lock is removed (Android then destroys the key), no further license can be issued for apps built with its public key: a new key means rebuilding and redistributing every VELTRIX OS app. Deleting the key needs two confirmations plus biometrics.
 
-## Security model
-- Access/refresh tokens are encrypted with an AES-GCM key held in the Android Keystore; refresh tokens rotate on every refresh (server-side reuse detection).
-- Biometric / device-credential gate on cold start and after 15 s in background.
-- `FLAG_SECURE` blocks screenshots and the recents preview.
-- Sensitive actions (suspend/revoke/transfer/seat changes, device deactivation, test Telegram message) re-prompt for the password, sent once as `X-Confirm-Password`; the server verifies it and writes the audit record.
-- Logout revokes the session on the server and wipes local tokens.
+## Security
+`FLAG_SECURE` on all screens; lock on cold start and after 15 s in background; no backups (`allowBackup=false`); history is a local JSON file in app-private storage. No QR output (no QR library in the dependencies).
 
-## Status / limitations
-- Built and unit-tested (21 JVM tests) and lint-clean; **not yet exercised on a physical device or emulator against a live server.**
-- Endpoint list: `docs/API_ADMIN.md`.
+## Tests
+JVM tests sign with a software EC key through the same `LicenseSigner` path and verify with a copy of the customer app's `LicenseVerifier` (valid, wrong device, wrong key/tampered, expiry), plus device-code parsing, expiry math, form validation and history search. Not yet exercised on a physical device.

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Admin session ciphertext is bound to this device's Keystore key: never back it up or transfer it. -->
+<!-- Issuance history stays on this phone; the signing key is non-exportable Keystore material. Never back up or transfer. -->
 <data-extraction-rules>
     <cloud-backup><exclude domain="root" /><exclude domain="database" /><exclude domain="sharedpref" /><exclude domain="file" /></cloud-backup>
     <device-transfer><exclude domain="root" /><exclude domain="database" /><exclude domain="sharedpref" /><exclude domain="file" /></device-transfer>

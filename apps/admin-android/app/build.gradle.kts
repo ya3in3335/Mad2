@@ -33,8 +33,6 @@ android {
         versionCode = buildNumber
         versionName = veltrixVersion
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        // No default server: the owner enters the server URL on first launch. Cleartext HTTP is never allowed outside debug.
-        buildConfigField("boolean", "ALLOW_CLEARTEXT_DEV_HOSTS", "false")
         resourceConfigurations += listOf("en", "fr", "ar")
     }
 
@@ -53,11 +51,9 @@ android {
         debug {
             applicationIdSuffix = ".debug"
             versionNameSuffix = "-debug"
-            // Debug builds may talk plain HTTP to the emulator host (10.0.2.2) / localhost only.
-            buildConfigField("boolean", "ALLOW_CLEARTEXT_DEV_HOSTS", "true")
             resValue("string", "build_label", "DEBUG BUILD — not for production")
         }
-        // Shrunk, installable test build signed with the debug key — clearly labelled, never for production. HTTPS only.
+        // Shrunk, installable test build signed with the debug key — clearly labelled, never for production.
         create("staging") {
             initWith(getByName("debug"))
             isDebuggable = false
@@ -66,7 +62,6 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             applicationIdSuffix = ".test"
             versionNameSuffix = "-test"
-            buildConfigField("boolean", "ALLOW_CLEARTEXT_DEV_HOSTS", "false")
             resValue("string", "build_label", "TEST BUILD — debug-signed, not for production")
             signingConfig = signingConfigs.getByName("debug")
             matchingFallbacks += listOf("release")
@@ -124,7 +119,6 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
-    implementation(libs.androidx.navigation.compose)
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.ui)
     implementation(libs.compose.ui.graphics)
@@ -136,7 +130,6 @@ dependencies {
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
     implementation(libs.biometric)
-    implementation(libs.okhttp)
     implementation(libs.serialization.json)
     implementation(libs.coroutines.android)
     testImplementation(libs.junit)

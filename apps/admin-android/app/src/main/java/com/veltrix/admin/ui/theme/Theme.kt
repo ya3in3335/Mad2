@@ -9,7 +9,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import com.veltrix.admin.ui.common.Tone
 
 // The admin console is always dark: navy surfaces, electric-blue primary, cyan highlights, subtle violet gradients.
 private val AdminDark = darkColorScheme(
