@@ -110,4 +110,25 @@
     <sys:String x:Key="dk.bind.status">Licensed for this computer (since {0}).</sys:String>
     <sys:String x:Key="dk.bind.continue">Continue</sys:String>
     <sys:String x:Key="dk.activation.subtitle">Choose your language and accept the privacy notice to get started.</sys:String>
+    <sys:String x:Key="dk.barcode.generate">Generate barcode</sys:String>
+    <sys:String x:Key="dk.barcode.autoGenerate">Generate a barcode automatically when saving without one</sys:String>
+    <sys:String x:Key="dk.barcode.invalidEan">Invalid EAN-13 barcode (wrong check digit): {0}</sys:String>
+    <sys:String x:Key="dk.labels.print">Print labels</sys:String>
+    <sys:String x:Key="dk.labels.title">Barcode labels</sys:String>
+    <sys:String x:Key="dk.labels.quantity">Qty</sys:String>
+    <sys:String x:Key="dk.labels.size">Label size</sys:String>
+    <sys:String x:Key="dk.labels.custom">Custom size</sys:String>
+    <sys:String x:Key="dk.labels.width">Width (mm)</sys:String>
+    <sys:String x:Key="dk.labels.height">Height (mm)</sys:String>
+    <sys:String x:Key="dk.labels.sheetMode">A4 sheet (grid of labels)</sys:String>
+    <sys:String x:Key="dk.labels.rows">Rows</sys:String>
+    <sys:String x:Key="dk.labels.columns">Columns</sys:String>
+    <sys:String x:Key="dk.labels.margin">Page margin (mm)</sys:String>
+    <sys:String x:Key="dk.labels.gap">Gap between labels (mm)</sys:String>
+    <sys:String x:Key="dk.labels.showShop">Show shop name</sys:String>
+    <sys:String x:Key="dk.labels.preview">Preview</sys:String>
+    <sys:String x:Key="dk.labels.printer">Last printer</sys:String>
+    <sys:String x:Key="dk.labels.noSelection">Select one or more products in the list (Ctrl/Shift for several) with a quantity of at least 1.</sys:String>
+    <sys:String x:Key="dk.labels.count">{0} label(s)</sys:String>
+    <sys:String x:Key="dk.labels.invalidSize">Invalid label size or sheet layout.</sys:String>
 </ResourceDictionary>

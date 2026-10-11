@@ -1,0 +1,73 @@
+<Window x:Class="Veltrix.Desktop.Views.LabelPrintWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="{DynamicResource dk.labels.title}" Width="1100" Height="740" MinWidth="820" MinHeight="560"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False" Style="{StaticResource AppWindow}">
+    <DockPanel Margin="16">
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+            <TextBlock Text="{Binding Message}" Style="{StaticResource Text.Caption}" VerticalAlignment="Center" Margin="0,0,16,0" TextWrapping="Wrap" MaxWidth="520"/>
+            <Button Content="{DynamicResource dk.labels.preview}" Click="Preview_Click" MinWidth="100"/>
+            <Button Content="{DynamicResource action.print}" Click="Print_Click" Style="{StaticResource Button.Primary}" Margin="8,0,0,0" MinWidth="100"/>
+            <Button Content="{DynamicResource action.close}" IsCancel="True" Click="Close_Click" Margin="8,0,0,0" MinWidth="100"/>
+        </StackPanel>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="360"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <DataGrid ItemsSource="{Binding Items}" AutoGenerateColumns="False" CanUserAddRows="False" MaxHeight="260" SelectionMode="Single">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="{DynamicResource cat.name}" Binding="{Binding Name}" IsReadOnly="True" Width="*"/>
+                            <DataGridTextColumn Header="{DynamicResource cat.barcode}" Binding="{Binding Code}" IsReadOnly="True" Width="110"/>
+                            <DataGridTextColumn Header="{DynamicResource dk.labels.quantity}" Binding="{Binding Quantity, UpdateSourceTrigger=PropertyChanged}" Width="60"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <TextBlock Text="{DynamicResource dk.labels.size}" Style="{StaticResource Text.Label}"/>
+                    <ComboBox ItemsSource="{Binding Presets}" DisplayMemberPath="Label" SelectedValuePath="Key" SelectedValue="{Binding Preset}"/>
+                    <Grid Visibility="{Binding IsCustom, Converter={StaticResource BoolToVis}}">
+                        <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="8"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="{DynamicResource dk.labels.width}" Style="{StaticResource Text.Label}"/>
+                            <TextBox Text="{Binding CustomWidth}" FlowDirection="LeftToRight"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="{DynamicResource dk.labels.height}" Style="{StaticResource Text.Label}"/>
+                            <TextBox Text="{Binding CustomHeight}" FlowDirection="LeftToRight"/>
+                        </StackPanel>
+                    </Grid>
+                    <CheckBox Content="{DynamicResource dk.labels.sheetMode}" IsChecked="{Binding SheetMode}" Margin="0,12,0,0"/>
+                    <Grid Visibility="{Binding SheetMode, Converter={StaticResource BoolToVis}}">
+                        <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="8"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions><RowDefinition/><RowDefinition/></Grid.RowDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="{DynamicResource dk.labels.rows}" Style="{StaticResource Text.Label}"/>
+                            <TextBox Text="{Binding Rows}" FlowDirection="LeftToRight"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="{DynamicResource dk.labels.columns}" Style="{StaticResource Text.Label}"/>
+                            <TextBox Text="{Binding Columns}" FlowDirection="LeftToRight"/>
+                        </StackPanel>
+                        <StackPanel Grid.Row="1">
+                            <TextBlock Text="{DynamicResource dk.labels.margin}" Style="{StaticResource Text.Label}"/>
+                            <TextBox Text="{Binding Margin}" FlowDirection="LeftToRight"/>
+                        </StackPanel>
+                        <StackPanel Grid.Row="1" Grid.Column="2">
+                            <TextBlock Text="{DynamicResource dk.labels.gap}" Style="{StaticResource Text.Label}"/>
+                            <TextBox Text="{Binding Gap}" FlowDirection="LeftToRight"/>
+                        </StackPanel>
+                    </Grid>
+                    <CheckBox Content="{DynamicResource dk.labels.showShop}" IsChecked="{Binding ShowShopName}" Margin="0,12,0,0"/>
+                    <TextBlock Text="{DynamicResource dk.labels.printer}" Style="{StaticResource Text.Label}"/>
+                    <TextBlock x:Name="PrinterText" Style="{StaticResource Text.Caption}" TextWrapping="Wrap"/>
+                </StackPanel>
+            </ScrollViewer>
+            <Border Grid.Column="2" BorderBrush="{DynamicResource Brush.border}" BorderThickness="1">
+                <!-- The preview mirrors the printed output: always left-to-right. -->
+                <DocumentViewer x:Name="Viewer" FlowDirection="LeftToRight" Background="#FF9AA0A6"/>
+            </Border>
+        </Grid>
+    </DockPanel>
+</Window>

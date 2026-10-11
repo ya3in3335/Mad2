@@ -110,4 +110,25 @@
     <sys:String x:Key="dk.bind.status">مرخّص لهذا الحاسوب (منذ {0}).</sys:String>
     <sys:String x:Key="dk.bind.continue">متابعة</sys:String>
     <sys:String x:Key="dk.activation.subtitle">اختر لغتك ووافق على إشعار الخصوصية للبدء.</sys:String>
+    <sys:String x:Key="dk.barcode.generate">توليد رمز شريطي</sys:String>
+    <sys:String x:Key="dk.barcode.autoGenerate">توليد رمز شريطي تلقائيًا عند الحفظ إذا كان فارغًا</sys:String>
+    <sys:String x:Key="dk.barcode.invalidEan">رمز EAN-13 غير صالح (رقم التحقق خاطئ): {0}</sys:String>
+    <sys:String x:Key="dk.labels.print">طباعة الملصقات</sys:String>
+    <sys:String x:Key="dk.labels.title">ملصقات الرمز الشريطي</sys:String>
+    <sys:String x:Key="dk.labels.quantity">الكمية</sys:String>
+    <sys:String x:Key="dk.labels.size">مقاس الملصق</sys:String>
+    <sys:String x:Key="dk.labels.custom">مقاس مخصص</sys:String>
+    <sys:String x:Key="dk.labels.width">العرض (مم)</sys:String>
+    <sys:String x:Key="dk.labels.height">الارتفاع (مم)</sys:String>
+    <sys:String x:Key="dk.labels.sheetMode">ورقة A4 (شبكة ملصقات)</sys:String>
+    <sys:String x:Key="dk.labels.rows">الصفوف</sys:String>
+    <sys:String x:Key="dk.labels.columns">الأعمدة</sys:String>
+    <sys:String x:Key="dk.labels.margin">هامش الصفحة (مم)</sys:String>
+    <sys:String x:Key="dk.labels.gap">المسافة بين الملصقات (مم)</sys:String>
+    <sys:String x:Key="dk.labels.showShop">إظهار اسم المتجر</sys:String>
+    <sys:String x:Key="dk.labels.preview">معاينة</sys:String>
+    <sys:String x:Key="dk.labels.printer">آخر طابعة</sys:String>
+    <sys:String x:Key="dk.labels.noSelection">اختر منتجًا أو أكثر من القائمة (Ctrl/Shift لاختيار عدة منتجات) بكمية 1 على الأقل.</sys:String>
+    <sys:String x:Key="dk.labels.count">{0} ملصق</sys:String>
+    <sys:String x:Key="dk.labels.invalidSize">مقاس الملصق أو تخطيط الورقة غير صالح.</sys:String>
 </ResourceDictionary>

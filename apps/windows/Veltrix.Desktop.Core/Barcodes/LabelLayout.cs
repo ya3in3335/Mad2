@@ -40,6 +40,13 @@ public static class LabelLayout
     public static double ModuleWidthMm(BarcodeSymbol symbol, double availableWidthMm) =>
         Math.Max(MinModuleMm, availableWidthMm / symbol.TotalWidth);
 
+    /// <summary>
+    /// Rounds a module width down to whole printer dots (203 dpi ≈ 8 dots/mm) so every bar of the same width prints identically
+    /// on thermal heads; never below <see cref="MinModuleMm"/>.
+    /// </summary>
+    public static double SnapToDots(double moduleMm, double dotsPerMm = 8) =>
+        Math.Max(MinModuleMm, Math.Floor(moduleMm * dotsPerMm + 1e-9) / dotsPerMm);
+
     /// <summary>Cells of an A4 sheet: rows × cols filling the page inside the margins with a gap between cells.</summary>
     public static IReadOnlyList<RectMm> SheetCells(int rows, int cols, double marginMm, double gapMm, double pageWidthMm = A4WidthMm, double pageHeightMm = A4HeightMm)
     {

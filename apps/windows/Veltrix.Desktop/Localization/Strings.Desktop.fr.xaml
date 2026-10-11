@@ -110,4 +110,25 @@
     <sys:String x:Key="dk.bind.status">Licence valide pour cet ordinateur (depuis le {0}).</sys:String>
     <sys:String x:Key="dk.bind.continue">Continuer</sys:String>
     <sys:String x:Key="dk.activation.subtitle">Choisissez votre langue et acceptez l'avis de confidentialité pour commencer.</sys:String>
+    <sys:String x:Key="dk.barcode.generate">Générer un code-barres</sys:String>
+    <sys:String x:Key="dk.barcode.autoGenerate">Générer automatiquement un code-barres à l’enregistrement s’il est vide</sys:String>
+    <sys:String x:Key="dk.barcode.invalidEan">Code EAN-13 invalide (clé de contrôle erronée) : {0}</sys:String>
+    <sys:String x:Key="dk.labels.print">Imprimer des étiquettes</sys:String>
+    <sys:String x:Key="dk.labels.title">Étiquettes code-barres</sys:String>
+    <sys:String x:Key="dk.labels.quantity">Qté</sys:String>
+    <sys:String x:Key="dk.labels.size">Format d’étiquette</sys:String>
+    <sys:String x:Key="dk.labels.custom">Format personnalisé</sys:String>
+    <sys:String x:Key="dk.labels.width">Largeur (mm)</sys:String>
+    <sys:String x:Key="dk.labels.height">Hauteur (mm)</sys:String>
+    <sys:String x:Key="dk.labels.sheetMode">Planche A4 (grille d’étiquettes)</sys:String>
+    <sys:String x:Key="dk.labels.rows">Lignes</sys:String>
+    <sys:String x:Key="dk.labels.columns">Colonnes</sys:String>
+    <sys:String x:Key="dk.labels.margin">Marge de page (mm)</sys:String>
+    <sys:String x:Key="dk.labels.gap">Espace entre étiquettes (mm)</sys:String>
+    <sys:String x:Key="dk.labels.showShop">Afficher le nom du magasin</sys:String>
+    <sys:String x:Key="dk.labels.preview">Aperçu</sys:String>
+    <sys:String x:Key="dk.labels.printer">Dernière imprimante</sys:String>
+    <sys:String x:Key="dk.labels.noSelection">Sélectionnez un ou plusieurs produits dans la liste (Ctrl/Maj pour plusieurs) avec une quantité d’au moins 1.</sys:String>
+    <sys:String x:Key="dk.labels.count">{0} étiquette(s)</sys:String>
+    <sys:String x:Key="dk.labels.invalidSize">Format d’étiquette ou disposition de planche invalide.</sys:String>
 </ResourceDictionary>

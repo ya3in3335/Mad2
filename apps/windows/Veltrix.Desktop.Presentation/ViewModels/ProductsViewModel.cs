@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using Veltrix.Contracts;
 using Veltrix.Contracts.Catalog;
 using Veltrix.Desktop.Core.Api;
+using Veltrix.Desktop.Core.Barcodes;
 
 namespace Veltrix.Desktop.Presentation.ViewModels;
 
@@ -23,6 +24,14 @@ public sealed partial class ProductEditor : ObservableObject
 
     public bool IsNew => Original is null;
 
+    public IReadOnlyList<string> BarcodeList() =>
+        Barcodes.Split(['\r', '\n', ',', ';'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Distinct().ToList();
+
+    /// <summary>13-digit numeric entries are EAN-13 and must carry a valid check digit; returns the first invalid one.</summary>
+    public string? InvalidEan13() => BarcodeList().FirstOrDefault(b => b.Length == 13 && Ean13.IsDigits(b) && !Ean13.IsValid(b));
+
+    public void AddBarcode(string code) => Barcodes = string.IsNullOrWhiteSpace(Barcodes) ? code : Barcodes.TrimEnd() + Environment.NewLine + code;
+
     public static ProductEditor For(ProductDto p) => new()
     {
         Original = p, Sku = p.Sku, Name = p.Name, NameAr = p.NameAr ?? "", SalePrice = p.SalePrice.ToString(System.Globalization.CultureInfo.InvariantCulture),
@@ -37,7 +46,7 @@ public sealed partial class ProductEditor : ObservableObject
         if (string.IsNullOrWhiteSpace(Sku) || string.IsNullOrWhiteSpace(Name)) throw new InvalidOperationException("SKU / name");
         if (!Parse.TryDecimal(SalePrice, out var price) || price < 0) throw new InvalidOperationException("Price");
         var o = Original;
-        var barcodes = Barcodes.Split(['\r', '\n', ',', ';'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Distinct().ToList();
+        var barcodes = BarcodeList().ToList();
         return new UpsertProductRequest(Sku.Trim(), Name.Trim(), string.IsNullOrWhiteSpace(NameAr) ? null : NameAr.Trim(), o?.Description,
             o?.Type ?? "Standard", IsActive ? "Active" : "Inactive", CategoryId, o?.BrandId, o?.UnitId, TaxCategoryId, price, o?.WholesalePrice,
             Parse.DecimalOr(PurchasePrice, o?.PurchasePrice ?? 0), TrackStock, o?.TrackSerial ?? false, o?.TrackLot ?? false, o?.TrackExpiry ?? false,
@@ -55,6 +64,32 @@ public sealed partial class ProductsViewModel(DesktopServices s) : ListPageViewM
     [ObservableProperty] private IReadOnlyList<CategoryDto> _categories = [];
 
     public bool CanManage => Can("catalog.manage");
+
+    /// <summary>Saved setting: assign an in-store EAN-13 ("21…") when a product is saved without a barcode.</summary>
+    public bool AutoGenerateBarcode
+    {
+        get => S.Settings.AutoGenerateBarcode;
+        set
+        {
+            if (S.Settings.AutoGenerateBarcode == value) return;
+            S.Settings.AutoGenerateBarcode = value;
+            S.SaveSettings();
+            OnPropertyChanged();
+        }
+    }
+
+    private InStoreBarcodeGenerator Generator => _generator ??= new InStoreBarcodeGenerator(S.Db);
+    private InStoreBarcodeGenerator? _generator;
+
+    [RelayCommand]
+    public Task GenerateBarcodeAsync() => TryActionAsync(async () =>
+    {
+        if (Editor is null) return;
+        Editor.AddBarcode(await Generator.NextAsync());
+    });
+
+    /// <summary>Opens the label printing dialog for the given (multi-)selection; supplied by the view.</summary>
+    public LabelPrintViewModel CreateLabelPrint(IEnumerable<ProductDto> products) => new(S, products);
 
     protected override async Task<PagedResponse<ProductDto>> FetchAsync(int page, string search, CancellationToken ct)
     {
@@ -84,6 +119,9 @@ public sealed partial class ProductsViewModel(DesktopServices s) : ListPageViewM
     public Task SaveAsync() => TryActionAsync(async () =>
     {
         if (Editor is null) return;
+        if (Editor.InvalidEan13() is { } bad) throw new InvalidOperationException(Loc.Format("dk.barcode.invalidEan", bad));
+        if (S.Settings.AutoGenerateBarcode && Editor.BarcodeList().Count == 0 && !string.IsNullOrWhiteSpace(Editor.Sku) && !string.IsNullOrWhiteSpace(Editor.Name))
+            Editor.AddBarcode(await Generator.NextAsync());
         var req = Editor.ToRequest();
         var saved = S.IsStandalone
             ? await S.Standalone.Store.UpsertProductAsync(req, Editor.Original?.Id)

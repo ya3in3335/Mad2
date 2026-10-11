@@ -10,6 +10,7 @@
                     <TextBox.InputBindings><KeyBinding Key="Return" Command="{Binding SearchNowCommand}"/></TextBox.InputBindings>
                 </TextBox>
                 <Button Content="{DynamicResource action.search}" Command="{Binding SearchNowCommand}" Margin="8,0,0,0"/>
+                <Button Content="{DynamicResource dk.labels.print}" Click="PrintLabels_Click" Margin="8,0,0,0"/>
                 <Button Content="{DynamicResource action.new}" Command="{Binding NewCommand}" Style="{StaticResource Button.Primary}" Margin="8,0,0,0"
                         Visibility="{Binding CanManage, Converter={StaticResource BoolToVis}}"/>
             </StackPanel>
@@ -27,7 +28,7 @@
                         <TextBlock Text="{Binding PageLabel}" VerticalAlignment="Center" Margin="12,0" Style="{StaticResource Text.Caption}"/>
                         <Button Content="›" Command="{Binding NextPageCommand}" IsEnabled="{Binding HasNext}" MinWidth="40"/>
                     </StackPanel>
-                    <DataGrid ItemsSource="{Binding Items}" SelectedItem="{Binding Selected}">
+                    <DataGrid x:Name="Grid" ItemsSource="{Binding Items}" SelectedItem="{Binding Selected}" SelectionMode="Extended">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="{DynamicResource cat.sku}" Binding="{Binding Sku}" Width="120"/>
                             <DataGridTextColumn Header="{DynamicResource cat.name}" Binding="{Binding Name}" Width="*"/>
@@ -62,6 +63,11 @@
                         <TextBox Text="{Binding PurchasePrice}" FlowDirection="LeftToRight"/>
                         <TextBlock Text="{DynamicResource cat.barcode}" Style="{StaticResource Text.Label}"/>
                         <TextBox Text="{Binding Barcodes}" AcceptsReturn="True" MinHeight="60" TextWrapping="Wrap" FlowDirection="LeftToRight" VerticalContentAlignment="Top"/>
+                        <Button Content="{DynamicResource dk.barcode.generate}" HorizontalAlignment="Left" Margin="0,6,0,0"
+                                Command="{Binding DataContext.GenerateBarcodeCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                Visibility="{Binding DataContext.CanManage, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVis}}"/>
+                        <CheckBox Content="{DynamicResource dk.barcode.autoGenerate}" Margin="0,6,0,0"
+                                  IsChecked="{Binding DataContext.AutoGenerateBarcode, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                         <TextBlock Text="{DynamicResource inv.lowStock}" Style="{StaticResource Text.Label}"/>
                         <TextBox Text="{Binding LowStockThreshold}" FlowDirection="LeftToRight"/>
                         <CheckBox Content="{DynamicResource dk.products.trackStock}" IsChecked="{Binding TrackStock}" Margin="0,10,0,0"/>
@@ -69,6 +75,8 @@
                         <Button Content="{DynamicResource action.save}" Style="{StaticResource Button.Primary}" Margin="0,16,0,0"
                                 Command="{Binding DataContext.SaveCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                 Visibility="{Binding DataContext.CanManage, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVis}}"/>
+                        <TextBlock Text="{Binding DataContext.StatusMessage, RelativeSource={RelativeSource AncestorType=UserControl}}" Style="{StaticResource Text.Caption}"
+                                   TextWrapping="Wrap" Margin="0,8,0,0"/>
                     </StackPanel>
                 </ScrollViewer>
             </Border>

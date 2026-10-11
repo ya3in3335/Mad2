@@ -157,5 +157,7 @@ public sealed class BarcodeTests : IAsyncLifetime
         var ean = Ean13.Encode("4006381333931");
         Assert.Equal(36.0 / 113, LabelLayout.ModuleWidthMm(ean, 36), 6);
         Assert.Equal(LabelLayout.MinModuleMm, LabelLayout.ModuleWidthMm(ean, 10));
+        Assert.Equal(0.375, LabelLayout.SnapToDots(0.49));
+        Assert.Equal(LabelLayout.MinModuleMm, LabelLayout.SnapToDots(0.1));
     }
 }
