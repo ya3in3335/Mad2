@@ -90,7 +90,6 @@
                 <Border Style="{StaticResource Card}" Margin="0,0,0,12" Visibility="{Binding CamerasAvailable, Converter={StaticResource BoolToVis}}">
                     <StackPanel>
                         <TextBlock Text="{DynamicResource cam.nav}" Style="{StaticResource Text.Section}"/>
-                        <CheckBox Content="{DynamicResource cam.set.posTile}" IsChecked="{Binding ShowPosCameraTile}" Style="{StaticResource Toggle.Switch}" Margin="0,4,0,0"/>
                         <CheckBox Content="{DynamicResource cam.set.snapshotOnSale}" IsChecked="{Binding SnapshotOnSale}" Style="{StaticResource Toggle.Switch}" Margin="0,8,0,0"/>
                         <TextBlock Text="{DynamicResource cam.set.retention}" Style="{StaticResource Text.Label}" Margin="0,12,0,6"/>
                         <TextBox Text="{Binding SnapshotRetentionDays, UpdateSourceTrigger=LostFocus}" Width="90" HorizontalAlignment="Left" FlowDirection="LeftToRight"/>

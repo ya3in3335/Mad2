@@ -18,8 +18,6 @@ public partial class PosView : UserControl
         Loaded += (_, _) =>
         {
             ScanBox.Focus();
-            // The tile preference and cashier camera may have changed in Settings / Cameras since the page was first loaded.
-            if (_vm is not null) _ = _vm.RefreshCameraAsync();
         };
         DataContextChanged += (_, e) =>
         {

@@ -179,12 +179,6 @@ public sealed partial class SettingsViewModel(DesktopServices s, ShellViewModel 
     /// <summary>CCTV preferences: shown to the owner when the camera feature is available.</summary>
     public bool CamerasAvailable => S.Cameras is not null && S.IsOwner;
 
-    public bool ShowPosCameraTile
-    {
-        get => S.Settings.Cameras.ShowPosTile;
-        set { S.Settings.Cameras.ShowPosTile = value; S.SaveSettings(); OnPropertyChanged(); }
-    }
-
     public bool SnapshotOnSale
     {
         get => S.Settings.Cameras.SnapshotOnSale;
@@ -207,7 +201,6 @@ public sealed partial class SettingsViewModel(DesktopServices s, ShellViewModel 
 
     protected override async Task<bool> LoadAsync(CancellationToken ct)
     {
-        OnPropertyChanged(nameof(ShowPosCameraTile));
         await using (var db = S.Db())
         {
             var last = await db.GetValueAsync(LocalDb.Keys.LastSyncAt, ct);

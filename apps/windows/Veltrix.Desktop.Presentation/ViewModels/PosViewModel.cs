@@ -60,35 +60,6 @@ public sealed partial class PosViewModel(DesktopServices s) : PageViewModel(s)
     public string Currency => _config.Currency;
     public ReceiptModel? LastReceipt { get; private set; }
 
-    /// <summary>Cashier camera (sub stream) for the small live tile; null when none is configured/enabled.</summary>
-    [ObservableProperty] [NotifyPropertyChangedFor(nameof(ShowCameraTile))] private CameraFeed? _cashierFeed;
-    public bool ShowCameraTile => CashierFeed is not null && S.Settings.Cameras.ShowPosTile;
-
-    /// <summary>The tile's close button: hides it and remembers the choice (re-enable in Settings).</summary>
-    [RelayCommand]
-    public void HideCameraTile()
-    {
-        S.Settings.Cameras.ShowPosTile = false;
-        S.SaveSettings();
-        OnPropertyChanged(nameof(ShowCameraTile));
-    }
-
-    /// <summary>Re-reads the cashier camera and the tile preference (called each time the POS screen is shown).</summary>
-    public async Task RefreshCameraAsync()
-    {
-        try
-        {
-            var cam = S.Cameras is null ? null : await S.Cameras.Repository.CashierCameraAsync();
-            CashierFeed = cam is null ? null : CameraFeed.For(cam, Core.Cameras.CameraStream.Sub);
-        }
-        catch (Exception e)
-        {
-            S.Log.Warn("Cashier camera lookup failed", e);
-            CashierFeed = null;
-        }
-        OnPropertyChanged(nameof(ShowCameraTile));
-    }
-
     protected override async Task<bool> LoadAsync(CancellationToken ct)
     {
         _config = await S.Pos.LoadConfigAsync(ct);
@@ -99,7 +70,6 @@ public sealed partial class PosViewModel(DesktopServices s) : PageViewModel(s)
         foreach (var r in registers.Where(r => r.IsActive)) Registers.Add(r);
         SelectedRegister = Registers.FirstOrDefault(r => r.Id == S.Settings.RegisterId) ?? (Registers.Count == 1 ? Registers[0] : null);
         await LoadShiftAsync(ct);
-        await RefreshCameraAsync();
         OnPropertyChanged(nameof(LicenseAllowsSelling));
         OnPropertyChanged(nameof(CanSell));
         return Registers.Count > 0;
