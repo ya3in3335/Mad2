@@ -283,8 +283,7 @@ public sealed partial class PosViewModel(DesktopServices s) : PageViewModel(s)
     public void PrintLastReceipt()
     {
         if (LastReceipt is null) return;
-        var width = ReceiptText.CharsFor(S.Settings.ReceiptPaperMm);
-        if (!S.Ui.PrintText(LastReceipt.Number, ReceiptText.Render(LastReceipt, width), width)) StatusMessage = Loc.Get("dk.pos.printSkipped");
+        if (!S.Ui.PrintReceipt(LastReceipt.Number, S.ReceiptFor(LastReceipt))) StatusMessage = Loc.Get("dk.pos.printSkipped");
     }
 
     private void Recalculate()

@@ -31,8 +31,8 @@ public interface IPlatformUi
     void ApplyTheme(string theme);
     /// <summary>Swaps the accent palette (Accents.All code) for the current theme.</summary>
     void ApplyAccent(string accent);
-    /// <summary>Prints monospaced text (receipts). Returns false when the user cancelled or no printer is available.</summary>
-    bool PrintText(string title, string text, int widthChars);
+    /// <summary>Prints a receipt layout (as many copies as its page asks). Returns false when the user cancelled or no printer is available.</summary>
+    bool PrintReceipt(string title, ReceiptDocument receipt);
     /// <summary>Asks for a destination file. Returns null when cancelled.</summary>
     string? PickSaveFile(string suggestedName, string filter);
     /// <summary>Asks for a file to open. Returns null when cancelled.</summary>
@@ -77,6 +77,12 @@ public sealed class DesktopServices
     public bool IsStandalone => Binding.IsBound;
 
     public void SaveSettings() => SettingsStore.Save(Settings);
+
+    /// <summary>Receipt layout for a sale with the current receipt settings (POS printing, reprint, preview).</summary>
+    public ReceiptDocument ReceiptFor(ReceiptModel receipt, bool reprint = false) =>
+        ReceiptLayout.Build(receipt, Settings.Receipt, Settings.ReceiptPaperMm, Settings.Language, reprint);
+
+    public ReceiptPage ReceiptPage => ReceiptLayout.Page(Settings.ReceiptPaperMm, Settings.Receipt, Settings.Language);
 
     public bool ReducedMotion => Settings.ReducedMotion ?? Ui.SystemReducedMotion;
 }

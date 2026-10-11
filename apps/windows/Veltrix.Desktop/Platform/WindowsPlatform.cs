@@ -126,23 +126,18 @@ public sealed class WpfPlatformUi(WpfLocalizer localizer) : IPlatformUi
         else dicts[dicts.IndexOf(current)] = next;
     }
 
-    public bool PrintText(string title, string text, int widthChars)
+    public bool PrintReceipt(string title, Core.Pos.ReceiptDocument receipt)
     {
         var dialog = new PrintDialog();
         if (dialog.ShowDialog() != true) return false;
-        // Receipt layout is fixed-width text: keep it left-to-right even in Arabic so columns stay aligned.
-        var fontSize = widthChars <= 32 ? 9.0 : 8.5;
-        var doc = new FlowDocument(new Paragraph(new Run(text)))
+        for (var copy = 0; copy < receipt.Page.Copies; copy++)
         {
-            FontFamily = new FontFamily("Consolas, Courier New"),
-            FontSize = fontSize,
-            FlowDirection = FlowDirection.LeftToRight,
-            PagePadding = new Thickness(8),
-            ColumnWidth = double.PositiveInfinity,
-            PageWidth = Math.Min(dialog.PrintableAreaWidth, widthChars * fontSize * 0.62 + 24),
-        };
-        doc.PageHeight = dialog.PrintableAreaHeight;
-        dialog.PrintDocument(((IDocumentPaginatorSource)doc).DocumentPaginator, "VELTRIX OS - " + title);
+            // A fresh document per copy: a paginated FlowDocument is not reused across print jobs.
+            var doc = Printing.ReceiptRenderer.Render(receipt);
+            doc.PageWidth = Math.Min(dialog.PrintableAreaWidth, doc.PageWidth);
+            doc.PageHeight = dialog.PrintableAreaHeight;
+            dialog.PrintDocument(((IDocumentPaginatorSource)doc).DocumentPaginator, "VELTRIX OS - " + title);
+        }
         return true;
     }
 

@@ -17,7 +17,8 @@ public sealed partial class SettingsViewModel(DesktopServices s, ShellViewModel 
     public override string TitleKey => "nav.settings";
 
     public IReadOnlyList<LanguageOption> LanguageOptions { get; } = Languages.Supported.Select(l => new LanguageOption(l.Code, l.NativeName)).ToList();
-    public IReadOnlyList<int> PaperWidths { get; } = [58, 80];
+    /// <summary>Receipt (ticket) customisation with live preview.</summary>
+    public ReceiptSettingsViewModel Receipt { get; } = new(s);
     public IReadOnlyList<AccentInfo> AccentOptions { get; } = Accents.All;
     public ObservableCollection<OutboxIssue> Issues { get; } = [];
     public ShellViewModel Shell { get; } = shell;
@@ -123,6 +124,7 @@ public sealed partial class SettingsViewModel(DesktopServices s, ShellViewModel 
             S.Ui.ApplyLanguage(code);
             OnPropertyChanged();
             OnPropertyChanged(nameof(Accent)); // refreshes the localized accent name
+            Receipt.AppLanguageChanged();
             _ = ReloadAsync();
         }
     }
@@ -160,17 +162,6 @@ public sealed partial class SettingsViewModel(DesktopServices s, ShellViewModel 
         set
         {
             S.Settings.ReducedMotion = value;
-            S.SaveSettings();
-            OnPropertyChanged();
-        }
-    }
-
-    public int ReceiptPaperMm
-    {
-        get => S.Settings.ReceiptPaperMm;
-        set
-        {
-            S.Settings.ReceiptPaperMm = value is 58 ? 58 : 80;
             S.SaveSettings();
             OnPropertyChanged();
         }

@@ -2,7 +2,8 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:sys="clr-namespace:System;assembly=mscorlib"
                     xmlns:p="clr-namespace:System.Windows.Controls.Primitives;assembly=PresentationFramework"
-                    xmlns:c="clr-namespace:Veltrix.Desktop.Controls">
+                    xmlns:c="clr-namespace:Veltrix.Desktop.Controls"
+                    xmlns:pr="clr-namespace:Veltrix.Desktop.Printing">
     <!-- Shared visual language. Theme colours live in Colors.*.xaml (generated) + Theme.*.xaml (gradients, tints, elevation),
          always referenced here through DynamicResource so the theme can be swapped at runtime. -->
 
@@ -17,6 +18,7 @@
     <c:EqualsZeroToVisibilityConverter x:Key="EqualsZeroToVis"/>
     <c:NotNullToBoolConverter x:Key="NotNullToBool"/>
     <c:UpperCaseConverter x:Key="ToUpper"/>
+    <pr:ReceiptPreviewConverter x:Key="ReceiptPreview"/>
 
     <!-- Typography: Segoe UI Variable (Windows 11) → Segoe UI (has Arabic) → Noto Sans Arabic / Tahoma. WPF falls back per character. -->
     <FontFamily x:Key="Font.Ui">Segoe UI Variable Text, Segoe UI, Noto Sans Arabic, Tahoma, Segoe UI Symbol</FontFamily>

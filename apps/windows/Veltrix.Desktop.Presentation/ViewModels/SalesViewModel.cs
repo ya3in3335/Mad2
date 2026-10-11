@@ -105,16 +105,21 @@ public sealed partial class SalesViewModel(DesktopServices s) : PageViewModel(s)
     public Task ReprintAsync() => TryActionAsync(async () =>
     {
         if (SelectedReceipt is null) return;
-        var width = Core.Pos.ReceiptText.CharsFor(S.Settings.ReceiptPaperMm);
-        if (S.IsStandalone)
+        await using (var db = S.Db())
         {
-            await using var db = S.Db();
-            var sale = await db.Sales.FindAsync(SelectedReceipt.Id) ?? throw new InvalidOperationException(Loc.Get("err.generic"));
-            var model = System.Text.Json.JsonSerializer.Deserialize<Core.Pos.ReceiptModel>(sale.ReceiptJson, ApiClient.Json)!;
-            S.Ui.PrintText(model.Number, Core.Pos.ReceiptText.Render(model, width), width);
-            return;
+            // Locally recorded sales keep their receipt model: reprint with the current receipt settings.
+            var sale = await db.Sales.FindAsync(SelectedReceipt.Id);
+            if (sale is { ReceiptJson.Length: > 0 })
+            {
+                var model = System.Text.Json.JsonSerializer.Deserialize<Core.Pos.ReceiptModel>(sale.ReceiptJson, ApiClient.Json)!;
+                S.Ui.PrintReceipt(model.Number, S.ReceiptFor(model, reprint: true));
+                return;
+            }
+            if (S.IsStandalone) throw new InvalidOperationException(Loc.Get("err.generic"));
         }
-        var r = await S.Api.GetAsync<ReceiptDto>($"/api/v1/pos/sales/{SelectedReceipt.Id}/receipt" + ApiClient.Query(("width", width), ("reprint", true)));
-        S.Ui.PrintText(r.Number, r.Content, width);
+        // Server-side sale: the server renders the text for the configured column count.
+        var page = S.ReceiptPage;
+        var r = await S.Api.GetAsync<ReceiptDto>($"/api/v1/pos/sales/{SelectedReceipt.Id}/receipt" + ApiClient.Query(("width", page.Columns), ("reprint", true)));
+        S.Ui.PrintReceipt(r.Number, Core.Pos.ReceiptLayout.FromPlainText(r.Content, page));
     });
 }

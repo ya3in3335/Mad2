@@ -21,7 +21,10 @@ public sealed class AppSettings
     public bool SetupCompleted { get; set; } = true;
     public Guid? RegisterId { get; set; }
     public string? LastUserEmail { get; set; }
+    /// <summary>58, 80 (thermal rolls) or 210 (A4, see <see cref="Pos.ReceiptPaper"/>).</summary>
     public int ReceiptPaperMm { get; set; } = 80;
+    /// <summary>Printed receipt customisation; missing in older settings files, where the defaults keep the historical layout.</summary>
+    public Pos.ReceiptSettings Receipt { get; set; } = new();
     public bool FirstLaunchDone { get; set; }
     /// <summary>Assign an in-store EAN-13 when a product is saved without a barcode.</summary>
     public bool AutoGenerateBarcode { get; set; } = true;
@@ -107,7 +110,9 @@ public sealed class SettingsStore(string path)
         if (s.InstallationId == Guid.Empty) s.InstallationId = Guid.NewGuid();
         s.Language = Languages.Normalize(s.Language);
         s.Theme = s.Theme == "light" ? "light" : "dark";
-        if (s.ReceiptPaperMm is not (58 or 80)) s.ReceiptPaperMm = 80;
+        s.ReceiptPaperMm = Pos.ReceiptPaper.Normalize(s.ReceiptPaperMm);
+        s.Receipt ??= new Pos.ReceiptSettings();
+        s.Receipt.Normalize();
         s.Labels ??= new LabelPrintSettings();
         s.Cameras ??= new CameraSettings();
         if (s.Cameras.RetentionDays is < 1 or > 3650) s.Cameras.RetentionDays = 30;

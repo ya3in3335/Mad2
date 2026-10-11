@@ -72,17 +72,12 @@
                     </StackPanel>
                 </Border>
                 <!-- Server (online mode) / printer -->
-                <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+                <Border Style="{StaticResource Card}" Margin="0,0,0,12" Visibility="{Binding IsOnlineMode, Converter={StaticResource BoolToVis}}">
                     <StackPanel>
-                        <StackPanel Visibility="{Binding IsOnlineMode, Converter={StaticResource BoolToVis}}">
+                        <StackPanel>
                             <TextBlock Text="{DynamicResource onb.server}" Style="{StaticResource Text.Section}"/>
                             <TextBox Text="{Binding ServerUrl, UpdateSourceTrigger=PropertyChanged}" FlowDirection="LeftToRight"/>
                             <Button Content="{DynamicResource action.save}" Command="{Binding SaveServerCommand}" HorizontalAlignment="Left" Margin="0,10,0,0"/>
-                        </StackPanel>
-                        <TextBlock Text="{DynamicResource set.printer}" Style="{StaticResource Text.Label}" Margin="0,16,0,6"/>
-                        <StackPanel Orientation="Horizontal">
-                            <RadioButton Content="58 mm" GroupName="paper" IsChecked="{Binding ReceiptPaperMm, Converter={StaticResource Equals}, ConverterParameter=58}"/>
-                            <RadioButton Content="80 mm" GroupName="paper" IsChecked="{Binding ReceiptPaperMm, Converter={StaticResource Equals}, ConverterParameter=80}"/>
                         </StackPanel>
                     </StackPanel>
                 </Border>
@@ -192,6 +187,125 @@
                     </StackPanel>
                 </Border>
             </UniformGrid>
+            <!-- Receipt (ticket) -->
+            <Border Style="{StaticResource Card}" Margin="0,0,0,12" DataContext="{Binding Receipt}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="16"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock Text="{DynamicResource dk.rcpt.title}" Style="{StaticResource Text.Section}"/>
+                        <TextBlock Text="{DynamicResource dk.rcpt.hint}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap"/>
+
+                        <TextBlock Text="{DynamicResource dk.rcpt.paper}" Style="{StaticResource Text.Label}" Margin="0,12,0,6"/>
+                        <StackPanel Orientation="Horizontal">
+                            <RadioButton Content="58 mm" GroupName="paper" IsChecked="{Binding PaperMm, Converter={StaticResource Equals}, ConverterParameter=58}" Margin="0,0,12,0"/>
+                            <RadioButton Content="80 mm" GroupName="paper" IsChecked="{Binding PaperMm, Converter={StaticResource Equals}, ConverterParameter=80}" Margin="0,0,12,0"/>
+                            <RadioButton Content="A4" GroupName="paper" IsChecked="{Binding PaperMm, Converter={StaticResource Equals}, ConverterParameter=210}"/>
+                        </StackPanel>
+                        <UniformGrid Columns="4" Margin="0,8,0,0">
+                            <StackPanel Margin="0,0,8,0">
+                                <TextBlock Text="{DynamicResource dk.rcpt.margins}" Style="{StaticResource Text.Label}" Margin="0,0,0,4"/>
+                                <ComboBox ItemsSource="{Binding MarginOptions}" SelectedItem="{Binding MarginMm}" ItemStringFormat="{}{0} mm"/>
+                            </StackPanel>
+                            <StackPanel Margin="0,0,8,0">
+                                <TextBlock Text="{DynamicResource dk.rcpt.fontSize}" Style="{StaticResource Text.Label}" Margin="0,0,0,4"/>
+                                <ComboBox ItemsSource="{Binding FontSizeOptions}" DisplayMemberPath="Name" SelectedValuePath="Code" SelectedValue="{Binding FontSize}"/>
+                            </StackPanel>
+                            <StackPanel Margin="0,0,8,0">
+                                <TextBlock Text="{DynamicResource dk.rcpt.copies}" Style="{StaticResource Text.Label}" Margin="0,0,0,4"/>
+                                <ComboBox ItemsSource="{Binding CopyOptions}" SelectedItem="{Binding Copies}"/>
+                            </StackPanel>
+                            <StackPanel>
+                                <TextBlock Text="{DynamicResource dk.rcpt.language}" Style="{StaticResource Text.Label}" Margin="0,0,0,4"/>
+                                <ComboBox ItemsSource="{Binding LanguageOptions}" DisplayMemberPath="Name" SelectedValuePath="Code" SelectedValue="{Binding Language}"/>
+                            </StackPanel>
+                        </UniformGrid>
+
+                        <TextBlock Text="{DynamicResource dk.rcpt.header}" Style="{StaticResource Text.Section}" Margin="0,16,0,0"/>
+                        <TextBlock Text="{DynamicResource dk.rcpt.logo}" Style="{StaticResource Text.Label}" Margin="0,8,0,4"/>
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="{DynamicResource dk.rcpt.logoPick}" Command="{Binding PickLogoCommand}" Margin="0,0,8,0"/>
+                            <Button Content="{DynamicResource dk.rcpt.logoRemove}" Command="{Binding RemoveLogoCommand}" Style="{StaticResource Button.Ghost}" Margin="0,0,8,0"
+                                    Visibility="{Binding HasLogo, Converter={StaticResource BoolToVis}}"/>
+                            <TextBlock Text="{DynamicResource dk.rcpt.logoWidth}" Style="{StaticResource Text.Caption}" VerticalAlignment="Center" Margin="8,0,6,0"/>
+                            <ComboBox ItemsSource="{Binding LogoWidthOptions}" SelectedItem="{Binding LogoMaxWidthMm}" ItemStringFormat="{}{0} mm" MinWidth="80"/>
+                        </StackPanel>
+                        <UniformGrid Columns="2">
+                            <StackPanel Margin="0,0,8,0">
+                                <TextBlock Text="{DynamicResource dk.rcpt.shopName}" Style="{StaticResource Text.Label}" Margin="0,8,0,4"/>
+                                <TextBox Text="{Binding ShopName, UpdateSourceTrigger=PropertyChanged, Delay=400}"/>
+                            </StackPanel>
+                            <StackPanel>
+                                <TextBlock Text="{DynamicResource dk.rcpt.phone}" Style="{StaticResource Text.Label}" Margin="0,8,0,4"/>
+                                <TextBox Text="{Binding Phone, UpdateSourceTrigger=PropertyChanged, Delay=400}" FlowDirection="LeftToRight"/>
+                            </StackPanel>
+                        </UniformGrid>
+                        <TextBlock Text="{DynamicResource dk.rcpt.address}" Style="{StaticResource Text.Label}" Margin="0,8,0,4"/>
+                        <TextBox Text="{Binding Address, UpdateSourceTrigger=PropertyChanged, Delay=400}"/>
+                        <UniformGrid Columns="4">
+                            <StackPanel Margin="0,0,8,0">
+                                <TextBlock Text="{DynamicResource dk.rcpt.nif}" Style="{StaticResource Text.Label}" Margin="0,8,0,4"/>
+                                <TextBox Text="{Binding Nif, UpdateSourceTrigger=PropertyChanged, Delay=400}" FlowDirection="LeftToRight"/>
+                            </StackPanel>
+                            <StackPanel Margin="0,0,8,0">
+                                <TextBlock Text="{DynamicResource dk.rcpt.rc}" Style="{StaticResource Text.Label}" Margin="0,8,0,4"/>
+                                <TextBox Text="{Binding Rc, UpdateSourceTrigger=PropertyChanged, Delay=400}" FlowDirection="LeftToRight"/>
+                            </StackPanel>
+                            <StackPanel Margin="0,0,8,0">
+                                <TextBlock Text="{DynamicResource dk.rcpt.nis}" Style="{StaticResource Text.Label}" Margin="0,8,0,4"/>
+                                <TextBox Text="{Binding Nis, UpdateSourceTrigger=PropertyChanged, Delay=400}" FlowDirection="LeftToRight"/>
+                            </StackPanel>
+                            <StackPanel>
+                                <TextBlock Text="{DynamicResource dk.rcpt.ai}" Style="{StaticResource Text.Label}" Margin="0,8,0,4"/>
+                                <TextBox Text="{Binding Ai, UpdateSourceTrigger=PropertyChanged, Delay=400}" FlowDirection="LeftToRight"/>
+                            </StackPanel>
+                        </UniformGrid>
+                        <TextBlock Text="{DynamicResource dk.rcpt.legalHint}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                        <TextBlock Text="{DynamicResource dk.rcpt.headerLines}" Style="{StaticResource Text.Label}" Margin="0,8,0,4"/>
+                        <TextBox Text="{Binding HeaderLines, UpdateSourceTrigger=PropertyChanged, Delay=400}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="54" VerticalContentAlignment="Top"/>
+
+                        <TextBlock Text="{DynamicResource dk.rcpt.body}" Style="{StaticResource Text.Section}" Margin="0,16,0,0"/>
+                        <UniformGrid Columns="2">
+                            <StackPanel>
+                                <CheckBox Content="{DynamicResource dk.rcpt.showSaleNumber}" IsChecked="{Binding ShowSaleNumber}" Style="{StaticResource Toggle.Switch}" Margin="0,6,0,0"/>
+                                <CheckBox Content="{DynamicResource dk.rcpt.showDate}" IsChecked="{Binding ShowDate}" Style="{StaticResource Toggle.Switch}" Margin="0,6,0,0"/>
+                                <CheckBox Content="{DynamicResource dk.rcpt.showCashier}" IsChecked="{Binding ShowCashier}" Style="{StaticResource Toggle.Switch}" Margin="0,6,0,0"/>
+                                <CheckBox Content="{DynamicResource dk.rcpt.showCustomer}" IsChecked="{Binding ShowCustomer}" Style="{StaticResource Toggle.Switch}" Margin="0,6,0,0"/>
+                                <CheckBox Content="{DynamicResource dk.rcpt.showItemCode}" IsChecked="{Binding ShowItemCode}" Style="{StaticResource Toggle.Switch}" Margin="0,6,0,0"/>
+                            </StackPanel>
+                            <StackPanel>
+                                <CheckBox Content="{DynamicResource dk.rcpt.showUnitPrice}" IsChecked="{Binding ShowUnitPrice}" Style="{StaticResource Toggle.Switch}" Margin="0,6,0,0"/>
+                                <CheckBox Content="{DynamicResource dk.rcpt.showDiscount}" IsChecked="{Binding ShowDiscount}" Style="{StaticResource Toggle.Switch}" Margin="0,6,0,0"/>
+                                <CheckBox Content="{DynamicResource dk.rcpt.showTax}" IsChecked="{Binding ShowTax}" Style="{StaticResource Toggle.Switch}" Margin="0,6,0,0"/>
+                                <CheckBox Content="{DynamicResource dk.rcpt.showPayments}" IsChecked="{Binding ShowPayments}" Style="{StaticResource Toggle.Switch}" Margin="0,6,0,0"/>
+                                <CheckBox Content="{DynamicResource dk.rcpt.totalInWords}" IsChecked="{Binding TotalInWords}" Style="{StaticResource Toggle.Switch}" Margin="0,6,0,0"/>
+                            </StackPanel>
+                        </UniformGrid>
+                        <TextBlock Text="{DynamicResource dk.rcpt.dateFormat}" Style="{StaticResource Text.Label}" Margin="0,8,0,4"/>
+                        <ComboBox ItemsSource="{Binding DateFormatOptions}" DisplayMemberPath="Name" SelectedValuePath="Code" SelectedValue="{Binding DateFormat}"
+                                  FlowDirection="LeftToRight" HorizontalAlignment="Left" MinWidth="200"/>
+
+                        <TextBlock Text="{DynamicResource dk.rcpt.footer}" Style="{StaticResource Text.Section}" Margin="0,16,0,0"/>
+                        <TextBlock Text="{DynamicResource dk.rcpt.footerLines}" Style="{StaticResource Text.Label}" Margin="0,8,0,4"/>
+                        <TextBox Text="{Binding FooterLines, UpdateSourceTrigger=PropertyChanged, Delay=400}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="54" VerticalContentAlignment="Top"/>
+                        <CheckBox Content="{DynamicResource dk.rcpt.saleBarcode}" IsChecked="{Binding ShowSaleBarcode}" Style="{StaticResource Toggle.Switch}" Margin="0,6,0,0"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Width="340">
+                        <DockPanel>
+                            <Button DockPanel.Dock="Right" Content="{DynamicResource dk.rcpt.testPrint}" Command="{Binding TestPrintCommand}" Style="{StaticResource Button.Primary}"/>
+                            <TextBlock Text="{DynamicResource dk.rcpt.preview}" Style="{StaticResource Text.Section}" VerticalAlignment="Center"/>
+                        </DockPanel>
+                        <Border Background="#E6E6E6" Padding="8" Margin="0,8,0,0" CornerRadius="4">
+                            <FlowDocumentScrollViewer Document="{Binding Preview, Converter={StaticResource ReceiptPreview}}" Height="720"
+                                                      HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" IsToolBarVisible="True"
+                                                      Background="#E6E6E6" FlowDirection="LeftToRight"/>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+            </Border>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

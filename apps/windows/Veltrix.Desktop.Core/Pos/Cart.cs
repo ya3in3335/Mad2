@@ -96,7 +96,7 @@ public sealed class Cart
     {
         var totals = Totals(config);
         var lines = _items.Select((i, idx) => new ReceiptLine(i.Product.DisplayName(language), i.Quantity, i.Product.SalePrice, totals.Lines[idx].Discount,
-            totals.Lines[idx].Total)).ToList();
+            totals.Lines[idx].Total, i.Product.Sku)).ToList();
         return new ReceiptModel(companyName, config.ReceiptHeader, config.ReceiptFooter, number, date, cashier, customer, lines,
             totals.Gross, totals.Discount, totals.Tax, totals.Total + settlement.Rounding, payments.Where(p => p.Amount > 0).ToList(), settlement.Change, offline,
             config.Currency);
