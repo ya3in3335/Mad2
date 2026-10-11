@@ -9,3 +9,5 @@ Open:
 5. ✅ Single plan "full" (all features) — verified: backend 40/40, CC 31/31 + build, admin-android 22/22 (commit c517b7c).
 6. ✅ Offline device-bound licensing (tools/license-issuer) — commit 9026499.
 7. ✅ Standalone mode done. Gaps: Win↔Android backup not interchangeable; Android re-login each start; no owner password-change UI; no auto backup.
+8. ✅ Auto device binding (elevated installer --bind), barcode labels, splash motion, local ERP (101 tests), modern UI restyle (52cf3f5, build OK, not yet viewed on Windows).
+9. ⬜ Phone↔PC Wi-Fi sync; ⬜ Arabic user guide + cleanup of server-era parts.
