@@ -7,6 +7,17 @@
     <!-- Startup sequence per branding/motion/MOTION_SPEC.md (vector paths + storyboards, no video). -->
     <Border x:Name="Root" CornerRadius="16" Background="#07111F" BorderBrush="#1E3557" BorderThickness="1" ClipToBounds="True">
         <Grid>
+            <!-- Motion graphics: slow aurora glow (blue/purple) drifting behind the logo. -->
+            <Canvas x:Name="Aurora" IsHitTestVisible="False" ClipToBounds="True" Opacity="0">
+                <Ellipse x:Name="AuroraBlue" Width="520" Height="420" Canvas.Left="-120" Canvas.Top="-80" RenderTransformOrigin="0.5,0.5">
+                    <Ellipse.Fill><RadialGradientBrush><GradientStop Color="#553478FF" Offset="0"/><GradientStop Color="#003478FF" Offset="1"/></RadialGradientBrush></Ellipse.Fill>
+                    <Ellipse.RenderTransform><TranslateTransform/></Ellipse.RenderTransform>
+                </Ellipse>
+                <Ellipse x:Name="AuroraPurple" Width="560" Height="460" Canvas.Left="260" Canvas.Top="220" RenderTransformOrigin="0.5,0.5">
+                    <Ellipse.Fill><RadialGradientBrush><GradientStop Color="#44765BFF" Offset="0"/><GradientStop Color="#00765BFF" Offset="1"/></RadialGradientBrush></Ellipse.Fill>
+                    <Ellipse.RenderTransform><TranslateTransform/></Ellipse.RenderTransform>
+                </Ellipse>
+            </Canvas>
             <Canvas x:Name="Particles" IsHitTestVisible="False" ClipToBounds="True"/>
             <Viewbox Margin="40,28,40,64" Stretch="Uniform">
                 <Canvas Width="512" Height="700">
@@ -20,6 +31,20 @@
                             <GradientStop Color="#3478FF" Offset="1"/>
                         </LinearGradientBrush>
                     </Canvas.Resources>
+                    <!-- Motion graphics: orbital rings rotating in opposite directions around the symbol. -->
+                    <Ellipse x:Name="RingOuter" Canvas.Left="36" Canvas.Top="48" Width="440" Height="440" Stroke="#3300D9FF" StrokeThickness="2"
+                             StrokeDashArray="18 10" RenderTransformOrigin="0.5,0.5" Opacity="0">
+                        <Ellipse.RenderTransform><RotateTransform/></Ellipse.RenderTransform>
+                    </Ellipse>
+                    <Ellipse x:Name="RingInner" Canvas.Left="86" Canvas.Top="98" Width="340" Height="340" Stroke="#44765BFF" StrokeThickness="1.5"
+                             StrokeDashArray="4 8" RenderTransformOrigin="0.5,0.5" Opacity="0">
+                        <Ellipse.RenderTransform><RotateTransform/></Ellipse.RenderTransform>
+                    </Ellipse>
+                    <!-- Energy pulse expanding from the core node once it lights up. -->
+                    <Ellipse x:Name="Pulse" Canvas.Left="270" Canvas.Top="354" Width="60" Height="60" Stroke="#00D9FF" StrokeThickness="2"
+                             RenderTransformOrigin="0.5,0.5" Opacity="0">
+                        <Ellipse.RenderTransform><ScaleTransform/></Ellipse.RenderTransform>
+                    </Ellipse>
                     <Path x:Name="LeftBlade" Data="M 84 104 L 184 104 L 282 356 L 240 432 Z" Fill="{StaticResource LeftGrad}">
                         <Path.RenderTransform><TranslateTransform/></Path.RenderTransform>
                     </Path>
@@ -69,6 +94,15 @@
                     </Canvas>
                     <TextBlock x:Name="Tagline" Canvas.Top="650" Width="512" TextAlignment="Center" FontSize="22" Foreground="#A3B3CB"
                                Text="{DynamicResource app.slogan}"/>
+                    <!-- Light sweep across the symbol and wordmark (brand reveal). -->
+                    <Rectangle x:Name="Sweep" Canvas.Left="-200" Canvas.Top="80" Width="140" Height="620" Opacity="0" IsHitTestVisible="False">
+                        <Rectangle.Fill>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                <GradientStop Color="#00FFFFFF" Offset="0"/><GradientStop Color="#55FFFFFF" Offset="0.5"/><GradientStop Color="#00FFFFFF" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Rectangle.Fill>
+                        <Rectangle.RenderTransform><TransformGroup><SkewTransform AngleX="-18"/><TranslateTransform/></TransformGroup></Rectangle.RenderTransform>
+                    </Rectangle>
                 </Canvas>
             </Viewbox>
             <ProgressBar x:Name="Progress" VerticalAlignment="Bottom" Margin="120,0,120,36" IsIndeterminate="True" Visibility="Collapsed"

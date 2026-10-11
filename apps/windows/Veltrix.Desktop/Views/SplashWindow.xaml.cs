@@ -48,6 +48,7 @@ public partial class SplashWindow : Window
         else
         {
             BuildParticles();
+            StartAmbient();
             _intro = BuildIntro();
             // Later launches compress the same choreography into ≈1.2 s.
             _intro.SpeedRatio = _firstLaunch ? 1.0 : 2.1 / 1.2;
@@ -84,8 +85,26 @@ public partial class SplashWindow : Window
         main.BeginAnimation(OpacityProperty, null);
         main.Opacity = 1;
         _particles?.Stop(this);
+        _ambient?.Stop(this);
         _intro?.Stop(this);
         Close();
+    }
+
+    private Storyboard? _ambient;
+
+    /// <summary>Looping background motion (aurora drift + counter-rotating rings). Disabled with reduced motion.</summary>
+    private void StartAmbient()
+    {
+        _ambient = new Storyboard();
+        var slow = TimeSpan.FromSeconds(9);
+        Add(_ambient, AuroraBlue, "(UIElement.RenderTransform).(TranslateTransform.X)", new DoubleAnimation(0, 140, slow) { AutoReverse = true, RepeatBehavior = RepeatBehavior.Forever, EasingFunction = new SineEase() });
+        Add(_ambient, AuroraBlue, "(UIElement.RenderTransform).(TranslateTransform.Y)", new DoubleAnimation(0, 60, slow) { AutoReverse = true, RepeatBehavior = RepeatBehavior.Forever, EasingFunction = new SineEase() });
+        Add(_ambient, AuroraPurple, "(UIElement.RenderTransform).(TranslateTransform.X)", new DoubleAnimation(0, -160, slow) { AutoReverse = true, RepeatBehavior = RepeatBehavior.Forever, EasingFunction = new SineEase() });
+        Add(_ambient, AuroraPurple, "(UIElement.RenderTransform).(TranslateTransform.Y)", new DoubleAnimation(0, -70, slow) { AutoReverse = true, RepeatBehavior = RepeatBehavior.Forever, EasingFunction = new SineEase() });
+        Add(_ambient, RingOuter, "(UIElement.RenderTransform).(RotateTransform.Angle)", new DoubleAnimation(0, 360, TimeSpan.FromSeconds(18)) { RepeatBehavior = RepeatBehavior.Forever });
+        Add(_ambient, RingInner, "(UIElement.RenderTransform).(RotateTransform.Angle)", new DoubleAnimation(360, 0, TimeSpan.FromSeconds(12)) { RepeatBehavior = RepeatBehavior.Forever });
+        _ambient.Begin(this, true);
+        Aurora.BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(900)));
     }
 
     private Storyboard BuildIntro()
@@ -119,6 +138,16 @@ public partial class SplashWindow : Window
         Add(sb, Wordmark, "(UIElement.RenderTransform).(TransformGroup.Children)[1].(TranslateTransform.Y)", Spline(12, 0, 1500, 700));
         Add(sb, Tagline, "Opacity", Fade(0, 1, 1800, 500));
         Add(sb, SkipHint, "Opacity", Fade(0, 0.6, 600, 400));
+
+        // Motion graphics: core energy pulse (1500 ms) and a single light sweep across the brand (1900–2700 ms).
+        Add(sb, Pulse, "Opacity", Fade(0.7, 0, 1500, 900));
+        Add(sb, Pulse, "(UIElement.RenderTransform).(ScaleTransform.ScaleX)", Spline(0.5, 4, 1500, 900));
+        Add(sb, Pulse, "(UIElement.RenderTransform).(ScaleTransform.ScaleY)", Spline(0.5, 4, 1500, 900));
+        Add(sb, Sweep, "Opacity", Fade(0, 1, 1900, 100));
+        Add(sb, Sweep, "(UIElement.RenderTransform).(TransformGroup.Children)[1].(TranslateTransform.X)", Spline(0, 900, 1900, 800));
+        Add(sb, Sweep, "Opacity", Fade(1, 0, 2600, 150));
+        Add(sb, RingOuter, "Opacity", Fade(0, 1, 600, 800));
+        Add(sb, RingInner, "Opacity", Fade(0, 1, 800, 800));
 
         // Initial state before the storyboard reaches each element.
         foreach (UIElement e in new UIElement[] { LeftBlade, RightBlade, Trace, Node1, Node2, Core, Wordmark, Tagline }) e.Opacity = 0;
