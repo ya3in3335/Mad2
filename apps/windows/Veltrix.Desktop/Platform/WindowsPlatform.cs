@@ -74,9 +74,10 @@ public sealed class WpfPlatformUi(WpfLocalizer localizer) : IPlatformUi
         var dicts = Application.Current.Resources.MergedDictionaries;
         foreach (var d in dicts.Where(d => d.Source?.OriginalString.Contains(StringsMarker, StringComparison.Ordinal) == true).ToList())
         {
-            var desktop = d.Source!.OriginalString.Contains("Strings.Desktop.", StringComparison.Ordinal);
+            var src = d.Source!.OriginalString;
+            var tag = src.Contains("Strings.Desktop.", StringComparison.Ordinal) ? "Desktop." : src.Contains("Strings.Erp.", StringComparison.Ordinal) ? "Erp." : "";
             var index = dicts.IndexOf(d);
-            dicts[index] = new ResourceDictionary { Source = new Uri($"pack://application:,,,/Localization/Strings.{(desktop ? "Desktop." : "")}{code}.xaml") };
+            dicts[index] = new ResourceDictionary { Source = new Uri($"pack://application:,,,/Localization/Strings.{tag}{code}.xaml") };
         }
         var culture = Languages.Culture(code);
         CultureInfo.DefaultThreadCurrentCulture = culture;
