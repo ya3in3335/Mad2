@@ -415,7 +415,7 @@ public sealed class ErpTests : IAsyncLifetime
             Assert.Equal(75m, (await db.Customers.SingleAsync()).Balance);
             Assert.Equal(1, await db.Sales.CountAsync());
             Assert.True(await db.Accounts.CountAsync() > 40);
-            Assert.Equal("3", await db.GetValueAsync(LocalDb.Keys.SchemaVersion));
+            Assert.Equal(LocalDb.SchemaVersion.ToString(), await db.GetValueAsync(LocalDb.Keys.SchemaVersion));
         }
         // The upgraded database is fully usable.
         var s = await Erp().UpsertSupplierAsync(null, new SupplierInput("New supplier"));

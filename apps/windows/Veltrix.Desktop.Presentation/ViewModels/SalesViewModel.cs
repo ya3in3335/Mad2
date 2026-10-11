@@ -89,6 +89,18 @@ public sealed partial class SalesViewModel(DesktopServices s) : PageViewModel(s)
         catch (Exception e) { StatusMessage = Describe(e); }
     }
 
+    public bool CamerasAvailable => S.Cameras is not null;
+
+    /// <summary>Shows the cashier-camera photo taken when the selected sale was completed.</summary>
+    [RelayCommand]
+    public Task ViewCameraPhotoAsync() => TryActionAsync(async () =>
+    {
+        if (SelectedReceipt is null || S.Cameras is null) return;
+        var path = await S.Cameras.Snapshots.FindAsync(SelectedReceipt.Id);
+        if (path is null) { StatusMessage = Loc.Get("cam.noPhoto"); return; }
+        S.Ui.ShowImage(path, $"{Loc.Get("cam.photo")} — {SelectedReceipt.Number}");
+    });
+
     [RelayCommand]
     public Task ReprintAsync() => TryActionAsync(async () =>
     {

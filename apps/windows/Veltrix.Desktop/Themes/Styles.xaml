@@ -66,6 +66,7 @@
     <sys:String x:Key="Glyph.purchasing">&#xE719;</sys:String>
     <sys:String x:Key="Glyph.reports">&#xE9D2;</sys:String>
     <sys:String x:Key="Glyph.settings">&#xE713;</sys:String>
+    <sys:String x:Key="Glyph.cameras">&#xE714;</sys:String>
     <sys:String x:Key="Glyph.erp.cash">&#xE825;</sys:String>
     <sys:String x:Key="Glyph.erp.receivables">&#xE8C7;</sys:String>
     <sys:String x:Key="Glyph.erp.suppliers">&#xE821;</sys:String>

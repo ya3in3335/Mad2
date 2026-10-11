@@ -151,6 +151,35 @@ public sealed class ParkedCart
     public DateTimeOffset CreatedAt { get; set; }
 }
 
+/// <summary>CCTV camera (schema v4). Username, password and custom URL are stored encrypted (<c>dp1:</c> + base64 of DPAPI output).</summary>
+public sealed class LocalCamera
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = "";
+    public string Brand { get; set; } = "Hikvision";
+    public string Host { get; set; } = "";
+    public int Port { get; set; } = 554;
+    public int HttpPort { get; set; } = 80;
+    public string? UsernameProtected { get; set; }
+    public string? PasswordProtected { get; set; }
+    public string? CustomUrlProtected { get; set; }
+    public int Channel { get; set; } = 1;
+    public string Stream { get; set; } = "sub";
+    public string Role { get; set; } = "general";
+    public bool Enabled { get; set; } = true;
+    public int SortOrder { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+}
+
+/// <summary>Cashier-camera photo taken when a POS sale completed (schema v4). <see cref="RelativePath"/> is relative to the app data root.</summary>
+public sealed class LocalSaleSnapshot
+{
+    public Guid SaleId { get; set; }
+    public Guid CameraId { get; set; }
+    public string RelativePath { get; set; } = "";
+    public DateTimeOffset TakenAt { get; set; }
+}
+
 public sealed class KeyValue
 {
     public string Key { get; set; } = "";
@@ -159,7 +188,7 @@ public sealed class KeyValue
 
 public sealed class LocalDb(DbContextOptions<LocalDb> options) : DbContext(options)
 {
-    public const int SchemaVersion = 3;
+    public const int SchemaVersion = 4;
 
     public DbSet<LocalProduct> Products => Set<LocalProduct>();
     public DbSet<LocalCustomer> Customers => Set<LocalCustomer>();
@@ -189,6 +218,9 @@ public sealed class LocalDb(DbContextOptions<LocalDb> options) : DbContext(optio
     public DbSet<LocalSaleReturn> SaleReturns => Set<LocalSaleReturn>();
     public DbSet<LocalSaleReturnLine> SaleReturnLines => Set<LocalSaleReturnLine>();
     public DbSet<LocalCashMovement> CashMovements => Set<LocalCashMovement>();
+    // schema v4: CCTV
+    public DbSet<LocalCamera> Cameras => Set<LocalCamera>();
+    public DbSet<LocalSaleSnapshot> SaleSnapshots => Set<LocalSaleSnapshot>();
 
     /// <summary>Tables added by schema v3 (created in place when upgrading a v2 database).</summary>
     public static readonly IReadOnlyList<string> V3Tables =
@@ -196,6 +228,9 @@ public sealed class LocalDb(DbContextOptions<LocalDb> options) : DbContext(optio
         "Suppliers", "Purchases", "PurchaseLines", "Payments", "ExpenseCategories", "Expenses", "Accounts", "JournalEntries", "JournalLines",
         "ClosedPeriods", "Employees", "SalaryAdvances", "PayrollRuns", "Payslips", "SaleReturns", "SaleReturnLines", "CashMovements",
     ];
+
+    /// <summary>Tables added by schema v4 (cameras and per-sale snapshots).</summary>
+    public static readonly IReadOnlyList<string> V4Tables = ["Cameras", "SaleSnapshots"];
 
     public static DbContextOptions<LocalDb> OptionsFor(string connectionString) =>
         new DbContextOptionsBuilder<LocalDb>().UseSqlite(connectionString).Options;
@@ -235,6 +270,8 @@ public sealed class LocalDb(DbContextOptions<LocalDb> options) : DbContext(optio
         b.Entity<LocalSaleReturn>(e => { e.HasKey(x => x.Id); e.HasIndex(x => x.SaleId); });
         b.Entity<LocalSaleReturnLine>(e => { e.HasKey(x => x.Id); e.HasIndex(x => x.ReturnId); });
         b.Entity<LocalCashMovement>(e => { e.HasKey(x => x.Id); e.HasIndex(x => x.Date); e.HasIndex(x => x.ShiftId); });
+        b.Entity<LocalCamera>(e => { e.HasKey(x => x.Id); e.HasIndex(x => x.SortOrder); });
+        b.Entity<LocalSaleSnapshot>(e => { e.HasKey(x => x.SaleId); e.HasIndex(x => x.TakenAt); });
 
         // SQLite has no native decimal/DateTimeOffset ordering; store as TEXT/ticks via converters where queried.
         foreach (var p in b.Model.GetEntityTypes().SelectMany(t => t.GetProperties()))
@@ -253,6 +290,7 @@ public sealed class LocalDb(DbContextOptions<LocalDb> options) : DbContext(optio
         var version = created ? SchemaVersion : int.TryParse(stored?.Value, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var v) ? v : 1;
         if (version < 2) await MigrateToV2Async(ct);
         if (version < 3) await MigrateToV3Async(ct);
+        if (version < 4) await CreateModelTablesAsync(V4Tables, ct);
         await Erp.DefaultChart.EnsureSeededAsync(this, ct);
         if (stored is null) Values.Add(new KeyValue { Key = Keys.SchemaVersion, Value = SchemaVersion.ToString(System.Globalization.CultureInfo.InvariantCulture) });
         else stored.Value = SchemaVersion.ToString(System.Globalization.CultureInfo.InvariantCulture);
@@ -299,17 +337,22 @@ public sealed class LocalDb(DbContextOptions<LocalDb> options) : DbContext(optio
             // Existing stock keeps its known purchase cost as the starting average.
             await Database.ExecuteSqlRawAsync("UPDATE \"Products\" SET \"AverageCost\" = \"PurchasePrice\";", ct);
         }
-        // The model's own DDL (so column types always match the mapping), restricted to the v3 tables and made idempotent.
+        await CreateModelTablesAsync(V3Tables, ct);
+        await tx.CommitAsync(ct);
+    }
+
+    /// <summary>Creates the given tables (and their indexes) from the model's own DDL, so column types always match the mapping; idempotent.</summary>
+    private async Task CreateModelTablesAsync(IReadOnlyList<string> tables, CancellationToken ct)
+    {
         foreach (var stmt in Database.GenerateCreateScript().Split(";", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
         {
-            if (!V3Tables.Any(t => stmt.Contains($"\"{t}\" (", StringComparison.Ordinal))) continue;
+            if (!tables.Any(t => stmt.Contains($"\"{t}\" (", StringComparison.Ordinal))) continue;
             var sql = stmt.Replace("CREATE TABLE ", "CREATE TABLE IF NOT EXISTS ").Replace("CREATE UNIQUE INDEX ", "CREATE UNIQUE INDEX IF NOT EXISTS ")
                 .Replace("CREATE INDEX ", "CREATE INDEX IF NOT EXISTS ");
 #pragma warning disable EF1002 // DDL generated by EF from the model, no user input
             await Database.ExecuteSqlRawAsync(sql, ct);
 #pragma warning restore EF1002
         }
-        await tx.CommitAsync(ct);
     }
 
     public async Task<string?> GetValueAsync(string key, CancellationToken ct = default) => (await Values.FindAsync([key], ct))?.Value;

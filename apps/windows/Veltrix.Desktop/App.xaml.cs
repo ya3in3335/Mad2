@@ -64,6 +64,13 @@ public partial class App : Application
             var init = app.InitializeAsync(CancellationToken.None);
             await splash.PlayAsync(init);
             route = await init;
+            // Sale-photo retention (default 30 days): off the UI thread, never blocks startup.
+            if (services.Cameras is { } cams)
+                _ = Task.Run(async () =>
+                {
+                    try { var n = await cams.Snapshots.CleanupAsync(); if (n > 0) _log?.Info($"Deleted {n} expired camera snapshot(s)"); }
+                    catch (Exception ex) { _log?.Warn("Snapshot cleanup failed", ex); }
+                });
         }
         catch (Exception ex)
         {
@@ -117,6 +124,9 @@ public partial class App : Application
             Session = new SessionService(api, tokens, secrets), Db = db, Sync = new SyncEngine(db, new ApiSyncTransport(api), time),
             Pos = new PosService(api, db, time, () => binding.IsBound), Loc = localizer, Ui = new WpfPlatformUi(localizer), Time = time, Log = log, Version = version,
             Standalone = new Core.Standalone.StandaloneService(secrets, db, time, () => binding.IsBound),
+            // CCTV (LAN only): camera credentials encrypted with DPAPI (current user); sale photos via the camera's HTTP snapshot, else a libVLC frame.
+            Cameras = new Core.Cameras.CameraService(db, new DpapiProtector(), AppPaths.Root,
+                new Core.Cameras.FallbackSnapshotCapturer(new Core.Cameras.HttpSnapshotCapturer(), new VlcFrameCapturer()), settings, time, log),
         };
     }
 

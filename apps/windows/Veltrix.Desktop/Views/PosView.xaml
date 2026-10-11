@@ -151,6 +151,12 @@
 
                 <!-- Totals and payment -->
                 <DockPanel Grid.Column="2">
+                    <!-- Optional cashier-camera live tile (sub stream); "×" hides it (re-enable in Settings). -->
+                    <Border DockPanel.Dock="Top" Height="190" Margin="0,0,0,12" CornerRadius="8" ClipToBounds="True" Background="Black"
+                            Visibility="{Binding ShowCameraTile, Converter={StaticResource BoolToVis}}">
+                        <c:CameraTile Feed="{Binding CashierFeed}" CloseCommand="{Binding HideCameraTileCommand}"
+                                      Visibility="{Binding ShowCameraTile, Converter={StaticResource BoolToVis}}"/>
+                    </Border>
                     <Grid DockPanel.Dock="Top">
                         <Border Style="{StaticResource Card.Shadow}"/>
                         <Border Style="{StaticResource Card}" Background="{DynamicResource Brush.totalPanel}" Padding="20,18">

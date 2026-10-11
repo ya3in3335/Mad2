@@ -1,0 +1,73 @@
+<Window x:Class="Veltrix.Desktop.Views.CameraEditWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="{DynamicResource cam.dialogTitle}" Width="760" Height="640" MinWidth="640" MinHeight="520"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False" Style="{StaticResource AppWindow}">
+    <DockPanel Margin="16">
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+            <TextBlock Text="{Binding Message}" Style="{StaticResource Text.Caption}" VerticalAlignment="Center" Margin="0,0,16,0" TextWrapping="Wrap" MaxWidth="380"/>
+            <Button Content="{DynamicResource cam.test}" Command="{Binding TestCommand}" MinWidth="110"/>
+            <Button Content="{DynamicResource action.save}" Command="{Binding SaveCommand}" Style="{StaticResource Button.Primary}" Margin="8,0,0,0" MinWidth="100"/>
+            <Button Content="{DynamicResource action.close}" IsCancel="True" Click="Close_Click" Margin="8,0,0,0" MinWidth="100"/>
+        </StackPanel>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="240"/>
+            </Grid.ColumnDefinitions>
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <TextBlock Text="{DynamicResource cam.name}" Style="{StaticResource Text.Label}"/>
+                    <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"/>
+                    <TextBlock Text="{DynamicResource cam.brand}" Style="{StaticResource Text.Label}"/>
+                    <ComboBox ItemsSource="{Binding Brands}" SelectedItem="{Binding Brand}"/>
+                    <StackPanel Visibility="{Binding IsPreset, Converter={StaticResource BoolToVis}}">
+                        <TextBlock Text="{DynamicResource cam.host}" Style="{StaticResource Text.Label}"/>
+                        <TextBox Text="{Binding Host, UpdateSourceTrigger=PropertyChanged}" FlowDirection="LeftToRight"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="{DynamicResource cam.port}" Style="{StaticResource Text.Label}"/>
+                                <TextBox Text="{Binding Port, UpdateSourceTrigger=PropertyChanged}" FlowDirection="LeftToRight"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="{DynamicResource cam.httpPort}" Style="{StaticResource Text.Label}"/>
+                                <TextBox Text="{Binding HttpPort, UpdateSourceTrigger=PropertyChanged}" FlowDirection="LeftToRight"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="4">
+                                <TextBlock Text="{DynamicResource cam.channel}" Style="{StaticResource Text.Label}"/>
+                                <TextBox Text="{Binding Channel, UpdateSourceTrigger=PropertyChanged}" FlowDirection="LeftToRight"/>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                    <StackPanel Visibility="{Binding IsGeneric, Converter={StaticResource BoolToVis}}">
+                        <TextBlock Text="{DynamicResource cam.customUrl}" Style="{StaticResource Text.Label}"/>
+                        <TextBox Text="{Binding CustomUrl, UpdateSourceTrigger=PropertyChanged}" FlowDirection="LeftToRight"/>
+                    </StackPanel>
+                    <TextBlock Text="{DynamicResource cam.username}" Style="{StaticResource Text.Label}"/>
+                    <TextBox Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}" FlowDirection="LeftToRight"/>
+                    <TextBlock Text="{DynamicResource cam.password}" Style="{StaticResource Text.Label}"/>
+                    <PasswordBox x:Name="PasswordInput" PasswordChanged="Password_Changed" FlowDirection="LeftToRight"/>
+                    <CheckBox Content="{DynamicResource cam.mainStream}" IsChecked="{Binding UseMainStream}" Style="{StaticResource Toggle.Switch}" Margin="0,12,0,0"/>
+                    <CheckBox Content="{DynamicResource cam.cashierRole}" IsChecked="{Binding IsCashier}" Style="{StaticResource Toggle.Switch}" Margin="0,8,0,0"/>
+                    <CheckBox Content="{DynamicResource cam.enabled}" IsChecked="{Binding Enabled}" Style="{StaticResource Toggle.Switch}" Margin="0,8,0,0"/>
+                    <TextBlock Text="{DynamicResource cam.preview}" Style="{StaticResource Text.Label}"/>
+                    <TextBlock Text="{Binding PreviewUrl}" Style="{StaticResource Text.Caption}" FontFamily="{StaticResource Font.Mono}" TextWrapping="Wrap" FlowDirection="LeftToRight"/>
+                    <TextBlock Text="{DynamicResource cam.lanOnly}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,8,0,0"/>
+                </StackPanel>
+            </ScrollViewer>
+            <DockPanel Grid.Column="2">
+                <Button DockPanel.Dock="Top" Content="{DynamicResource cam.discover}" Command="{Binding DiscoverCommand}" HorizontalAlignment="Stretch"/>
+                <TextBlock DockPanel.Dock="Top" Text="{DynamicResource cam.discoverHint}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,8"/>
+                <ListBox ItemsSource="{Binding Discovered}" SelectedItem="{Binding SelectedDiscovered}" DisplayMemberPath="Display"/>
+            </DockPanel>
+        </Grid>
+    </DockPanel>
+</Window>

@@ -150,6 +150,23 @@ public sealed class WpfPlatformUi(WpfLocalizer localizer) : IPlatformUi
         catch (System.Runtime.InteropServices.ExternalException) { } // clipboard busy: the user can still select the text
     }
 
+    public void ShowImage(string path, string title)
+    {
+        var image = new System.Windows.Media.Imaging.BitmapImage();
+        image.BeginInit();
+        image.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad; // file not kept locked (retention can delete it)
+        image.UriSource = new Uri(path);
+        image.EndInit();
+        var window = new Window
+        {
+            Title = title, Owner = Application.Current.MainWindow, WindowStartupLocation = WindowStartupLocation.CenterOwner, ShowInTaskbar = false,
+            Width = 900, Height = 620, Background = Brushes.Black,
+            Content = new Image { Source = image, Stretch = Stretch.Uniform },
+        };
+        window.KeyDown += (_, e) => { if (e.Key == System.Windows.Input.Key.Escape) window.Close(); };
+        window.ShowDialog();
+    }
+
     public bool Confirm(string message)
     {
         var owner = Application.Current.MainWindow;

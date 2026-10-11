@@ -42,6 +42,7 @@
             <DataTemplate DataType="{x:Type vm:PurchasingViewModel}"><views:PurchasingView/></DataTemplate>
             <DataTemplate DataType="{x:Type vm:ReportsViewModel}"><views:ReportsView/></DataTemplate>
             <DataTemplate DataType="{x:Type vm:SettingsViewModel}"><views:SettingsView/></DataTemplate>
+            <DataTemplate DataType="{x:Type vm:CamerasViewModel}"><views:CamerasView/></DataTemplate>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

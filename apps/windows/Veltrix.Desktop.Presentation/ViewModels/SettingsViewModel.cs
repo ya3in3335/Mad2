@@ -159,8 +159,38 @@ public sealed partial class SettingsViewModel(DesktopServices s, ShellViewModel 
         }
     }
 
+    /// <summary>CCTV preferences: shown to the owner when the camera feature is available.</summary>
+    public bool CamerasAvailable => S.Cameras is not null && S.IsOwner;
+
+    public bool ShowPosCameraTile
+    {
+        get => S.Settings.Cameras.ShowPosTile;
+        set { S.Settings.Cameras.ShowPosTile = value; S.SaveSettings(); OnPropertyChanged(); }
+    }
+
+    public bool SnapshotOnSale
+    {
+        get => S.Settings.Cameras.SnapshotOnSale;
+        set { S.Settings.Cameras.SnapshotOnSale = value; S.SaveSettings(); OnPropertyChanged(); }
+    }
+
+    public string SnapshotRetentionDays
+    {
+        get => S.Settings.Cameras.RetentionDays.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        set
+        {
+            if (int.TryParse(value, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var d) && d is >= 1 and <= 3650)
+            {
+                S.Settings.Cameras.RetentionDays = d;
+                S.SaveSettings();
+            }
+            OnPropertyChanged();
+        }
+    }
+
     protected override async Task<bool> LoadAsync(CancellationToken ct)
     {
+        OnPropertyChanged(nameof(ShowPosCameraTile));
         await using (var db = S.Db())
         {
             var last = await db.GetValueAsync(LocalDb.Keys.LastSyncAt, ct);

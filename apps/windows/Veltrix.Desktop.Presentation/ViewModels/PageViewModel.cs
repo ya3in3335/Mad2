@@ -112,7 +112,7 @@ public static class ErrorText
         ApiException { Code: "client.no_server" } => loc.Get("dk.err.noServer"),
         ApiException a when !string.IsNullOrWhiteSpace(a.Message) => a.Message,
         // Local ERP rules report a localization key (erp.err.*).
-        InvalidOperationException io when io.Message.StartsWith("erp.", StringComparison.Ordinal) => loc.Get(io.Message),
+        InvalidOperationException io when io.Message.StartsWith("erp.", StringComparison.Ordinal) || io.Message.StartsWith("cam.", StringComparison.Ordinal) => loc.Get(io.Message),
         InvalidOperationException io => io.Message,
         _ => loc.Get("err.generic"),
     };

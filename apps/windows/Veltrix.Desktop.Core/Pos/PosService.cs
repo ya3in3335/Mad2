@@ -13,7 +13,11 @@ using Veltrix.Desktop.Core.Sync;
 
 namespace Veltrix.Desktop.Core.Pos;
 
-public sealed record CheckoutResult(string Number, bool Offline, ReceiptModel Receipt, SaleDto? Sale);
+public sealed record CheckoutResult(string Number, bool Offline, ReceiptModel Receipt, SaleDto? Sale)
+{
+    /// <summary>Local/client sale id (also sent to the server), used to link the cashier-camera photo.</summary>
+    public Guid SaleId { get; init; }
+}
 
 /// <summary>Where a register's open shift came from: the server, or a shift opened offline and queued for sync.</summary>
 public sealed record ShiftInfo(Guid Id, Guid RegisterId, DateTimeOffset OpenedAt, decimal OpeningFloat, bool Offline);
@@ -218,7 +222,7 @@ public sealed class PosService(ApiClient api, Func<LocalDb> dbFactory, TimeProvi
             {
                 var sale = await api.PostAsync<SaleDto>("/api/v1/pos/sales", cart.ToSaleRequest(opId, registerId, shift.Id, customerId, recorded, saleId, now, false, null), ct);
                 var receipt = cart.ToReceipt(config, companyName, sale.Number, sale.CreatedAt, cashier, customerName, payments, settlement, false, language);
-                return new CheckoutResult(sale.Number, false, receipt, sale);
+                return new CheckoutResult(sale.Number, false, receipt, sale) { SaleId = saleId };
             }
             catch (ApiOfflineException) { }
         }
@@ -235,7 +239,7 @@ public sealed class PosService(ApiClient api, Func<LocalDb> dbFactory, TimeProvi
             ReceiptJson = JsonSerializer.Serialize(offlineReceipt, ApiClient.Json),
         });
         await db.SaveChangesAsync(ct);
-        return new CheckoutResult(number, true, offlineReceipt, null);
+        return new CheckoutResult(number, true, offlineReceipt, null) { SaleId = saleId };
     }
 
     /// <summary>Standalone sale: receipt, sale lines and stock decrement commit in one transaction; nothing is queued for a server.</summary>
@@ -276,7 +280,7 @@ public sealed class PosService(ApiClient api, Func<LocalDb> dbFactory, TimeProvi
         });
         await db.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
-        return new CheckoutResult(number, false, receipt, null);
+        return new CheckoutResult(number, false, receipt, null) { SaleId = saleId };
     }
 
     /// <summary>Sale journal entry (port of the server POS posting): Dr cash/card/bank/receivable, Cr sales, output VAT and rounding;

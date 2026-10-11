@@ -37,6 +37,8 @@ public interface IPlatformUi
     string? PickOpenFile(string filter);
     void CopyToClipboard(string text);
     bool Confirm(string message);
+    /// <summary>Shows an image file (e.g. a sale's camera photo) in a viewer window.</summary>
+    void ShowImage(string path, string title);
     bool SystemReducedMotion { get; }
 }
 
@@ -62,6 +64,12 @@ public sealed class DesktopServices
     public required string Version { get; init; }
     /// <summary>Local accounts, repository and backups (standalone mode, the only customer mode).</summary>
     public required Core.Standalone.StandaloneService Standalone { get; init; }
+    /// <summary>CCTV over the shop LAN (cameras, sale photos). Null when the video runtime is unavailable.</summary>
+    public Core.Cameras.CameraService? Cameras { get; init; }
+
+    /// <summary>Owner of the shop: local owner account, or an online profile with full permissions.</summary>
+    public bool IsOwner => Session.LocalUser is { } lu ? lu.IsOwner
+        : Session.User is { } u && (u.IsPlatformAdmin || u.Permissions.Contains("*") || u.Roles.Any(r => string.Equals(r, "owner", StringComparison.OrdinalIgnoreCase)));
 
     /// <summary>Standalone mode: single device bound on first run, local data only, no server and no sync.</summary>
     public bool IsStandalone => Binding.IsBound;

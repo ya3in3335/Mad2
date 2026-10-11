@@ -24,6 +24,7 @@ public sealed class AppSettings
     /// <summary>Assign an in-store EAN-13 when a product is saved without a barcode.</summary>
     public bool AutoGenerateBarcode { get; set; } = true;
     public LabelPrintSettings Labels { get; set; } = new();
+    public CameraSettings Cameras { get; set; } = new();
 
     public static string DefaultLanguage(CultureInfo culture) => culture.TwoLetterISOLanguageName switch
     {
@@ -48,6 +49,17 @@ public sealed class LabelPrintSettings
     public double SheetMarginMm { get; set; } = 8;
     public double SheetGapMm { get; set; } = 2;
     public bool ShowShopName { get; set; } = true;
+}
+
+/// <summary>CCTV preferences (cameras themselves, with encrypted credentials, live in the local database).</summary>
+public sealed class CameraSettings
+{
+    /// <summary>Small live tile of the cashier camera on the POS screen (sub stream).</summary>
+    public bool ShowPosTile { get; set; }
+    /// <summary>Take a cashier-camera photo after each completed POS sale.</summary>
+    public bool SnapshotOnSale { get; set; } = true;
+    /// <summary>Sale photos older than this are deleted at startup.</summary>
+    public int RetentionDays { get; set; } = 30;
 }
 
 public static class Languages
@@ -95,6 +107,8 @@ public sealed class SettingsStore(string path)
         s.Theme = s.Theme == "light" ? "light" : "dark";
         if (s.ReceiptPaperMm is not (58 or 80)) s.ReceiptPaperMm = 80;
         s.Labels ??= new LabelPrintSettings();
+        s.Cameras ??= new CameraSettings();
+        if (s.Cameras.RetentionDays is < 1 or > 3650) s.Cameras.RetentionDays = 30;
         return s;
     }
 

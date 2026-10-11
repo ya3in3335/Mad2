@@ -59,6 +59,9 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
                 ("erp.hr", "erp.nav.hr", "Icon.Customers", "hr.manage", () => new EmployeesViewModel(s)),
             ]);
         }
+        // CCTV (owner only): live view of the shop cameras over the LAN.
+        if (s.Cameras is not null && s.IsOwner)
+            all.Insert(all.FindIndex(a => a.Key == "settings"), ("cameras", "cam.nav", "Icon.Settings", null, () => new CamerasViewModel(s)));
         NavItems = new ObservableCollection<NavItem>(all.Where(a => a.Permission is null || s.Session.HasPermission(a.Permission))
             .Select(a => new NavItem(a.Key, a.Title, a.Icon, a.Make)));
         UpdateTexts();
