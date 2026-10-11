@@ -161,15 +161,10 @@ public sealed class DpapiMachineProtector : IDataProtector
 }
 
 /// <summary>
-/// Device binding storage on Windows. Two locations:
-/// <list type="bullet">
-/// <item>"file": %ProgramData%\VELTRIX\binding.dat (the installer grants Users modify rights on that folder); falls back to
-/// %LocalAppData%\VELTRIX OS\binding.dat when ProgramData is not writable.</item>
-/// <item>"registry": HKLM\SOFTWARE\VELTRIX, value Binding (the installer grants Users modify rights on that key); falls back
-/// to HKCU\Software\VELTRIX when HKLM is not writable (app runs asInvoker, i.e. not elevated).</item>
-/// </list>
-/// The installer's one-time token is %ProgramData%\VELTRIX\install.token (Program Files is not writable by the app, so the token
-/// is not kept in {app}).
+/// Device binding storage on Windows, admin-only (no per-user fallbacks, which a normal user could forge):
+/// "file" = %ProgramData%\VELTRIX\binding.dat (the folder ACL is reset to SYSTEM/Administrators full control, Users read) and
+/// "registry" = HKLM\SOFTWARE\VELTRIX, value Binding (HKLM\SOFTWARE is read-only for Users by default). Written only by
+/// <c>VeltrixOS.exe --bind</c>, which the elevated installer runs.
 /// </summary>
 [SupportedOSPlatform("windows")]
 public sealed class WindowsBindingStore : Core.Licensing.IDeviceBindingStore
@@ -181,63 +176,64 @@ public sealed class WindowsBindingStore : Core.Licensing.IDeviceBindingStore
 
     public static string MachineDir { get; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "VELTRIX");
     private static string MachineFile => Path.Combine(MachineDir, "binding.dat");
-    private static string UserFile => Path.Combine(AppPaths.Root, "binding.dat");
-    public static string TokenPath => Path.Combine(MachineDir, "install.token");
 
     public IReadOnlyList<string> Locations { get; } = [FileLoc, RegLoc];
 
-    public byte[]? Read(string location) => location == FileLoc
-        ? ReadFile(MachineFile) ?? ReadFile(UserFile)
-        : ReadReg(RegistryHive.LocalMachine) ?? ReadReg(RegistryHive.CurrentUser);
+    public byte[]? Read(string location) => location == FileLoc ? ReadFile() : ReadReg();
 
-    public bool Write(string location, byte[] data) => location == FileLoc
-        ? WriteFile(MachineFile, data) || WriteFile(UserFile, data)
-        : WriteReg(RegistryHive.LocalMachine, data) || WriteReg(RegistryHive.CurrentUser, data);
+    public bool Write(string location, byte[] data) => location == FileLoc ? WriteFile(data) : WriteReg(data);
 
-    public string? ReadInstallToken()
+    /// <summary>True when the process runs elevated (administrator token).</summary>
+    public static bool IsElevated()
     {
-        try { return File.Exists(TokenPath) ? File.ReadAllText(TokenPath).Trim() is { Length: > 0 } t ? t : null : null; }
+        using var id = System.Security.Principal.WindowsIdentity.GetCurrent();
+        return new System.Security.Principal.WindowsPrincipal(id).IsInRole(System.Security.Principal.WindowsBuiltInRole.Administrator);
+    }
+
+    private static byte[]? ReadFile()
+    {
+        try { return File.Exists(MachineFile) ? File.ReadAllBytes(MachineFile) : null; }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException) { return null; }
     }
 
-    public bool DeleteInstallToken()
-    {
-        try { File.Delete(TokenPath); return true; }
-        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { return false; }
-    }
-
-    private static byte[]? ReadFile(string path)
-    {
-        try { return File.Exists(path) ? File.ReadAllBytes(path) : null; }
-        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { return null; }
-    }
-
-    private static bool WriteFile(string path, byte[] data)
+    private static bool WriteFile(byte[] data)
     {
         try
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-            File.WriteAllBytes(path, data);
+            var dir = Directory.CreateDirectory(MachineDir);
+            // Admin-only writes: drop inherited ProgramData rights (Users may create files there by default).
+            var acl = new System.Security.AccessControl.DirectorySecurity();
+            acl.SetAccessRuleProtection(isProtected: true, preserveInheritance: false);
+            const System.Security.AccessControl.InheritanceFlags inherit =
+                System.Security.AccessControl.InheritanceFlags.ContainerInherit | System.Security.AccessControl.InheritanceFlags.ObjectInherit;
+            void Allow(System.Security.Principal.WellKnownSidType sid, System.Security.AccessControl.FileSystemRights rights) =>
+                acl.AddAccessRule(new System.Security.AccessControl.FileSystemAccessRule(new System.Security.Principal.SecurityIdentifier(sid, null),
+                    rights, inherit, System.Security.AccessControl.PropagationFlags.None, System.Security.AccessControl.AccessControlType.Allow));
+            Allow(System.Security.Principal.WellKnownSidType.LocalSystemSid, System.Security.AccessControl.FileSystemRights.FullControl);
+            Allow(System.Security.Principal.WellKnownSidType.BuiltinAdministratorsSid, System.Security.AccessControl.FileSystemRights.FullControl);
+            Allow(System.Security.Principal.WellKnownSidType.BuiltinUsersSid, System.Security.AccessControl.FileSystemRights.ReadAndExecute);
+            dir.SetAccessControl(acl);
+            File.WriteAllBytes(MachineFile, data);
             return true;
         }
-        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { return false; }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidOperationException) { return false; }
     }
 
-    private static byte[]? ReadReg(RegistryHive hive)
+    private static byte[]? ReadReg()
     {
         try
         {
-            using var key = RegistryKey.OpenBaseKey(hive, RegistryView.Registry64).OpenSubKey(SubKey);
+            using var key = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey(SubKey);
             return key?.GetValue(ValueName) as byte[];
         }
         catch (Exception e) when (e is System.Security.SecurityException or UnauthorizedAccessException or IOException) { return null; }
     }
 
-    private static bool WriteReg(RegistryHive hive, byte[] data)
+    private static bool WriteReg(byte[] data)
     {
         try
         {
-            using var key = RegistryKey.OpenBaseKey(hive, RegistryView.Registry64).CreateSubKey(SubKey, writable: true);
+            using var key = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).CreateSubKey(SubKey, writable: true);
             key.SetValue(ValueName, data, RegistryValueKind.Binary);
             return true;
         }

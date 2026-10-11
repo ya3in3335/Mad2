@@ -41,15 +41,6 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 [Files]
 Source: "{#PublishDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
-[Dirs]
-; Device binding + one-time install token. The app runs unelevated (asInvoker), so Users get modify rights here to
-; consume the token and write %ProgramData%\VELTRIX\binding.dat.
-Name: "{commonappdata}\VELTRIX"; Permissions: users-modify
-
-[Registry]
-; Second binding location (HKLM\SOFTWARE\VELTRIX, value "Binding"), writable by the unelevated app.
-Root: HKLM64; Subkey: "SOFTWARE\VELTRIX"; Permissions: users-modify; Flags: uninsdeletekeyifempty
-
 [Icons]
 Name: "{group}\VELTRIX OS"; Filename: "{app}\VeltrixOS.exe"
 Name: "{group}\{cm:UninstallProgram,VELTRIX OS}"; Filename: "{uninstallexe}"
@@ -59,24 +50,18 @@ Name: "{autodesktop}\VELTRIX OS"; Filename: "{app}\VeltrixOS.exe"; Tasks: deskto
 Filename: "{app}\VeltrixOS.exe"; Description: "{cm:LaunchProgram,VELTRIX OS}"; Flags: nowait postinstall skipifsilent
 
 [Code]
-// Anti-copy, trust-on-first-use: every (re)installation by the vendor writes a fresh one-time token. On its first start the
-// app binds itself to this PC (DPAPI LocalMachine) and deletes the token. Program files copied to another PC have no token and
-// no valid binding there, so the app refuses to start. The vendor deletes the installer after installing.
-function NewInstallToken(): String;
-begin
-  Result := GetSHA256OfString(GetDateTimeString('yyyymmddhhnnsszzz', #0, #0) + '|' + IntToStr(Random(2147483647)) + '|' +
-    IntToStr(Random(2147483647)) + '|' + ExpandConstant('{computername}') + '|' + ExpandConstant('{app}'));
-end;
-
+// Anti-copy: the device binding is created HERE, while setup runs elevated. VeltrixOS.exe --bind writes the binding
+// (DPAPI LocalMachine + HMAC) to %ProgramData%\VELTRIX\binding.dat and HKLM\SOFTWARE\VELTRIX, both admin-only. The normal
+// app only verifies it, so program files copied to another PC refuse to start there. The vendor deletes the installer afterwards.
+// Exit codes: 0 = bound, 2 = not elevated, other = failure.
 procedure CurStepChanged(CurStep: TSetupStep);
 var
-  Dir: String;
+  ResultCode: Integer;
 begin
   if CurStep = ssPostInstall then
   begin
-    Dir := ExpandConstant('{commonappdata}\VELTRIX');
-    ForceDirectories(Dir);
-    if not SaveStringToFile(Dir + '\install.token', NewInstallToken(), False) then
-      MsgBox('Could not write the installation token. The application will not start.', mbError, MB_OK);
+    if not Exec(ExpandConstant('{app}\VeltrixOS.exe'), '--bind', '', SW_HIDE, ewWaitUntilTerminated, ResultCode) or (ResultCode <> 0) then
+      MsgBox('VELTRIX OS could not be bound to this computer (code ' + IntToStr(ResultCode) + '). ' +
+        'Run the installer again as administrator; the application will not start until it is bound.', mbCriticalError, MB_OK);
   end;
 end;

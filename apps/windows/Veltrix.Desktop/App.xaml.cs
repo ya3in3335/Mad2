@@ -28,6 +28,12 @@ public partial class App : Application
     protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+        if (e.Args.Any(a => string.Equals(a, "--bind", StringComparison.OrdinalIgnoreCase)))
+        {
+            // Installer-only path (elevated): create/repair the device binding, report through the exit code, no UI.
+            Shutdown(RunBind());
+            return;
+        }
         _singleInstance = new Mutex(true, @"Local\VELTRIX-OS-Desktop", out var first);
         if (!first)
         {
@@ -98,9 +104,8 @@ public partial class App : Application
             .FirstOrDefault(a => a.Key == "VeltrixVendorPublicKey")?.Value;
         var identity = new DeviceIdentity(secrets, settings.InstallationId, WindowsFingerprint.Read());
         var license = new LicenseManager(api, secrets, settings, () => settingsStore.Save(settings), identity, time, version, pinned);
-        // Anti-copy: trust-on-first-use binding to this PC (DPAPI LocalMachine), created from the installer's one-time token.
-        var binding = new DeviceBindingManager(new WindowsBindingStore(), new DpapiMachineProtector(),
-            DeviceFingerprint.ComputeBinding(WindowsFingerprint.Read()), time);
+        // Anti-copy: binding to this PC (DPAPI LocalMachine) written by the elevated installer; the app only verifies it.
+        var binding = CreateBinding(time);
         var localizer = new WpfLocalizer(settings);
 
         return new DesktopServices
@@ -110,6 +115,23 @@ public partial class App : Application
             Pos = new PosService(api, db, time, () => binding.IsBound), Loc = localizer, Ui = new WpfPlatformUi(localizer), Time = time, Log = log, Version = version,
             Standalone = new Core.Standalone.StandaloneService(secrets, db, time, () => binding.IsBound),
         };
+    }
+
+    private static DeviceBindingManager CreateBinding(TimeProvider time) => new(new WindowsBindingStore(), new DpapiMachineProtector(),
+        DeviceFingerprint.ComputeBinding(WindowsFingerprint.Read()), time, WindowsBindingStore.IsElevated);
+
+    /// <summary>VeltrixOS.exe --bind: 0 = bound, 2 = not elevated, 1 = any other failure.</summary>
+    private static int RunBind()
+    {
+        try
+        {
+            var result = CreateBinding(TimeProvider.System).Bind();
+            return result.IsLicensed ? 0 : result.Status == BindingStatus.NotElevated ? 2 : 1;
+        }
+        catch (Exception)
+        {
+            return 1;
+        }
     }
 
     private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
