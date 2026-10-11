@@ -1,0 +1,80 @@
+<!-- Hand-written companion to the generated Colors.Dark.xaml: derived surfaces, gradients and elevation for the dark theme.
+     Swapped together with Colors.*.xaml by WpfPlatformUi.ApplyTheme. Keep the key set identical to Theme.Light.xaml. -->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Surfaces -->
+    <SolidColorBrush x:Key="Brush.surfaceHover" Color="#17304F"/>
+    <SolidColorBrush x:Key="Brush.surfaceSunken" Color="#0A1729"/>
+    <SolidColorBrush x:Key="Brush.borderStrong" Color="#2B4A75"/>
+    <SolidColorBrush x:Key="Brush.topbar" Color="#E6091527"/>
+    <LinearGradientBrush x:Key="Brush.sidebar" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#0C1C33" Offset="0"/>
+        <GradientStop Color="#0A172B" Offset="0.7"/>
+        <GradientStop Color="#0F1438" Offset="1"/>
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="Brush.card" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#0F213A" Offset="0"/>
+        <GradientStop Color="#0C1B30" Offset="1"/>
+    </LinearGradientBrush>
+    <!-- Card border: brighter brand-tinted hairline on the top edge fading into the regular border. -->
+    <LinearGradientBrush x:Key="Brush.cardBorder" StartPoint="0,0" EndPoint="0.25,1">
+        <GradientStop Color="#663478FF" Offset="0"/>
+        <GradientStop Color="#2A4670" Offset="0.12"/>
+        <GradientStop Color="#1A2F4F" Offset="1"/>
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="Brush.hairline" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Color="#003478FF" Offset="0"/>
+        <GradientStop Color="#CC3478FF" Offset="0.3"/>
+        <GradientStop Color="#CC00D9FF" Offset="0.7"/>
+        <GradientStop Color="#00765BFF" Offset="1"/>
+    </LinearGradientBrush>
+
+    <!-- Interaction overlays and tints -->
+    <SolidColorBrush x:Key="Brush.overlayHover" Color="#16FFFFFF"/>
+    <SolidColorBrush x:Key="Brush.overlayPress" Color="#26000000"/>
+    <SolidColorBrush x:Key="Brush.focusRing" Color="#5500D9FF"/>
+    <SolidColorBrush x:Key="Brush.rowAlt" Color="#0F2139"/>
+    <SolidColorBrush x:Key="Brush.rowHover" Color="#16304F"/>
+    <SolidColorBrush x:Key="Brush.selection" Color="#333478FF"/>
+    <SolidColorBrush x:Key="Brush.primarySoft" Color="#263478FF"/>
+    <SolidColorBrush x:Key="Brush.accentSoft" Color="#1C00D9FF"/>
+    <SolidColorBrush x:Key="Brush.violetSoft" Color="#26765BFF"/>
+    <SolidColorBrush x:Key="Brush.successSoft" Color="#2217C78B"/>
+    <SolidColorBrush x:Key="Brush.warningSoft" Color="#22FFB547"/>
+    <SolidColorBrush x:Key="Brush.dangerSoft" Color="#1FF35C6E"/>
+    <SolidColorBrush x:Key="Brush.dangerBorder" Color="#80F35C6E"/>
+    <SolidColorBrush x:Key="Brush.scrollThumb" Color="#3A5478"/>
+    <SolidColorBrush x:Key="Brush.scrollThumbHover" Color="#5C7A9F"/>
+    <SolidColorBrush x:Key="Brush.chip" Color="#14FFFFFF"/>
+    <SolidColorBrush x:Key="Brush.chipBorder" Color="#2B4A75"/>
+    <LinearGradientBrush x:Key="Brush.navActive" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Color="#383478FF" Offset="0"/>
+        <GradientStop Color="#0C00D9FF" Offset="1"/>
+    </LinearGradientBrush>
+
+    <!-- Brand gradients -->
+    <LinearGradientBrush x:Key="Brush.primaryGradient" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#2563EB" Offset="0"/>
+        <GradientStop Color="#2F7BF5" Offset="0.55"/>
+        <GradientStop Color="#0A98CF" Offset="1"/>
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="Brush.accentBar" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#3478FF" Offset="0"/>
+        <GradientStop Color="#00D9FF" Offset="1"/>
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="Brush.textGradient" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Color="#6B9BFF" Offset="0"/>
+        <GradientStop Color="#00D9FF" Offset="1"/>
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="Brush.totalPanel" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#132B52" Offset="0"/>
+        <GradientStop Color="#0D1D33" Offset="0.6"/>
+        <GradientStop Color="#1A1A4A" Offset="1"/>
+    </LinearGradientBrush>
+
+    <!-- Elevation (applied only to child-less backing elements so text keeps ClearType) -->
+    <DropShadowEffect x:Key="Shadow.Card" Color="#000000" BlurRadius="22" ShadowDepth="4" Direction="270" Opacity="0.35"/>
+    <DropShadowEffect x:Key="Shadow.Popup" Color="#000000" BlurRadius="18" ShadowDepth="6" Direction="270" Opacity="0.45"/>
+    <DropShadowEffect x:Key="Shadow.Primary" Color="#3478FF" BlurRadius="16" ShadowDepth="2" Direction="270" Opacity="0.45"/>
+    <DropShadowEffect x:Key="Shadow.Glow" Color="#00D9FF" BlurRadius="10" ShadowDepth="0" Opacity="0.8"/>
+</ResourceDictionary>
