@@ -108,6 +108,41 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
         if (NavItems.FirstOrDefault(n => n.Key == key) is { } item) Selected = item;
     }
 
+    /// <summary>Keyboard-shortcuts help overlay (F1 / Ctrl+/).</summary>
+    [ObservableProperty] private bool _isShortcutsOpen;
+    [ObservableProperty] private IReadOnlyList<ShortcutGroup> _shortcutGroups = [];
+
+    [RelayCommand]
+    public void ShowShortcuts()
+    {
+        ShortcutGroups = ShortcutMap.Groups(_s.Loc, NavItems.Select(n => (n.Key, n.Title)));
+        IsShortcutsOpen = true;
+    }
+
+    [RelayCommand]
+    public void CloseShortcuts() => IsShortcutsOpen = false;
+
+    /// <summary>Ctrl+1..9: sidebar page by position.</summary>
+    [RelayCommand]
+    public void NavigateToIndex(int index)
+    {
+        if (index >= 0 && index < NavItems.Count) Selected = NavItems[index];
+    }
+
+    /// <summary>Ctrl+Tab / Ctrl+Shift+Tab: next / previous sidebar page (wraps around).</summary>
+    [RelayCommand]
+    public void NextPage() => Step(1);
+
+    [RelayCommand]
+    public void PreviousPage() => Step(-1);
+
+    private void Step(int delta)
+    {
+        if (NavItems.Count == 0) return;
+        var i = Selected is null ? -1 : NavItems.IndexOf(Selected);
+        Selected = NavItems[((i + delta) % NavItems.Count + NavItems.Count) % NavItems.Count];
+    }
+
     [RelayCommand]
     public async Task SyncNowAsync() => await RunSyncAsync(_life.Token);
 

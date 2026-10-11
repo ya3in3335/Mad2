@@ -178,5 +178,48 @@
 
             <ContentControl x:Name="PageHost" Content="{Binding CurrentPage}" Margin="28,20,28,22" Focusable="False"/>
         </DockPanel>
+        <!-- Keyboard shortcuts help (F1 / Ctrl+/): grouped by page; Esc, F1 or a click outside closes it. -->
+        <Grid Grid.ColumnSpan="2" Panel.ZIndex="100" Background="#99000000" MouseLeftButtonDown="OnShortcutsBackdrop"
+              Visibility="{Binding IsShortcutsOpen, Converter={StaticResource BoolToVis}}">
+            <Border Style="{StaticResource Card}" MaxWidth="980" MaxHeight="680" Margin="40" HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Background="{DynamicResource Brush.surface}" AutomationProperties.Name="{DynamicResource sc.title}">
+                <DockPanel>
+                    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,12">
+                        <Button DockPanel.Dock="Right" Style="{StaticResource Button.Icon}" Command="{Binding CloseShortcutsCommand}"
+                                Content="&#x2715;" ToolTip="Esc" AutomationProperties.Name="{DynamicResource action.close}"/>
+                        <StackPanel>
+                            <TextBlock Text="{DynamicResource sc.title}" Style="{StaticResource Text.Title}"/>
+                            <TextBlock Text="{DynamicResource sc.hint}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </DockPanel>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <ItemsControl ItemsSource="{Binding ShortcutGroups}" Focusable="False">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate><UniformGrid Columns="2"/></ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="0,0,24,18">
+                                        <TextBlock Text="{Binding Title}" Style="{StaticResource Text.Section}" Margin="0,0,0,6"/>
+                                        <ItemsControl ItemsSource="{Binding Rows}" Focusable="False">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <DockPanel Margin="0,3">
+                                                        <Border DockPanel.Dock="Right" Style="{StaticResource Chip}" Margin="12,0,0,0" Padding="8,2">
+                                                            <TextBlock Text="{Binding Gesture}" FlowDirection="LeftToRight" FontFamily="Consolas" FontSize="12" FontWeight="SemiBold"/>
+                                                        </Border>
+                                                        <TextBlock Text="{Binding Label}" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                                                    </DockPanel>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </DockPanel>
+            </Border>
+        </Grid>
     </Grid>
 </UserControl>

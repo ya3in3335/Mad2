@@ -15,6 +15,7 @@ public partial class ShellView : UserControl
     private ShellViewModel? _vm;
     private readonly DispatcherTimer _clock = new() { Interval = TimeSpan.FromSeconds(15) };
     private bool _collapsed;
+    private Platform.ShortcutService? _shortcuts;
 
     public ShellView()
     {
@@ -27,8 +28,24 @@ public partial class ShellView : UserControl
             if (_vm is not null) _vm.PropertyChanged += OnVmChanged;
         };
         _clock.Tick += (_, _) => UpdateClock();
-        Loaded += (_, _) => { UpdateClock(); UpdateThemeGlyph(); _clock.Start(); };
-        Unloaded += (_, _) => _clock.Stop();
+        Loaded += (_, _) =>
+        {
+            UpdateClock();
+            UpdateThemeGlyph();
+            _clock.Start();
+            if (_vm is not null)
+            {
+                _shortcuts = new Platform.ShortcutService(this, _vm, ToggleTheme);
+                _shortcuts.Attach();
+            }
+            Platform.ShortcutService.Hint(ThemeToggle, "Ctrl+Shift+T");
+        };
+        Unloaded += (_, _) =>
+        {
+            _clock.Stop();
+            _shortcuts?.Detach();
+            _shortcuts = null;
+        };
     }
 
     /// <summary>System "show animations" off, or the app's own reduced-motion preference.</summary>
@@ -94,7 +111,14 @@ public partial class ShellView : UserControl
     private void UpdateThemeGlyph() =>
         ThemeToggle.Content = Application.Current.TryFindResource(IsDark ? "Glyph.Sun" : "Glyph.Moon");
 
-    private void OnToggleTheme(object sender, RoutedEventArgs e)
+    private void OnToggleTheme(object sender, RoutedEventArgs e) => ToggleTheme();
+
+    private void OnShortcutsBackdrop(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (ReferenceEquals(e.OriginalSource, sender)) _vm?.CloseShortcuts();
+    }
+
+    internal void ToggleTheme()
     {
         // Same path as Settings → Theme, so the choice is persisted and the Settings page stays in sync.
         if (_vm?.NavItems.FirstOrDefault(n => n.Key == "settings")?.Page is SettingsViewModel settings)

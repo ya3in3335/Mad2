@@ -204,4 +204,34 @@
     <sys:String x:Key="dk.accent.emerald">Émeraude</sys:String>
     <sys:String x:Key="dk.accent.teal">Sarcelle</sys:String>
     <sys:String x:Key="dk.accent.aurora">Aurore</sys:String>
+    <!-- Keyboard shortcuts (F1 overlay) -->
+    <sys:String x:Key="sc.title">Raccourcis clavier</sys:String>
+    <sys:String x:Key="sc.hint">Appuyez sur F1 ou Ctrl+/ à tout moment pour afficher cette liste. Les raccourcis d’édition (Suppr, Entrée) ne s’activent pas pendant la saisie dans un champ.</sys:String>
+    <sys:String x:Key="sc.group.global">Partout</sys:String>
+    <sys:String x:Key="sc.group.page">Toutes les pages</sys:String>
+    <sys:String x:Key="sc.group.system">Windows</sys:String>
+    <sys:String x:Key="sc.goto">Aller à la page 1–9 du menu</sys:String>
+    <sys:String x:Key="sc.next">Page suivante</sys:String>
+    <sys:String x:Key="sc.prev">Page précédente</sys:String>
+    <sys:String x:Key="sc.signOut">Se déconnecter (verrouiller)</sys:String>
+    <sys:String x:Key="sc.theme">Basculer thème clair / sombre</sys:String>
+    <sys:String x:Key="sc.help">Afficher les raccourcis clavier</sys:String>
+    <sys:String x:Key="sc.refresh">Actualiser</sys:String>
+    <sys:String x:Key="sc.search">Rechercher</sys:String>
+    <sys:String x:Key="sc.new">Nouveau</sys:String>
+    <sys:String x:Key="sc.save">Enregistrer</sys:String>
+    <sys:String x:Key="sc.edit">Modifier la sélection</sys:String>
+    <sys:String x:Key="sc.delete">Supprimer la sélection</sys:String>
+    <sys:String x:Key="sc.cancel">Annuler / fermer l’éditeur</sys:String>
+    <sys:String x:Key="sc.print">Imprimer / réimprimer</sys:String>
+    <sys:String x:Key="sc.pos.remove">Supprimer la ligne sélectionnée</sys:String>
+    <sys:String x:Key="sc.pos.inc">Quantité +1</sys:String>
+    <sys:String x:Key="sc.pos.dec">Quantité −1</sys:String>
+    <sys:String x:Key="sc.pos.scan">Aller au champ code-barres</sys:String>
+    <sys:String x:Key="sc.pos.pay">Paiement (montant reçu)</sys:String>
+    <sys:String x:Key="sc.pos.complete">Valider la vente</sys:String>
+    <sys:String x:Key="sc.pos.cancelPay">Annuler le paiement</sys:String>
+    <sys:String x:Key="sc.pos.newSale">Nouvelle vente (vider le panier)</sys:String>
+    <sys:String x:Key="sc.pos.reprint">Réimprimer le dernier ticket</sys:String>
+    <sys:String x:Key="sc.launch">Ouvrir VELTRIX OS ou le ramener au premier plan (Win+V est réservé par Windows)</sys:String>
 </ResourceDictionary>

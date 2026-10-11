@@ -7,8 +7,9 @@
         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
             <TextBlock Text="{Binding Message}" Style="{StaticResource Text.Caption}" VerticalAlignment="Center" Margin="0,0,16,0" TextWrapping="Wrap" MaxWidth="520"/>
             <Button Content="{DynamicResource dk.labels.preview}" Click="Preview_Click" MinWidth="100"/>
-            <Button Content="{DynamicResource action.print}" Click="Print_Click" Style="{StaticResource Button.Primary}" Margin="8,0,0,0" MinWidth="100"/>
-            <Button Content="{DynamicResource action.close}" IsCancel="True" Click="Close_Click" Margin="8,0,0,0" MinWidth="100"/>
+            <Button Content="{DynamicResource action.print}" Click="Print_Click" Style="{StaticResource Button.Primary}" Margin="8,0,0,0" MinWidth="100"
+                    IsDefault="True" ToolTip="Enter" AutomationProperties.AcceleratorKey="Enter"/>
+            <Button Content="{DynamicResource action.close}" IsCancel="True" Click="Close_Click" ToolTip="Esc" Margin="8,0,0,0" MinWidth="100"/>
         </StackPanel>
         <Grid>
             <Grid.ColumnDefinitions>

@@ -3,12 +3,16 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="{DynamicResource cam.dialogTitle}" Width="760" Height="640" MinWidth="640" MinHeight="520"
         WindowStartupLocation="CenterOwner" ShowInTaskbar="False" Style="{StaticResource AppWindow}">
+    <Window.InputBindings>
+        <KeyBinding Key="S" Modifiers="Control" Command="{Binding SaveCommand}"/>
+    </Window.InputBindings>
     <DockPanel Margin="16">
         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
             <TextBlock Text="{Binding Message}" Style="{StaticResource Text.Caption}" VerticalAlignment="Center" Margin="0,0,16,0" TextWrapping="Wrap" MaxWidth="380"/>
             <Button Content="{DynamicResource cam.test}" Command="{Binding TestCommand}" MinWidth="110"/>
-            <Button Content="{DynamicResource action.save}" Command="{Binding SaveCommand}" Style="{StaticResource Button.Primary}" Margin="8,0,0,0" MinWidth="100"/>
-            <Button Content="{DynamicResource action.close}" IsCancel="True" Click="Close_Click" Margin="8,0,0,0" MinWidth="100"/>
+            <Button Content="{DynamicResource action.save}" Command="{Binding SaveCommand}" Style="{StaticResource Button.Primary}" Margin="8,0,0,0" MinWidth="100"
+                    IsDefault="True" ToolTip="Ctrl+S / Enter" AutomationProperties.AcceleratorKey="Ctrl+S"/>
+            <Button Content="{DynamicResource action.close}" IsCancel="True" Click="Close_Click" ToolTip="Esc" Margin="8,0,0,0" MinWidth="100"/>
         </StackPanel>
         <Grid>
             <Grid.ColumnDefinitions>

@@ -42,7 +42,9 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Source: "{#PublishDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
-Name: "{group}\VELTRIX OS"; Filename: "{app}\VeltrixOS.exe"
+; Ctrl+Alt+V launches VELTRIX OS (or brings the running window to front: the app is single-instance).
+; Win+V cannot be used: Windows reserves it for clipboard history.
+Name: "{group}\VELTRIX OS"; Filename: "{app}\VeltrixOS.exe"; HotKey: ctrl+alt+v
 Name: "{group}\{cm:UninstallProgram,VELTRIX OS}"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\VELTRIX OS"; Filename: "{app}\VeltrixOS.exe"; Tasks: desktopicon
 

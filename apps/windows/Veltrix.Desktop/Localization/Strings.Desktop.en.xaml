@@ -204,4 +204,34 @@
     <sys:String x:Key="dk.accent.emerald">Emerald</sys:String>
     <sys:String x:Key="dk.accent.teal">Teal</sys:String>
     <sys:String x:Key="dk.accent.aurora">Aurora</sys:String>
+    <!-- Keyboard shortcuts (F1 overlay) -->
+    <sys:String x:Key="sc.title">Keyboard shortcuts</sys:String>
+    <sys:String x:Key="sc.hint">Press F1 or Ctrl+/ at any time to show this list. Shortcuts that edit text (Delete, Enter) do not fire while you type in a field.</sys:String>
+    <sys:String x:Key="sc.group.global">Everywhere</sys:String>
+    <sys:String x:Key="sc.group.page">Every page</sys:String>
+    <sys:String x:Key="sc.group.system">Windows</sys:String>
+    <sys:String x:Key="sc.goto">Go to sidebar page 1–9</sys:String>
+    <sys:String x:Key="sc.next">Next page</sys:String>
+    <sys:String x:Key="sc.prev">Previous page</sys:String>
+    <sys:String x:Key="sc.signOut">Sign out (lock)</sys:String>
+    <sys:String x:Key="sc.theme">Toggle light / dark theme</sys:String>
+    <sys:String x:Key="sc.help">Show keyboard shortcuts</sys:String>
+    <sys:String x:Key="sc.refresh">Refresh</sys:String>
+    <sys:String x:Key="sc.search">Search</sys:String>
+    <sys:String x:Key="sc.new">New</sys:String>
+    <sys:String x:Key="sc.save">Save</sys:String>
+    <sys:String x:Key="sc.edit">Edit selected</sys:String>
+    <sys:String x:Key="sc.delete">Delete selected</sys:String>
+    <sys:String x:Key="sc.cancel">Cancel / close editor</sys:String>
+    <sys:String x:Key="sc.print">Print / reprint</sys:String>
+    <sys:String x:Key="sc.pos.remove">Delete selected line</sys:String>
+    <sys:String x:Key="sc.pos.inc">Quantity +1</sys:String>
+    <sys:String x:Key="sc.pos.dec">Quantity −1</sys:String>
+    <sys:String x:Key="sc.pos.scan">Focus barcode field</sys:String>
+    <sys:String x:Key="sc.pos.pay">Payment (amount tendered)</sys:String>
+    <sys:String x:Key="sc.pos.complete">Validate sale</sys:String>
+    <sys:String x:Key="sc.pos.cancelPay">Cancel payment</sys:String>
+    <sys:String x:Key="sc.pos.newSale">New sale (clear cart)</sys:String>
+    <sys:String x:Key="sc.pos.reprint">Reprint last receipt</sys:String>
+    <sys:String x:Key="sc.launch">Open VELTRIX OS or bring it to front (Win+V is reserved by Windows)</sys:String>
 </ResourceDictionary>

@@ -204,4 +204,34 @@
     <sys:String x:Key="dk.accent.emerald">زمردي</sys:String>
     <sys:String x:Key="dk.accent.teal">أزرق مخضر</sys:String>
     <sys:String x:Key="dk.accent.aurora">شفق</sys:String>
+    <!-- Keyboard shortcuts (F1 overlay) -->
+    <sys:String x:Key="sc.title">اختصارات لوحة المفاتيح</sys:String>
+    <sys:String x:Key="sc.hint">اضغط F1 أو Ctrl+/ في أي وقت لعرض هذه القائمة. لا تعمل اختصارات التحرير (Delete وEnter) أثناء الكتابة في حقل.</sys:String>
+    <sys:String x:Key="sc.group.global">في كل مكان</sys:String>
+    <sys:String x:Key="sc.group.page">كل الصفحات</sys:String>
+    <sys:String x:Key="sc.group.system">Windows</sys:String>
+    <sys:String x:Key="sc.goto">الانتقال إلى صفحة القائمة 1–9</sys:String>
+    <sys:String x:Key="sc.next">الصفحة التالية</sys:String>
+    <sys:String x:Key="sc.prev">الصفحة السابقة</sys:String>
+    <sys:String x:Key="sc.signOut">تسجيل الخروج (قفل)</sys:String>
+    <sys:String x:Key="sc.theme">التبديل بين المظهر الفاتح والداكن</sys:String>
+    <sys:String x:Key="sc.help">عرض اختصارات لوحة المفاتيح</sys:String>
+    <sys:String x:Key="sc.refresh">تحديث</sys:String>
+    <sys:String x:Key="sc.search">بحث</sys:String>
+    <sys:String x:Key="sc.new">جديد</sys:String>
+    <sys:String x:Key="sc.save">حفظ</sys:String>
+    <sys:String x:Key="sc.edit">تعديل العنصر المحدد</sys:String>
+    <sys:String x:Key="sc.delete">حذف العنصر المحدد</sys:String>
+    <sys:String x:Key="sc.cancel">إلغاء / إغلاق المحرر</sys:String>
+    <sys:String x:Key="sc.print">طباعة / إعادة الطباعة</sys:String>
+    <sys:String x:Key="sc.pos.remove">حذف السطر المحدد</sys:String>
+    <sys:String x:Key="sc.pos.inc">الكمية +1</sys:String>
+    <sys:String x:Key="sc.pos.dec">الكمية −1</sys:String>
+    <sys:String x:Key="sc.pos.scan">الانتقال إلى حقل الباركود</sys:String>
+    <sys:String x:Key="sc.pos.pay">الدفع (المبلغ المستلم)</sys:String>
+    <sys:String x:Key="sc.pos.complete">تأكيد البيع</sys:String>
+    <sys:String x:Key="sc.pos.cancelPay">إلغاء الدفع</sys:String>
+    <sys:String x:Key="sc.pos.newSale">بيع جديد (إفراغ السلة)</sys:String>
+    <sys:String x:Key="sc.pos.reprint">إعادة طباعة آخر إيصال</sys:String>
+    <sys:String x:Key="sc.launch">فتح VELTRIX OS أو إظهاره في المقدمة (Win+V محجوز من Windows)</sys:String>
 </ResourceDictionary>

@@ -21,7 +21,7 @@ namespace Veltrix.Desktop;
 
 public partial class App : Application
 {
-    private static Mutex? _singleInstance;
+    private static SingleInstance? _singleInstance;
     private DesktopServices? _services;
 
     /// <summary>Running services, for view code-behind that needs app-wide visual preferences (e.g. reduced motion).</summary>
@@ -37,10 +37,11 @@ public partial class App : Application
             Shutdown(RunBind());
             return;
         }
-        _singleInstance = new Mutex(true, @"Local\VELTRIX-OS-Desktop", out var first);
-        if (!first)
+        // Single instance: a second launch (or the Ctrl+Alt+V Start Menu hotkey) brings the running window to front instead.
+        AllowSetForegroundWindow(-1); // ASFW_ANY: this (foreground) launch lets the running copy take the foreground
+        _singleInstance = SingleInstance.TryClaim("VELTRIX-OS-Desktop", () => Dispatcher.BeginInvoke(BringToFront));
+        if (_singleInstance is null)
         {
-            MessageBox.Show("VELTRIX OS is already running.", "VELTRIX OS", MessageBoxButton.OK, MessageBoxImage.Information);
             Shutdown();
             return;
         }
@@ -146,6 +147,24 @@ public partial class App : Application
         {
             return 1;
         }
+    }
+
+    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    [return: System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)]
+    private static extern bool AllowSetForegroundWindow(int processId);
+
+    /// <summary>Restores and activates the main window (or the splash while starting).</summary>
+    private void BringToFront()
+    {
+        var w = MainWindow ?? Windows.OfType<Window>().FirstOrDefault(x => x.IsVisible);
+        if (w is null) return;
+        if (w.WindowState == WindowState.Minimized) w.WindowState = WindowState.Normal;
+        w.Show();
+        w.Activate();
+        // Topmost flip: reliable z-order raise even when Windows refuses a plain activation.
+        w.Topmost = true;
+        w.Topmost = false;
+        w.Focus();
     }
 
     private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
