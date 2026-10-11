@@ -1,60 +1,75 @@
-# License Activation Guide
+# License Guide — device binding (no activation codes)
 
-## Concepts
-- **License**: issued by the platform owner to a tenant (company) with a type (Trial/demo, Monthly, Quarterly, Annual, Perpetual, Enterprise), an expiry and a **seat count** (max active devices).
-- **Device certificate**: after activation, each device holds a certificate signed by the server's ECDSA P-256 key. Apps verify it **offline** with the public key (`GET /api/v1/licensing/public-key`), so they keep working without internet until the offline grace period ends (max 30 days by default).
-- The private signing key exists only on the server (`Licensing__SigningKeyPath`). It is never shipped in an app.
+VELTRIX OS customer apps (Windows and Android) run **standalone only**: one device, a local owner account, local data, no
+server and no sync. There are **no license keys, device codes or activation codes**. Anti-piracy relies on two things:
 
-## Issuing (owner)
-Control Center → Licenses, or VELTRIX Admin → Licenses:
-- **Demo**: tenant + days (1–90) + seats → `POST /api/v1/platform/licenses/demo`
-- **Commercial**: tenant + plan/term + seats → `POST /api/v1/platform/licenses`
-- Renew/extend, change seats, suspend, revoke, transfer: actions on the license page (suspend/revoke/transfer ask for your password).
-The license key is shown **once** — send it to the customer through a secure channel.
+1. **The vendor installs the app personally** on the customer's computer or phone, and **deletes the installer** afterwards
+   (never leave the setup file or APK with the customer).
+2. **Automatic device binding on first run** (trust-on-first-use): the installed copy binds itself to that device and refuses
+   to open anywhere else.
 
-## Activating a device (customer)
-1. Install VELTRIX OS (Windows Setup.exe or Android APK).
-2. Enter the server address and the license key.
-3. The app requests a challenge (`POST /api/v1/licensing/challenge`), signs it with a key generated on the device, and calls `POST /api/v1/licensing/activate`. The server checks the key, the license status and the free seats, then returns the signed certificate.
-4. Reinstalling on the same machine replaces the previous registration instead of consuming a new seat.
+## Installing for a customer (vendor)
 
-## Offline activation (no server)
-Activates one device with a code you issue yourself; no VELTRIX server is involved. Offline licenses use the single
-plan (`full`, every feature), are bound to exactly one device and stay valid until their expiry date without ever
-contacting a server.
+### Windows
+1. Run `VELTRIX-OS-Windows-<version>-Setup.exe` as administrator on the customer's PC.
+2. The installer writes a one-time token `%ProgramData%\VELTRIX\install.token` (new random value on every install) and grants
+   the Users group modify rights on `%ProgramData%\VELTRIX` and `HKLM\SOFTWARE\VELTRIX` so the (non-elevated) app can bind.
+3. Start the app once. It binds silently, then shows: language → privacy notice → create the local owner account.
+4. **Delete the installer** from the PC, USB stick, Downloads folder and recycle bin.
 
-### One-time setup (owner)
-1. Generate the vendor key pair (once, on a trusted machine):
-   `dotnet run --project tools/license-issuer -- keygen --out <secure-dir>`
-   It writes `vendor-private-key.pem` (owner-only permissions on Linux/macOS) and `vendor-public-key.pem`, and never overwrites existing files.
-2. **Back up `vendor-private-key.pem` offline** (encrypted USB / password manager). Anyone holding it can issue licenses;
-   if it is lost, no new codes can be issued for apps built with its public key. Never commit it (`*private-key*.pem` is git-ignored).
-3. Copy `vendor-public-key.pem` to `licensing/vendor-public-key.pem` in the repository (this file is safe to commit) and rebuild:
-   Windows embeds it at build time, Android as `BuildConfig.VENDOR_PUBLIC_KEY_SPKI`. Builds without this file show
-   "Offline activation is not configured". If you also run the server, use the same key pair for it
-   (`Licensing__SigningKeyPath`), because an explicitly pinned key (`VeltrixVendorPublicKey` / `VELTRIX_VENDOR_PUBLIC_KEY`) takes precedence.
+### Android
+1. Install the APK yourself (USB / `adb install`, or from your own device), then delete the APK from the phone.
+2. Open the app once: it binds silently, then shows language → privacy → create the local owner account.
 
-### Per customer
-1. On the device: activation screen → **Offline activation** → the app shows a 64-character **device code**
-   (installation id + device-key thumbprint, in blocks of 8). The customer copies or shares it to you.
-2. You issue the code:
-   `dotnet run --project tools/license-issuer -- issue --key <secure-dir>/vendor-private-key.pem --device-code "<code>" --name "<shop>" --days 365`
-   It prints the activation code and writes `<shop>-activation.txt`.
-3. The customer pastes the code (or opens the `.txt` file) and taps **Activate offline**. The app verifies the signature
-   with the embedded public key and checks that the code matches this device; a code issued for another device is rejected.
+## How the binding works
 
-### Limitations
-- **No remote revocation**: an offline license cannot be revoked or suspended after issue. Use short terms (`--days`) and
-  issue a new code to renew.
-- Reinstalling the app or resetting the device key changes the device code: issue a new activation code.
-- The clock-rollback protection still applies.
+### Windows
+- First start, no binding and `install.token` present → a record `{v, iid (new installation id), fingerprint, boundAt, tok}` is
+  created. The fingerprint is a salted SHA-256 of the Windows **MachineGuid** (machine name only if MachineGuid is unreadable);
+  OS version and CPU count are deliberately not used so Windows updates do not break a legitimate install.
+- The record is encrypted with **DPAPI LocalMachine** and authenticated with an **HMAC-SHA256** whose random key is itself
+  DPAPI-LocalMachine protected. It is stored in two places:
+  - `%ProgramData%\VELTRIX\binding.dat` (fallback `%LocalAppData%\VELTRIX OS\binding.dat` if not writable),
+  - `HKLM\SOFTWARE\VELTRIX` value `Binding` (fallback `HKCU\Software\VELTRIX` if not writable).
+  The token is then deleted.
+- Every start, **before any local data is opened**: at least one location must exist, decrypt on this machine, pass the HMAC,
+  match the fingerprint, and both locations must agree when both exist. A missing location is repaired from the valid one.
+  Otherwise the app shows **"This copy is not licensed for this computer — contact your vendor"** and stops.
+- No binding and no token (program folder copied to another PC) → refused. A binding copied to another PC cannot be decrypted
+  there (DPAPI machine key) → refused.
+- **Re-install by the vendor** writes a fresh token: on the same PC the existing binding is kept; if the binding is unusable
+  (e.g. motherboard/Windows reinstall changed MachineGuid) the app re-binds.
+
+### Android
+- First launch (no binding and no "bound" marker): the record `{iid, keyThumbprint, boundAt}` is created, where
+  `keyThumbprint` is the SHA-256 of the existing non-exportable Keystore device identity key. It is authenticated with an
+  **HMAC by a Keystore key** and stored in the Keystore-encrypted secure store; a plain marker records that binding happened.
+- Every launch verifies it. Keystore keys never leave the phone, so data restored or copied to another phone fails
+  verification → "not licensed" screen. `android:allowBackup="false"` and `dataExtractionRules` exclude every domain from cloud
+  backup and device-to-device transfer.
+- Moving to a new phone: the vendor installs the app there; the customer moves business data with the app's own
+  password-encrypted backup (Settings → Backup), not with Android backup.
+
+## Local data
+
+- Windows: secrets (owner credentials, tokens) are DPAPI current-user protected. The SQLite business database is **not**
+  encrypted at rest in this version; copying it to another PC lets someone read it with SQLite tools (the app itself will
+  not open on that PC). Wrapping the database key with the binding requires an encrypted SQLite provider (SQLCipher) and a
+  data migration — planned, not done.
+- Android: the Room database lives in app-private storage, excluded from backup/transfer.
+
+## Limits (be honest with customers)
+
+This **deters casual copying** (copying the program folder, cloning app data, restoring a backup onto another device). It is
+**not** unbreakable: someone with administrator/root access and reverse-engineering skills can patch the app or forge a
+binding on a machine they control. Keeping the installer out of customers' hands is the most important control.
 
 ## Troubleshooting
-| Symptom | Cause / fix |
-|---------|-------------|
-| "No seats available" | Revoke an old device (Licenses → Devices) or increase seats. |
-| "License suspended/expired" | Reactivate or renew from the Control Center / Admin app. |
-| Works offline then locks | Offline grace exceeded — connect once to refresh the certificate. |
-| Activation failures | Visible to the owner in *Licenses → Activation failures* (`GET /api/v1/platform/licenses/activation-failures`); the attempted key is never stored. |
-| "Offline activation is not configured" | The build has no `licensing/vendor-public-key.pem`: add it and rebuild. |
-| "Issued for another device" | The code was issued from a different device code (or the app was reinstalled): issue a new one. |
+
+| Screen / symptom | Cause | Fix |
+| --- | --- | --- |
+| "This copy is not licensed for this computer" (reference `NotInstalled`) | Started without a vendor installation (no token, no binding) | Vendor re-installs on this PC |
+| … reference `WrongDevice` | Binding from another PC, or MachineGuid changed | Vendor re-installs (fresh token re-binds) |
+| … reference `Tampered` | Binding edited or the two locations disagree | Vendor re-installs |
+| … reference `StorageFailed` | Neither binding location writable | Check `%ProgramData%\VELTRIX` permissions, re-install as admin |
+| Android "not licensed for this device" | Data moved/restored from another phone, or binding cleared | Uninstall, vendor re-installs, restore the app's encrypted backup |
