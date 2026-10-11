@@ -1,0 +1,81 @@
+<UserControl x:Class="Veltrix.Desktop.Views.Erp.ExpensesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:Veltrix.Desktop.Controls"
+             xmlns:vm="clr-namespace:Veltrix.Desktop.Presentation.ViewModels;assembly=Veltrix.Desktop.Presentation">
+    <DockPanel>
+        <HeaderedContentControl DockPanel.Dock="Top" Header="{DynamicResource erp.nav.expenses}" Style="{StaticResource PageHeader}">
+            <WrapPanel Orientation="Horizontal">
+                <ComboBox ItemsSource="{Binding Categories}" SelectedItem="{Binding CategoryFilter}" DisplayMemberPath="Name" Width="180" Margin="0,0,8,0"
+                          AutomationProperties.Name="{DynamicResource erp.category}"/>
+                <DatePicker SelectedDate="{Binding From}" Width="130" Margin="0,0,4,0" AutomationProperties.Name="{DynamicResource erp.from}"/>
+                <DatePicker SelectedDate="{Binding To}" Width="130" Margin="0,0,8,0" AutomationProperties.Name="{DynamicResource erp.to}"/>
+                <TextBox Text="{Binding Search, UpdateSourceTrigger=PropertyChanged}" Width="180" AutomationProperties.Name="{DynamicResource action.search}">
+                    <TextBox.InputBindings><KeyBinding Key="Return" Command="{Binding SearchNowCommand}"/></TextBox.InputBindings>
+                </TextBox>
+                <Button Content="{DynamicResource action.search}" Command="{Binding SearchNowCommand}" Margin="8,0,0,0"/>
+            </WrapPanel>
+        </HeaderedContentControl>
+        <TextBlock DockPanel.Dock="Bottom" Text="{Binding StatusMessage}" Style="{StaticResource Text.Status}" Margin="0,8,0,0"/>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="360"/>
+            </Grid.ColumnDefinitions>
+            <Grid>
+                <DockPanel Visibility="{Binding IsReady, Converter={StaticResource BoolToVis}}">
+                    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
+                        <TextBlock Text="{DynamicResource erp.total}" Style="{StaticResource Text.Caption}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <TextBlock Text="{Binding Total, StringFormat=N2}" FontWeight="SemiBold"/>
+                    </StackPanel>
+                    <DataGrid ItemsSource="{Binding Items}" IsReadOnly="True" AutoGenerateColumns="False">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="#" Binding="{Binding Expense.Number}" Width="110"/>
+                            <DataGridTextColumn Header="{DynamicResource erp.date}" Binding="{Binding Expense.Date}" Width="100"/>
+                            <DataGridTextColumn Header="{DynamicResource erp.category}" Binding="{Binding CategoryName}" Width="150"/>
+                            <DataGridTextColumn Header="{DynamicResource erp.account}" Binding="{Binding AccountCode}" Width="70"/>
+                            <DataGridTextColumn Header="{DynamicResource erp.payee}" Binding="{Binding Expense.Payee}" Width="*"/>
+                            <DataGridTextColumn Header="{DynamicResource erp.method}" Binding="{Binding Expense.Method}" Width="70"/>
+                            <DataGridTextColumn Header="{DynamicResource erp.vat}" Binding="{Binding Expense.TaxAmount, StringFormat=N2}" Width="90" ElementStyle="{StaticResource Cell.Number}"/>
+                            <DataGridTextColumn Header="{DynamicResource erp.amount}" Binding="{Binding Expense.Amount, StringFormat=N2}" Width="110" ElementStyle="{StaticResource Cell.Number}"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+                <c:PageState/>
+            </Grid>
+
+            <Border Grid.Column="2" Style="{StaticResource Card}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <TextBlock Text="{DynamicResource erp.newExpense}" Style="{StaticResource Text.Section}"/>
+                        <TextBlock Text="{DynamicResource erp.date}" Style="{StaticResource Text.Label}"/>
+                        <DatePicker SelectedDate="{Binding Date}"/>
+                        <TextBlock Text="{DynamicResource erp.category}" Style="{StaticResource Text.Label}"/>
+                        <ComboBox ItemsSource="{Binding Categories}" SelectedItem="{Binding Category}" DisplayMemberPath="Name"/>
+                        <TextBlock Text="{DynamicResource erp.amountTtc}" Style="{StaticResource Text.Label}"/>
+                        <TextBox Text="{Binding Amount, UpdateSourceTrigger=PropertyChanged}" FlowDirection="LeftToRight"/>
+                        <TextBlock Text="{DynamicResource erp.vatIncluded}" Style="{StaticResource Text.Label}"/>
+                        <TextBox Text="{Binding TaxAmount, UpdateSourceTrigger=PropertyChanged}" FlowDirection="LeftToRight"/>
+                        <TextBlock Text="{DynamicResource erp.method}" Style="{StaticResource Text.Label}"/>
+                        <ComboBox ItemsSource="{x:Static vm:ErpPageViewModel.PayMethodsList}" SelectedItem="{Binding Method}"/>
+                        <TextBlock Text="{DynamicResource erp.payee}" Style="{StaticResource Text.Label}"/>
+                        <TextBox Text="{Binding Payee}"/>
+                        <TextBlock Text="{DynamicResource erp.description}" Style="{StaticResource Text.Label}"/>
+                        <TextBox Text="{Binding Description}"/>
+                        <TextBlock Text="{Binding FormError}" Style="{StaticResource Text.Error}" TextWrapping="Wrap" Margin="0,8,0,0"
+                                   Visibility="{Binding FormError, Converter={StaticResource NotNullToVis}}"/>
+                        <Button Content="{DynamicResource erp.recordExpense}" Command="{Binding CreateCommand}" Style="{StaticResource Button.Primary}" Margin="0,12,0,0"/>
+
+                        <TextBlock Text="{DynamicResource erp.newCategory}" Style="{StaticResource Text.Section}" Margin="0,24,0,4"/>
+                        <TextBlock Text="{DynamicResource erp.name}" Style="{StaticResource Text.Label}"/>
+                        <TextBox Text="{Binding NewCategoryName}"/>
+                        <TextBlock Text="{DynamicResource erp.account}" Style="{StaticResource Text.Label}"/>
+                        <ComboBox ItemsSource="{Binding ExpenseAccounts}" SelectedItem="{Binding NewCategoryAccount}" DisplayMemberPath="Text"/>
+                        <Button Content="{DynamicResource action.add}" Command="{Binding AddCategoryCommand}" Margin="0,8,0,0"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </DockPanel>
+</UserControl>

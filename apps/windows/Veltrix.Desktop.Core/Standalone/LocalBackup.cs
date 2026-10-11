@@ -11,7 +11,14 @@ namespace Veltrix.Desktop.Core.Standalone;
 /// <summary>Everything a standalone installation needs to continue on another device.</summary>
 public sealed record BackupPayload(int Version, DateTimeOffset CreatedAt, string? TenantId, string? TenantName, string UsersJson,
     List<LocalProduct> Products, List<LocalCustomer> Customers, List<LocalStock> Stock, List<LocalRegister> Registers, List<LocalShift> Shifts,
-    List<LocalSale> Sales, List<LocalSaleLine> SaleLines, List<KeyValue> Values);
+    List<LocalSale> Sales, List<LocalSaleLine> SaleLines, List<KeyValue> Values, ErpBackup? Erp = null);
+
+/// <summary>Local ERP tables (format version 2). Absent in version-1 backups.</summary>
+public sealed record ErpBackup(List<LocalSupplier> Suppliers, List<LocalPurchase> Purchases, List<LocalPurchaseLine> PurchaseLines, List<LocalPayment> Payments,
+    List<LocalExpenseCategory> ExpenseCategories, List<LocalExpense> Expenses, List<LocalAccount> Accounts, List<LocalJournalEntry> JournalEntries,
+    List<LocalJournalLine> JournalLines, List<LocalClosedPeriod> ClosedPeriods, List<LocalEmployee> Employees, List<LocalSalaryAdvance> SalaryAdvances,
+    List<LocalPayrollRun> PayrollRuns, List<LocalPayslip> Payslips, List<LocalSaleReturn> SaleReturns, List<LocalSaleReturnLine> SaleReturnLines,
+    List<LocalCashMovement> CashMovements);
 
 /// <summary>
 /// Encrypted local backup. File layout: <c>"VLXBAK01" | iterations (int32 LE) | salt (16) | nonce (12) | tag (16) | ciphertext</c>.
@@ -20,7 +27,7 @@ public sealed record BackupPayload(int Version, DateTimeOffset CreatedAt, string
 /// </summary>
 public static class LocalBackup
 {
-    public const int FormatVersion = 1;
+    public const int FormatVersion = 2;
     public const string FileExtension = ".vlxbak";
     private static readonly byte[] Magic = "VLXBAK01"u8.ToArray();
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
@@ -84,13 +91,38 @@ public static class LocalBackup
             await db.Products.AsNoTracking().ToListAsync(ct), await db.Customers.AsNoTracking().ToListAsync(ct), await db.Stock.AsNoTracking().ToListAsync(ct),
             await db.Registers.AsNoTracking().ToListAsync(ct), await db.Shifts.AsNoTracking().ToListAsync(ct), await db.Sales.AsNoTracking().ToListAsync(ct),
             await db.SaleLines.AsNoTracking().ToListAsync(ct),
-            await db.Values.AsNoTracking().Where(v => v.Key != LocalDb.Keys.SchemaVersion && !v.Key.StartsWith("sync.")).ToListAsync(ct));
+            await db.Values.AsNoTracking().Where(v => v.Key != LocalDb.Keys.SchemaVersion && !v.Key.StartsWith("sync.")).ToListAsync(ct),
+            new ErpBackup(await db.Suppliers.AsNoTracking().ToListAsync(ct), await db.Purchases.AsNoTracking().ToListAsync(ct),
+                await db.PurchaseLines.AsNoTracking().ToListAsync(ct), await db.Payments.AsNoTracking().ToListAsync(ct),
+                await db.ExpenseCategories.AsNoTracking().ToListAsync(ct), await db.Expenses.AsNoTracking().ToListAsync(ct), await db.Accounts.AsNoTracking().ToListAsync(ct),
+                await db.JournalEntries.AsNoTracking().ToListAsync(ct), await db.JournalLines.AsNoTracking().ToListAsync(ct),
+                await db.ClosedPeriods.AsNoTracking().ToListAsync(ct), await db.Employees.AsNoTracking().ToListAsync(ct),
+                await db.SalaryAdvances.AsNoTracking().ToListAsync(ct), await db.PayrollRuns.AsNoTracking().ToListAsync(ct), await db.Payslips.AsNoTracking().ToListAsync(ct),
+                await db.SaleReturns.AsNoTracking().ToListAsync(ct), await db.SaleReturnLines.AsNoTracking().ToListAsync(ct),
+                await db.CashMovements.AsNoTracking().ToListAsync(ct)));
 
     /// <summary>Replaces all local business data with the backup, atomically.</summary>
     public static async Task RestoreAsync(LocalDb db, BackupPayload p, CancellationToken ct = default)
     {
         await using var tx = await db.Database.BeginTransactionAsync(ct);
         db.SaleLines.RemoveRange(db.SaleLines);
+        db.Suppliers.RemoveRange(db.Suppliers);
+        db.Purchases.RemoveRange(db.Purchases);
+        db.PurchaseLines.RemoveRange(db.PurchaseLines);
+        db.Payments.RemoveRange(db.Payments);
+        db.ExpenseCategories.RemoveRange(db.ExpenseCategories);
+        db.Expenses.RemoveRange(db.Expenses);
+        db.Accounts.RemoveRange(db.Accounts);
+        db.JournalEntries.RemoveRange(db.JournalEntries);
+        db.JournalLines.RemoveRange(db.JournalLines);
+        db.ClosedPeriods.RemoveRange(db.ClosedPeriods);
+        db.Employees.RemoveRange(db.Employees);
+        db.SalaryAdvances.RemoveRange(db.SalaryAdvances);
+        db.PayrollRuns.RemoveRange(db.PayrollRuns);
+        db.Payslips.RemoveRange(db.Payslips);
+        db.SaleReturns.RemoveRange(db.SaleReturns);
+        db.SaleReturnLines.RemoveRange(db.SaleReturnLines);
+        db.CashMovements.RemoveRange(db.CashMovements);
         db.Sales.RemoveRange(db.Sales);
         db.Shifts.RemoveRange(db.Shifts);
         db.Stock.RemoveRange(db.Stock);
@@ -109,7 +141,17 @@ public static class LocalBackup
         db.Sales.AddRange(p.Sales);
         db.SaleLines.AddRange(p.SaleLines);
         db.Values.AddRange(p.Values.Where(v => v.Key != LocalDb.Keys.SchemaVersion));
+        if (p.Erp is { } e)
+        {
+            db.Suppliers.AddRange(e.Suppliers); db.Purchases.AddRange(e.Purchases); db.PurchaseLines.AddRange(e.PurchaseLines); db.Payments.AddRange(e.Payments);
+            db.ExpenseCategories.AddRange(e.ExpenseCategories); db.Expenses.AddRange(e.Expenses); db.Accounts.AddRange(e.Accounts);
+            db.JournalEntries.AddRange(e.JournalEntries); db.JournalLines.AddRange(e.JournalLines); db.ClosedPeriods.AddRange(e.ClosedPeriods);
+            db.Employees.AddRange(e.Employees); db.SalaryAdvances.AddRange(e.SalaryAdvances); db.PayrollRuns.AddRange(e.PayrollRuns); db.Payslips.AddRange(e.Payslips);
+            db.SaleReturns.AddRange(e.SaleReturns); db.SaleReturnLines.AddRange(e.SaleReturnLines); db.CashMovements.AddRange(e.CashMovements);
+        }
         await db.SaveChangesAsync(ct);
+        // A version-1 backup has no chart of accounts: seed the default one so postings keep working.
+        await Erp.DefaultChart.EnsureSeededAsync(db, ct);
         await tx.CommitAsync(ct);
     }
 }

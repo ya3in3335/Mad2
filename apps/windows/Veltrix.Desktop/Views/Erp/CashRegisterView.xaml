@@ -1,0 +1,119 @@
+<UserControl x:Class="Veltrix.Desktop.Views.Erp.CashRegisterView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:Veltrix.Desktop.Controls">
+    <DockPanel>
+        <HeaderedContentControl DockPanel.Dock="Top" Header="{DynamicResource erp.nav.cash}" Style="{StaticResource PageHeader}">
+            <StackPanel Orientation="Horizontal">
+                <DatePicker SelectedDate="{Binding Day}" Width="140" AutomationProperties.Name="{DynamicResource erp.date}"/>
+                <Button Content="{DynamicResource action.refresh}" Command="{Binding RefreshCommand}" Margin="8,0,0,0"/>
+            </StackPanel>
+        </HeaderedContentControl>
+        <TextBlock DockPanel.Dock="Bottom" Text="{Binding StatusMessage}" Style="{StaticResource Text.Status}" Margin="0,8,0,0"/>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="340"/>
+            </Grid.ColumnDefinitions>
+            <DockPanel>
+                <!-- KPIs -->
+                <UniformGrid DockPanel.Dock="Top" Rows="1" Margin="0,0,0,12">
+                    <Border Style="{StaticResource Card}" Margin="0,0,8,0">
+                        <StackPanel>
+                            <TextBlock Text="{DynamicResource erp.openingFloat}" Style="{StaticResource Text.Caption}"/>
+                            <TextBlock Text="{Binding Summary.OpeningFloat, StringFormat=N2}" Style="{StaticResource Text.Kpi}"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource Card}" Margin="0,0,8,0">
+                        <StackPanel>
+                            <TextBlock Text="{DynamicResource erp.cashSales}" Style="{StaticResource Text.Caption}"/>
+                            <TextBlock Text="{Binding Summary.CashSales, StringFormat=N2}" Style="{StaticResource Text.Kpi}"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource Card}" Margin="0,0,8,0">
+                        <StackPanel>
+                            <TextBlock Text="{DynamicResource erp.cashInOut}" Style="{StaticResource Text.Caption}"/>
+                            <TextBlock Style="{StaticResource Text.Kpi}"><Run Text="{Binding Summary.CashIn, Mode=OneWay, StringFormat=N2}"/> / <Run Text="{Binding Summary.CashOut, Mode=OneWay, StringFormat=N2}"/></TextBlock>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Text="{DynamicResource erp.expectedCash}" Style="{StaticResource Text.Caption}"/>
+                            <TextBlock Text="{Binding Summary.Expected, StringFormat=N2}" Style="{StaticResource Text.Kpi}"/>
+                        </StackPanel>
+                    </Border>
+                </UniformGrid>
+                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
+                    <TextBlock Text="{DynamicResource erp.cashAccountBalance}" Style="{StaticResource Text.Caption}" Margin="0,0,8,0"/>
+                    <TextBlock Text="{Binding Summary.CashAccountBalance, StringFormat=N2}" FontWeight="SemiBold" Margin="0,0,24,0"/>
+                    <TextBlock Text="{DynamicResource erp.dayInOut}" Style="{StaticResource Text.Caption}" Margin="0,0,8,0"/>
+                    <TextBlock><Run Text="{Binding DayIn, Mode=OneWay, StringFormat=N2}"/> / <Run Text="{Binding DayOut, Mode=OneWay, StringFormat=N2}"/></TextBlock>
+                </StackPanel>
+                <Grid>
+                    <DataGrid ItemsSource="{Binding Movements}" IsReadOnly="True" AutoGenerateColumns="False" Visibility="{Binding IsReady, Converter={StaticResource BoolToVis}}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="#" Binding="{Binding Number}" Width="110"/>
+                            <DataGridTextColumn Header="{DynamicResource erp.time}" Binding="{Binding CreatedAt.LocalDateTime, StringFormat=t}" Width="70"/>
+                            <DataGridTextColumn Header="{DynamicResource erp.source}" Binding="{Binding Source}" Width="100"/>
+                            <DataGridTextColumn Header="{DynamicResource erp.description}" Binding="{Binding Reason}" Width="*"/>
+                            <DataGridTextColumn Header="{DynamicResource erp.account}" Binding="{Binding CounterAccountCode}" Width="70"/>
+                            <DataGridTextColumn Header="{DynamicResource erp.amount}" Binding="{Binding Amount, StringFormat=N2}" Width="120" ElementStyle="{StaticResource Cell.Number}"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <c:PageState/>
+                </Grid>
+            </DockPanel>
+
+            <Border Grid.Column="2" Style="{StaticResource Card}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <!-- Open the day -->
+                        <StackPanel Visibility="{Binding NoOpenShift, Converter={StaticResource BoolToVis}}">
+                            <TextBlock Text="{DynamicResource erp.openDay}" Style="{StaticResource Text.Section}"/>
+                            <TextBlock Text="{DynamicResource erp.openingFloat}" Style="{StaticResource Text.Label}"/>
+                            <TextBox Text="{Binding OpeningFloat, UpdateSourceTrigger=PropertyChanged}" FlowDirection="LeftToRight"/>
+                            <Button Content="{DynamicResource erp.openDay}" Command="{Binding OpenDayCommand}" Style="{StaticResource Button.Primary}" Margin="0,10,0,0"/>
+                        </StackPanel>
+
+                        <!-- Cash in / out -->
+                        <TextBlock Text="{DynamicResource erp.cashMovement}" Style="{StaticResource Text.Section}" Margin="0,16,0,4"/>
+                        <StackPanel Orientation="Horizontal">
+                            <RadioButton Content="{DynamicResource erp.cashIn}" IsChecked="{Binding IsCashIn}" GroupName="dir" Margin="0,0,16,0"/>
+                            <RadioButton Content="{DynamicResource erp.cashOut}" IsChecked="{Binding IsCashIn, Converter={StaticResource Not}}" GroupName="dir"/>
+                        </StackPanel>
+                        <TextBlock Text="{DynamicResource erp.amount}" Style="{StaticResource Text.Label}"/>
+                        <TextBox Text="{Binding Amount, UpdateSourceTrigger=PropertyChanged}" FlowDirection="LeftToRight"/>
+                        <TextBlock Text="{DynamicResource erp.reason}" Style="{StaticResource Text.Label}"/>
+                        <TextBox Text="{Binding Reason}"/>
+                        <TextBlock Text="{DynamicResource erp.counterAccount}" Style="{StaticResource Text.Label}"/>
+                        <ComboBox ItemsSource="{Binding CounterAccounts}" SelectedItem="{Binding CounterAccount}" DisplayMemberPath="Text"/>
+                        <Button Content="{DynamicResource action.save}" Command="{Binding RecordCommand}" Margin="0,10,0,0"/>
+
+                        <!-- Close the day -->
+                        <StackPanel Visibility="{Binding HasOpenShift, Converter={StaticResource BoolToVis}}">
+                            <TextBlock Text="{DynamicResource erp.closeDay}" Style="{StaticResource Text.Section}" Margin="0,20,0,4"/>
+                            <TextBlock Text="{DynamicResource erp.countedCash}" Style="{StaticResource Text.Label}"/>
+                            <TextBox Text="{Binding CountedCash, UpdateSourceTrigger=PropertyChanged}" FlowDirection="LeftToRight"/>
+                            <TextBlock Text="{DynamicResource erp.notes}" Style="{StaticResource Text.Label}"/>
+                            <TextBox Text="{Binding CloseNotes}"/>
+                            <Button Content="{DynamicResource erp.closeDay}" Command="{Binding CloseDayCommand}" Style="{StaticResource Button.Danger}" Margin="0,10,0,0"/>
+                        </StackPanel>
+                        <TextBlock Text="{Binding FormError}" Style="{StaticResource Text.Error}" TextWrapping="Wrap" Margin="0,8,0,0"
+                                   Visibility="{Binding FormError, Converter={StaticResource NotNullToVis}}"/>
+
+                        <!-- Last closing report -->
+                        <Border Style="{StaticResource Banner}" Margin="0,16,0,0" Visibility="{Binding LastClose, Converter={StaticResource NotNullToVis}}">
+                            <StackPanel>
+                                <TextBlock Text="{DynamicResource erp.closingReport}" FontWeight="SemiBold"/>
+                                <TextBlock><Run Text="{DynamicResource erp.expectedCash}"/>: <Run Text="{Binding LastClose.ExpectedCash, Mode=OneWay, StringFormat=N2}"/></TextBlock>
+                                <TextBlock><Run Text="{DynamicResource erp.countedCash}"/>: <Run Text="{Binding LastClose.CountedCash, Mode=OneWay, StringFormat=N2}"/></TextBlock>
+                                <TextBlock><Run Text="{DynamicResource erp.variance}"/>: <Run Text="{Binding LastClose.Variance, Mode=OneWay, StringFormat=N2}"/></TextBlock>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </DockPanel>
+</UserControl>

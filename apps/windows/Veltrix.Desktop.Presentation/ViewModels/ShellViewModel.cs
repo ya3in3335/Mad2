@@ -44,7 +44,21 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
             ("settings", "nav.settings", "Icon.Settings", null, () => new SettingsViewModel(s, this)),
         };
         // Standalone (offline license): purchasing documents live on the server, so the module is hidden.
-        if (s.IsStandalone) all.RemoveAll(a => a.Key == "purchasing");
+        if (s.IsStandalone)
+        {
+            all.RemoveAll(a => a.Key == "purchasing");
+            // Local ERP (standalone only: online installations keep these documents on the server).
+            all.InsertRange(all.FindIndex(a => a.Key == "reports"),
+            [
+                ("erp.cash", "erp.nav.cash", "Icon.Pos", "cash.register", () => new CashRegisterViewModel(s)),
+                ("erp.receivables", "erp.nav.receivables", "Icon.Customers", "customers.manage", () => new ReceivablesViewModel(s)),
+                ("erp.suppliers", "erp.nav.suppliers", "Icon.Purchasing", "purchasing.view", () => new SuppliersViewModel(s)),
+                ("erp.purchases", "erp.nav.purchases", "Icon.Purchasing", "purchasing.manage", () => new PurchasesViewModel(s)),
+                ("erp.expenses", "erp.nav.expenses", "Icon.Sales", "expenses.manage", () => new ExpensesViewModel(s)),
+                ("erp.accounting", "erp.nav.accounting", "Icon.Reports", "accounting.view", () => new AccountingViewModel(s)),
+                ("erp.hr", "erp.nav.hr", "Icon.Customers", "hr.manage", () => new EmployeesViewModel(s)),
+            ]);
+        }
         NavItems = new ObservableCollection<NavItem>(all.Where(a => a.Permission is null || s.Session.HasPermission(a.Permission))
             .Select(a => new NavItem(a.Key, a.Title, a.Icon, a.Make)));
         UpdateTexts();

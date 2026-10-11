@@ -14,7 +14,7 @@ public static class LocalRoles
 
     /// <summary>Permissions granted to a local cashier (the owner gets "*").</summary>
     public static readonly IReadOnlyList<string> CashierPermissions =
-        ["pos.sell", "catalog.view", "customers.view", "customers.manage", "sales.view", "inventory.view"];
+        ["pos.sell", "catalog.view", "customers.view", "customers.manage", "sales.view", "inventory.view", "cash.register"];
 }
 
 /// <summary>A user of a standalone (offline-licensed) installation. Only the salted PBKDF2 hash of the secret is stored.</summary>

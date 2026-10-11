@@ -1,0 +1,152 @@
+<UserControl x:Class="Veltrix.Desktop.Views.Erp.PurchasesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:Veltrix.Desktop.Controls">
+    <DockPanel>
+        <HeaderedContentControl DockPanel.Dock="Top" Header="{DynamicResource erp.nav.purchases}" Style="{StaticResource PageHeader}">
+            <WrapPanel Orientation="Horizontal">
+                <ComboBox ItemsSource="{Binding Suppliers}" SelectedItem="{Binding SupplierFilter}" DisplayMemberPath="Name" Width="180" Margin="0,0,8,0"
+                          AutomationProperties.Name="{DynamicResource erp.supplier}"/>
+                <DatePicker SelectedDate="{Binding From}" Width="130" Margin="0,0,4,0" AutomationProperties.Name="{DynamicResource erp.from}"/>
+                <DatePicker SelectedDate="{Binding To}" Width="130" Margin="0,0,8,0" AutomationProperties.Name="{DynamicResource erp.to}"/>
+                <TextBox Text="{Binding Search, UpdateSourceTrigger=PropertyChanged}" Width="180" AutomationProperties.Name="{DynamicResource action.search}">
+                    <TextBox.InputBindings><KeyBinding Key="Return" Command="{Binding SearchNowCommand}"/></TextBox.InputBindings>
+                </TextBox>
+                <Button Content="{DynamicResource action.search}" Command="{Binding SearchNowCommand}" Margin="8,0,0,0"/>
+                <Button Content="{DynamicResource erp.newInvoice}" Command="{Binding NewInvoiceCommand}" Style="{StaticResource Button.Primary}" Margin="8,0,0,0"/>
+                <Button Content="{DynamicResource erp.newReturn}" Command="{Binding NewReturnCommand}" Margin="8,0,0,0"/>
+            </WrapPanel>
+        </HeaderedContentControl>
+        <TextBlock DockPanel.Dock="Bottom" Text="{Binding StatusMessage}" Style="{StaticResource Text.Status}" Margin="0,8,0,0"/>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="Auto" MaxWidth="560"/>
+            </Grid.ColumnDefinitions>
+
+            <DockPanel>
+                <TabControl DockPanel.Dock="Top" SelectedIndex="{Binding TabIndex}" Margin="0,0,0,8">
+                    <TabItem Header="{DynamicResource erp.invoices}"/>
+                    <TabItem Header="{DynamicResource erp.returns}"/>
+                </TabControl>
+                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8" Visibility="{Binding CanReceive, Converter={StaticResource BoolToVis}}">
+                    <Button Content="{DynamicResource erp.receive}" Command="{Binding ReceiveCommand}" Style="{StaticResource Button.Primary}" Margin="0,0,8,0"/>
+                    <Button Content="{DynamicResource action.edit}" Command="{Binding EditDraftCommand}" Margin="0,0,8,0"/>
+                    <Button Content="{DynamicResource action.delete}" Command="{Binding DeleteDraftCommand}" Style="{StaticResource Button.Danger}"/>
+                </StackPanel>
+                <DataGrid DockPanel.Dock="Bottom" ItemsSource="{Binding SelectedLines}" IsReadOnly="True" AutoGenerateColumns="False" MaxHeight="200" Margin="0,8,0,0"
+                          Visibility="{Binding Selected, Converter={StaticResource NotNullToVis}}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="{DynamicResource erp.sku}" Binding="{Binding Sku}" Width="100"/>
+                        <DataGridTextColumn Header="{DynamicResource erp.product}" Binding="{Binding Name}" Width="*"/>
+                        <DataGridTextColumn Header="{DynamicResource erp.qty}" Binding="{Binding Quantity, StringFormat={}{0:0.###}}" Width="70" ElementStyle="{StaticResource Cell.Number}"/>
+                        <DataGridTextColumn Header="{DynamicResource erp.unitCost}" Binding="{Binding UnitCost, StringFormat=N2}" Width="100" ElementStyle="{StaticResource Cell.Number}"/>
+                        <DataGridTextColumn Header="{DynamicResource erp.vatRate}" Binding="{Binding TaxRatePercent, StringFormat={}{0:0.##}}" Width="60" ElementStyle="{StaticResource Cell.Number}"/>
+                        <DataGridTextColumn Header="{DynamicResource erp.total}" Binding="{Binding Total, StringFormat=N2}" Width="110" ElementStyle="{StaticResource Cell.Number}"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+                <Grid>
+                    <DataGrid ItemsSource="{Binding Items}" SelectedItem="{Binding Selected}" IsReadOnly="True" AutoGenerateColumns="False"
+                              Visibility="{Binding IsReady, Converter={StaticResource BoolToVis}}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="#" Binding="{Binding Doc.Number}" Width="120"/>
+                            <DataGridTextColumn Header="{DynamicResource erp.date}" Binding="{Binding Doc.Date}" Width="100"/>
+                            <DataGridTextColumn Header="{DynamicResource erp.supplier}" Binding="{Binding SupplierName}" Width="*"/>
+                            <DataGridTextColumn Header="{DynamicResource erp.reference}" Binding="{Binding Doc.SupplierReference}" Width="110"/>
+                            <DataGridTextColumn Header="{DynamicResource erp.status}" Binding="{Binding Doc.Status}" Width="90"/>
+                            <DataGridTextColumn Header="{DynamicResource erp.subtotal}" Binding="{Binding Doc.Subtotal, StringFormat=N2}" Width="110" ElementStyle="{StaticResource Cell.Number}"/>
+                            <DataGridTextColumn Header="{DynamicResource erp.vat}" Binding="{Binding Doc.Tax, StringFormat=N2}" Width="90" ElementStyle="{StaticResource Cell.Number}"/>
+                            <DataGridTextColumn Header="{DynamicResource erp.total}" Binding="{Binding Doc.Total, StringFormat=N2}" Width="110" ElementStyle="{StaticResource Cell.Number}"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <c:PageState/>
+                </Grid>
+            </DockPanel>
+
+            <!-- Invoice / return editor -->
+            <Border Grid.Column="2" Style="{StaticResource Card}" Width="540" Visibility="{Binding Editor, Converter={StaticResource NotNullToVis}}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <TextBlock Text="{DynamicResource erp.purchaseInvoice}" Style="{StaticResource Text.Section}"
+                                   Visibility="{Binding Editor.IsReturn, Converter={StaticResource InvBoolToVis}}"/>
+                        <TextBlock Text="{DynamicResource erp.purchaseReturn}" Style="{StaticResource Text.Section}"
+                                   Visibility="{Binding Editor.IsReturn, Converter={StaticResource BoolToVis}}"/>
+                        <StackPanel Visibility="{Binding Editor.IsReturn, Converter={StaticResource BoolToVis}}">
+                            <TextBlock Text="{DynamicResource erp.originalInvoice}" Style="{StaticResource Text.Label}"/>
+                            <ComboBox ItemsSource="{Binding ReceivedInvoices}" SelectedItem="{Binding Editor.OriginalInvoice}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock><Run Text="{Binding Doc.Number, Mode=OneWay}"/> · <Run Text="{Binding SupplierName, Mode=OneWay}"/> · <Run Text="{Binding Doc.Total, Mode=OneWay, StringFormat=N2}"/></TextBlock>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="12"/><ColumnDefinition Width="150"/></Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="{DynamicResource erp.supplier}" Style="{StaticResource Text.Label}"/>
+                                <ComboBox ItemsSource="{Binding Suppliers}" SelectedItem="{Binding Editor.Supplier}" DisplayMemberPath="Name"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="{DynamicResource erp.date}" Style="{StaticResource Text.Label}"/>
+                                <DatePicker SelectedDate="{Binding Editor.Date}"/>
+                            </StackPanel>
+                        </Grid>
+                        <StackPanel Visibility="{Binding Editor.IsReturn, Converter={StaticResource InvBoolToVis}}">
+                            <TextBlock Text="{DynamicResource erp.reference}" Style="{StaticResource Text.Label}"/>
+                            <TextBox Text="{Binding Editor.Reference}"/>
+                        </StackPanel>
+                        <TextBlock Text="{DynamicResource erp.notes}" Style="{StaticResource Text.Label}"/>
+                        <TextBox Text="{Binding Editor.Notes}"/>
+
+                        <TextBlock Text="{DynamicResource erp.lines}" Style="{StaticResource Text.Section}" Margin="0,14,0,4"/>
+                        <DockPanel>
+                            <Button DockPanel.Dock="Right" Content="{DynamicResource action.add}" Command="{Binding AddLineCommand}" Margin="8,0,0,0"/>
+                            <ComboBox DockPanel.Dock="Right" ItemsSource="{Binding Picker.Results}" SelectedItem="{Binding Picker.Selected}" Width="200" Margin="8,0,0,0">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate><TextBlock><Run Text="{Binding Sku, Mode=OneWay}"/> · <Run Text="{Binding Name, Mode=OneWay}"/></TextBlock></DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <TextBox Text="{Binding Picker.Search, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="{DynamicResource erp.findProduct}">
+                                <TextBox.InputBindings><KeyBinding Key="Return" Command="{Binding Picker.SearchCommand}"/></TextBox.InputBindings>
+                            </TextBox>
+                        </DockPanel>
+                        <DataGrid ItemsSource="{Binding Editor.Lines}" SelectedItem="{Binding Editor.SelectedLine}" AutoGenerateColumns="False" CanUserAddRows="False"
+                                  Margin="0,8,0,0" MinHeight="120">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="{DynamicResource erp.product}" Binding="{Binding Name}" IsReadOnly="True" Width="*"/>
+                                <DataGridTextColumn Header="{DynamicResource erp.qty}" Binding="{Binding Quantity, UpdateSourceTrigger=PropertyChanged}" Width="60"/>
+                                <DataGridTextColumn Header="{DynamicResource erp.unitCost}" Binding="{Binding UnitPrice, UpdateSourceTrigger=PropertyChanged}" Width="80"/>
+                                <DataGridTextColumn Header="{DynamicResource erp.vatRate}" Binding="{Binding TaxRate, UpdateSourceTrigger=PropertyChanged}" Width="50"/>
+                                <DataGridTextColumn Header="{DynamicResource erp.total}" Binding="{Binding Total, StringFormat=N2, Mode=OneWay}" IsReadOnly="True" Width="90" ElementStyle="{StaticResource Cell.Number}"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                        <Button Content="{DynamicResource erp.removeLine}" Command="{Binding Editor.RemoveLineCommand}" Style="{StaticResource Button.Ghost}" HorizontalAlignment="Left" Margin="0,4,0,0"/>
+                        <Grid Margin="0,8,0,0">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions><RowDefinition/><RowDefinition/><RowDefinition/></Grid.RowDefinitions>
+                            <TextBlock Text="{DynamicResource erp.subtotal}" Style="{StaticResource Text.Caption}"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Editor.Subtotal, StringFormat=N2}"/>
+                            <TextBlock Grid.Row="1" Text="{DynamicResource erp.vat}" Style="{StaticResource Text.Caption}"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Editor.Tax, StringFormat=N2}"/>
+                            <TextBlock Grid.Row="2" Text="{DynamicResource erp.total}" FontWeight="SemiBold"/>
+                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Editor.Total, StringFormat=N2}" FontWeight="SemiBold"/>
+                        </Grid>
+                        <TextBlock Text="{Binding FormError}" Style="{StaticResource Text.Error}" TextWrapping="Wrap" Margin="0,8,0,0"
+                                   Visibility="{Binding FormError, Converter={StaticResource NotNullToVis}}"/>
+                        <WrapPanel Margin="0,12,0,0" Visibility="{Binding Editor.IsReturn, Converter={StaticResource InvBoolToVis}}">
+                            <Button Content="{DynamicResource erp.saveDraft}" Command="{Binding SaveDraftCommand}" Margin="0,0,8,0"/>
+                            <Button Content="{DynamicResource erp.saveAndReceive}" Command="{Binding SaveAndReceiveCommand}" Style="{StaticResource Button.Primary}" Margin="0,0,8,0"/>
+                            <Button Content="{DynamicResource action.cancel}" Command="{Binding CancelEditCommand}" Style="{StaticResource Button.Ghost}"/>
+                        </WrapPanel>
+                        <WrapPanel Margin="0,12,0,0" Visibility="{Binding Editor.IsReturn, Converter={StaticResource BoolToVis}}">
+                            <Button Content="{DynamicResource erp.recordReturn}" Command="{Binding SubmitReturnCommand}" Style="{StaticResource Button.Primary}" Margin="0,0,8,0"/>
+                            <Button Content="{DynamicResource action.cancel}" Command="{Binding CancelEditCommand}" Style="{StaticResource Button.Ghost}"/>
+                        </WrapPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </DockPanel>
+</UserControl>
