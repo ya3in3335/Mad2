@@ -207,18 +207,6 @@
     <string name="dlg_unsaved">You have unsaved changes.</string>
     <string name="help_docs">User guide</string>
     <string name="help_contact">Contact support</string>
-    <string name="offline_title">Offline activation (no server)</string>
-    <string name="offline_hint">Send this device code to your vendor. You will receive an activation code bound to this device only: paste it below or open the .txt file you received.</string>
-    <string name="offline_deviceCode">Device code</string>
-    <string name="offline_copy">Copy</string>
-    <string name="offline_share">Share</string>
-    <string name="offline_activationCode">Activation code</string>
-    <string name="offline_openFile">Open file…</string>
-    <string name="offline_activate">Activate offline</string>
-    <string name="offline_notConfigured">Offline activation is not configured in this build (no vendor public key).</string>
-    <string name="offline_invalid">This activation code is not valid. Check that it was copied completely.</string>
-    <string name="offline_wrongDevice">This activation code was issued for another device.</string>
-    <string name="offline_expired">This activation code has expired.</string>
     <!-- Standalone mode (offline license) -->
     <string name="sa_setupTitle">Create the owner account</string>
     <string name="sa_setupHint">This device runs standalone with an offline license: accounts and data stay on this device.</string>
@@ -259,4 +247,8 @@
     <string name="sa_err_backupFile">This file is not a readable VELTRIX backup.</string>
     <string name="sa_err_invalid">Wrong user name or password.</string>
     <string name="sa_saleSavedLocal">Saved on this device</string>
+    <string name="bind_title">This copy is not licensed for this device</string>
+    <string name="bind_body">VELTRIX OS must be installed on this device by your vendor. This copy was moved or restored from another device, or its license data was changed.</string>
+    <string name="bind_contact">Please contact your vendor. No data has been opened.</string>
+    <string name="bind_status">Licensed for this device since</string>
 </resources>

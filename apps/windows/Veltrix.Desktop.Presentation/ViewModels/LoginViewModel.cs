@@ -158,9 +158,6 @@ public sealed partial class LoginViewModel(DesktopServices s, AppViewModel app) 
         finally { IsBusy = false; }
     }
 
-    [RelayCommand]
-    public void ChangeServer() => app.Navigate(StartRoute.Activation);
-
     private void Fail(string message)
     {
         ErrorMessage = message;

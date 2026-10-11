@@ -59,7 +59,7 @@ public partial class App : Application
         catch (Exception ex)
         {
             _log?.Error("Startup failed", ex);
-            route = StartRoute.Activation;
+            route = services.Binding.IsBound ? StartRoute.Login : StartRoute.NotLicensed;
         }
 
         var main = new MainWindow { DataContext = app };
@@ -98,14 +98,17 @@ public partial class App : Application
             .FirstOrDefault(a => a.Key == "VeltrixVendorPublicKey")?.Value;
         var identity = new DeviceIdentity(secrets, settings.InstallationId, WindowsFingerprint.Read());
         var license = new LicenseManager(api, secrets, settings, () => settingsStore.Save(settings), identity, time, version, pinned);
+        // Anti-copy: trust-on-first-use binding to this PC (DPAPI LocalMachine), created from the installer's one-time token.
+        var binding = new DeviceBindingManager(new WindowsBindingStore(), new DpapiMachineProtector(),
+            DeviceFingerprint.ComputeBinding(WindowsFingerprint.Read()), time);
         var localizer = new WpfLocalizer(settings);
 
         return new DesktopServices
         {
-            Api = api, Settings = settings, SettingsStore = settingsStore, Secrets = secrets, Tokens = tokens, License = license,
+            Api = api, Settings = settings, SettingsStore = settingsStore, Secrets = secrets, Tokens = tokens, License = license, Binding = binding,
             Session = new SessionService(api, tokens, secrets), Db = db, Sync = new SyncEngine(db, new ApiSyncTransport(api), time),
-            Pos = new PosService(api, db, time, () => license.IsStandalone), Loc = localizer, Ui = new WpfPlatformUi(localizer), Time = time, Log = log, Version = version,
-            Standalone = new Core.Standalone.StandaloneService(secrets, db, time, () => license.IsStandalone && (license.Current?.CanSell ?? false)),
+            Pos = new PosService(api, db, time, () => binding.IsBound), Loc = localizer, Ui = new WpfPlatformUi(localizer), Time = time, Log = log, Version = version,
+            Standalone = new Core.Standalone.StandaloneService(secrets, db, time, () => binding.IsBound),
         };
     }
 

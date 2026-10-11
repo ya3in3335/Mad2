@@ -24,4 +24,14 @@ public static class DeviceFingerprint
             (inputs.MachineGuid ?? "").Trim().ToLowerInvariant());
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(material))).ToLowerInvariant();
     }
+
+    /// <summary>
+    /// Fingerprint used by the device binding: MachineGuid (falls back to the machine name when unreadable). OS version and
+    /// processor count are deliberately excluded so Windows updates or VM resizing do not invalidate a legitimate binding.
+    /// </summary>
+    public static string ComputeBinding(FingerprintInputs inputs)
+    {
+        var id = string.IsNullOrWhiteSpace(inputs.MachineGuid) ? "name:" + inputs.MachineName.Trim().ToUpperInvariant() : inputs.MachineGuid.Trim().ToLowerInvariant();
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes("veltrix.desktop.binding.v1|" + id))).ToLowerInvariant();
+    }
 }

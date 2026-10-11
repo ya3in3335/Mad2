@@ -15,7 +15,6 @@ import com.veltrix.os.data.db.LocalSaleLineEntity
 import com.veltrix.os.data.db.ProductEntity
 import com.veltrix.os.data.db.StockEntity
 import com.veltrix.os.data.repo.CartLine
-import com.veltrix.os.data.security.OfflineActivation
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -26,8 +25,8 @@ import kotlinx.serialization.json.JsonPrimitive
 
 /** Which app mode a license selects, and what is available in it. */
 object ModePolicy {
-    /** A vendor-issued offline license runs the app standalone: single device, local accounts and data, no server, no sync. */
-    fun isStandalone(certificateType: String?): Boolean = certificateType == OfflineActivation.OFFLINE_TYPE
+    /** Legacy: a vendor-issued "Offline" certificate also meant standalone. Standalone is now selected by the device binding. */
+    fun isStandalone(certificateType: String?): Boolean = certificateType == "Offline"
 
     /** Screens that inherently need the server (multi-device sync, accounting, HR, notifications/Telegram, branches). */
     val SERVER_ONLY_ROUTES = setOf("expenses", "employees", "notifications", "branch", "sync")

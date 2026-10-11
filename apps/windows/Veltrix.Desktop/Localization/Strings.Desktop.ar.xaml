@@ -3,7 +3,6 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
     <sys:String x:Key="dk.activation.acceptRequired">يرجى قراءة إشعار الترخيص والخصوصية والموافقة عليه.</sys:String>
     <sys:String x:Key="dk.activation.serverHint">مثال: https://erp.your-company.dz — لا يُسمح بـ http إلا على الشبكة المحلية.</sys:String>
-    <sys:String x:Key="dk.activation.subtitle">اربط هذا الحاسوب بخادم VELTRIX OS وفعّله بمفتاح الترخيص.</sys:String>
     <sys:String x:Key="dk.active">نشط</sys:String>
     <sys:String x:Key="dk.check">إعادة التحقق</sys:String>
     <sys:String x:Key="dk.city">المدينة</sys:String>
@@ -69,16 +68,6 @@
     <sys:String x:Key="dk.set.serverChangeConfirm">تغيير عنوان الخادم؟ قد تحتاج إلى تسجيل الدخول من جديد.</sys:String>
     <sys:String x:Key="dk.splash.skip">انقر أو اضغط أي مفتاح للتخطي</sys:String>
     <sys:String x:Key="dk.state.offlineData">بيانات دون اتصال</sys:String>
-    <sys:String x:Key="dk.offline.title">التفعيل دون اتصال (بدون خادم)</sys:String>
-    <sys:String x:Key="dk.offline.hint">أرسل رمز الجهاز هذا إلى المورّد. ستتلقى رمز تفعيل مرتبطًا بهذا الجهاز فقط: الصقه أدناه أو افتح ملف ‎.txt‎ الذي استلمته.</sys:String>
-    <sys:String x:Key="dk.offline.deviceCode">رمز الجهاز</sys:String>
-    <sys:String x:Key="dk.offline.copy">نسخ</sys:String>
-    <sys:String x:Key="dk.offline.activationCode">رمز التفعيل</sys:String>
-    <sys:String x:Key="dk.offline.openFile">فتح ملف…</sys:String>
-    <sys:String x:Key="dk.offline.activate">تفعيل دون اتصال</sys:String>
-    <sys:String x:Key="dk.offline.fileFilter">ملف التفعيل (*.txt)</sys:String>
-    <sys:String x:Key="dk.offline.notConfigured">التفعيل دون اتصال غير مُهيأ في هذا الإصدار (لا يوجد مفتاح عام للمورّد).</sys:String>
-    <sys:String x:Key="dk.offline.invalid">رمز التفعيل هذا غير صالح. تحقق من نسخه بالكامل.</sys:String>
     <!-- Standalone mode (offline license) -->
     <sys:String x:Key="dk.sa.setupTitle">إنشاء حساب المالك</sys:String>
     <sys:String x:Key="dk.sa.setupHint">يعمل هذا الجهاز بشكل مستقل بترخيص غير متصل: تبقى الحسابات والبيانات على هذا الحاسوب. اختر اسم المالك وكلمة مرور (8 أحرف على الأقل) أو رمزًا سريًا (6 أرقام على الأقل).</sys:String>
@@ -114,4 +103,11 @@
     <sys:String x:Key="dk.sa.report.sales-by-day">المبيعات حسب اليوم</sys:String>
     <sys:String x:Key="dk.sa.report.sales-by-product">المبيعات حسب المنتج</sys:String>
     <sys:String x:Key="dk.sa.report.stock">المخزون المتوفر</sys:String>
+    <sys:String x:Key="dk.bind.title">هذه النسخة غير مرخّصة لهذا الحاسوب</sys:String>
+    <sys:String x:Key="dk.bind.body">يجب أن يقوم مورّدك بتثبيت VELTRIX OS على هذا الحاسوب. لم يتم تثبيت هذه النسخة هنا، أو تم نسخها من حاسوب آخر، أو تم تعديل بيانات الترخيص الخاصة بها.</sys:String>
+    <sys:String x:Key="dk.bind.contact">يرجى الاتصال بمورّدك. لم يتم فتح أي بيانات.</sys:String>
+    <sys:String x:Key="dk.bind.reference">المرجع</sys:String>
+    <sys:String x:Key="dk.bind.status">مرخّص لهذا الحاسوب (منذ {0}).</sys:String>
+    <sys:String x:Key="dk.bind.continue">متابعة</sys:String>
+    <sys:String x:Key="dk.activation.subtitle">اختر لغتك ووافق على إشعار الخصوصية للبدء.</sys:String>
 </ResourceDictionary>

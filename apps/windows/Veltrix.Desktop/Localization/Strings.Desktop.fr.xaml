@@ -3,7 +3,6 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
     <sys:String x:Key="dk.activation.acceptRequired">Veuillez lire et accepter la notice de licence et de confidentialité.</sys:String>
     <sys:String x:Key="dk.activation.serverHint">Exemple : https://erp.votre-entreprise.dz — http simple uniquement sur le réseau local.</sys:String>
-    <sys:String x:Key="dk.activation.subtitle">Connectez ce PC à votre serveur VELTRIX OS et activez-le avec votre clé de licence.</sys:String>
     <sys:String x:Key="dk.active">Actif</sys:String>
     <sys:String x:Key="dk.check">Vérifier à nouveau</sys:String>
     <sys:String x:Key="dk.city">Ville</sys:String>
@@ -69,16 +68,6 @@
     <sys:String x:Key="dk.set.serverChangeConfirm">Changer l'adresse du serveur ? Vous devrez peut-être vous reconnecter.</sys:String>
     <sys:String x:Key="dk.splash.skip">Cliquez ou appuyez sur une touche pour passer</sys:String>
     <sys:String x:Key="dk.state.offlineData">Données hors ligne</sys:String>
-    <sys:String x:Key="dk.offline.title">Activation hors ligne (sans serveur)</sys:String>
-    <sys:String x:Key="dk.offline.hint">Envoyez ce code appareil à votre fournisseur. Vous recevrez un code d'activation lié uniquement à cet appareil : collez-le ci-dessous ou ouvrez le fichier .txt reçu.</sys:String>
-    <sys:String x:Key="dk.offline.deviceCode">Code appareil</sys:String>
-    <sys:String x:Key="dk.offline.copy">Copier</sys:String>
-    <sys:String x:Key="dk.offline.activationCode">Code d'activation</sys:String>
-    <sys:String x:Key="dk.offline.openFile">Ouvrir un fichier…</sys:String>
-    <sys:String x:Key="dk.offline.activate">Activer hors ligne</sys:String>
-    <sys:String x:Key="dk.offline.fileFilter">Fichier d'activation (*.txt)</sys:String>
-    <sys:String x:Key="dk.offline.notConfigured">L'activation hors ligne n'est pas configurée dans cette version (aucune clé publique fournisseur).</sys:String>
-    <sys:String x:Key="dk.offline.invalid">Ce code d'activation n'est pas valide. Vérifiez qu'il a été copié en entier.</sys:String>
     <!-- Standalone mode (offline license) -->
     <sys:String x:Key="dk.sa.setupTitle">Créer le compte propriétaire</sys:String>
     <sys:String x:Key="dk.sa.setupHint">Cet appareil fonctionne en autonome avec une licence hors ligne : les comptes et les données restent sur ce PC. Choisissez le nom du propriétaire et un mot de passe (8 caractères min.) ou un code PIN (6 chiffres min.).</sys:String>
@@ -114,4 +103,11 @@
     <sys:String x:Key="dk.sa.report.sales-by-day">Ventes par jour</sys:String>
     <sys:String x:Key="dk.sa.report.sales-by-product">Ventes par produit</sys:String>
     <sys:String x:Key="dk.sa.report.stock">Stock disponible</sys:String>
+    <sys:String x:Key="dk.bind.title">Cette copie n'est pas autorisée sur cet ordinateur</sys:String>
+    <sys:String x:Key="dk.bind.body">VELTRIX OS doit être installé sur cet ordinateur par votre revendeur. Cette copie n'a pas été installée ici, a été copiée depuis un autre ordinateur, ou ses données de licence ont été modifiées.</sys:String>
+    <sys:String x:Key="dk.bind.contact">Veuillez contacter votre revendeur. Aucune donnée n'a été ouverte.</sys:String>
+    <sys:String x:Key="dk.bind.reference">Référence</sys:String>
+    <sys:String x:Key="dk.bind.status">Licence valide pour cet ordinateur (depuis le {0}).</sys:String>
+    <sys:String x:Key="dk.bind.continue">Continuer</sys:String>
+    <sys:String x:Key="dk.activation.subtitle">Choisissez votre langue et acceptez l'avis de confidentialité pour commencer.</sys:String>
 </ResourceDictionary>

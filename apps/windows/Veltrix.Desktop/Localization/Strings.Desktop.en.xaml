@@ -3,7 +3,6 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
     <sys:String x:Key="dk.activation.acceptRequired">Please read and accept the licensing and privacy notice.</sys:String>
     <sys:String x:Key="dk.activation.serverHint">Example: https://erp.your-company.dz — plain http is only allowed on your local network.</sys:String>
-    <sys:String x:Key="dk.activation.subtitle">Connect this PC to your VELTRIX OS server and activate it with your license key.</sys:String>
     <sys:String x:Key="dk.active">Active</sys:String>
     <sys:String x:Key="dk.check">Check again</sys:String>
     <sys:String x:Key="dk.city">City</sys:String>
@@ -69,16 +68,6 @@
     <sys:String x:Key="dk.set.serverChangeConfirm">Change the server address? You may need to sign in again.</sys:String>
     <sys:String x:Key="dk.splash.skip">Click or press any key to skip</sys:String>
     <sys:String x:Key="dk.state.offlineData">Offline data</sys:String>
-    <sys:String x:Key="dk.offline.title">Offline activation (no server)</sys:String>
-    <sys:String x:Key="dk.offline.hint">Send this device code to your vendor. You will receive an activation code bound to this device only: paste it below or open the .txt file you received.</sys:String>
-    <sys:String x:Key="dk.offline.deviceCode">Device code</sys:String>
-    <sys:String x:Key="dk.offline.copy">Copy</sys:String>
-    <sys:String x:Key="dk.offline.activationCode">Activation code</sys:String>
-    <sys:String x:Key="dk.offline.openFile">Open file…</sys:String>
-    <sys:String x:Key="dk.offline.activate">Activate offline</sys:String>
-    <sys:String x:Key="dk.offline.fileFilter">Activation file (*.txt)</sys:String>
-    <sys:String x:Key="dk.offline.notConfigured">Offline activation is not configured in this build (no vendor public key).</sys:String>
-    <sys:String x:Key="dk.offline.invalid">This activation code is not valid. Check that it was copied completely.</sys:String>
     <!-- Standalone mode (offline license) -->
     <sys:String x:Key="dk.sa.setupTitle">Create the owner account</sys:String>
     <sys:String x:Key="dk.sa.setupHint">This device runs standalone with an offline license: accounts and data stay on this PC. Choose the owner's name and a password (8+ characters) or a PIN (6+ digits).</sys:String>
@@ -114,4 +103,11 @@
     <sys:String x:Key="dk.sa.report.sales-by-day">Sales by day</sys:String>
     <sys:String x:Key="dk.sa.report.sales-by-product">Sales by product</sys:String>
     <sys:String x:Key="dk.sa.report.stock">Stock on hand</sys:String>
+    <sys:String x:Key="dk.bind.title">This copy is not licensed for this computer</sys:String>
+    <sys:String x:Key="dk.bind.body">VELTRIX OS must be installed on this computer by your vendor. This copy was not installed here, was copied from another computer, or its license data was changed.</sys:String>
+    <sys:String x:Key="dk.bind.contact">Please contact your vendor. No data has been opened.</sys:String>
+    <sys:String x:Key="dk.bind.reference">Reference</sys:String>
+    <sys:String x:Key="dk.bind.status">Licensed for this computer (since {0}).</sys:String>
+    <sys:String x:Key="dk.bind.continue">Continue</sys:String>
+    <sys:String x:Key="dk.activation.subtitle">Choose your language and accept the privacy notice to get started.</sys:String>
 </ResourceDictionary>

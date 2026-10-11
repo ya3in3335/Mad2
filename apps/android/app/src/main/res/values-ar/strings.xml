@@ -207,18 +207,6 @@
     <string name="dlg_unsaved">لديك تغييرات غير محفوظة.</string>
     <string name="help_docs">دليل المستخدم</string>
     <string name="help_contact">الاتصال بالدعم</string>
-    <string name="offline_title">التفعيل دون اتصال (بدون خادم)</string>
-    <string name="offline_hint">أرسل رمز الجهاز هذا إلى المورّد. ستتلقى رمز تفعيل مرتبطًا بهذا الجهاز فقط: الصقه أدناه أو افتح ملف ‎.txt‎ الذي استلمته.</string>
-    <string name="offline_deviceCode">رمز الجهاز</string>
-    <string name="offline_copy">نسخ</string>
-    <string name="offline_share">مشاركة</string>
-    <string name="offline_activationCode">رمز التفعيل</string>
-    <string name="offline_openFile">فتح ملف…</string>
-    <string name="offline_activate">تفعيل دون اتصال</string>
-    <string name="offline_notConfigured">التفعيل دون اتصال غير مُعدّ في هذا الإصدار (لا يوجد مفتاح عام للمورّد).</string>
-    <string name="offline_invalid">رمز التفعيل هذا غير صالح. تحقق من نسخه بالكامل.</string>
-    <string name="offline_wrongDevice">صدر رمز التفعيل هذا لجهاز آخر.</string>
-    <string name="offline_expired">انتهت صلاحية رمز التفعيل هذا.</string>
     <!-- Standalone mode (offline license) -->
     <string name="sa_setupTitle">إنشاء حساب المالك</string>
     <string name="sa_setupHint">يعمل هذا الجهاز بشكل مستقل بترخيص غير متصل: تبقى الحسابات والبيانات على هذا الجهاز.</string>
@@ -259,4 +247,8 @@
     <string name="sa_err_backupFile">هذا الملف ليس نسخة VELTRIX احتياطية صالحة.</string>
     <string name="sa_err_invalid">اسم المستخدم أو كلمة المرور غير صحيحة.</string>
     <string name="sa_saleSavedLocal">تم الحفظ على هذا الجهاز</string>
+    <string name="bind_title">هذه النسخة غير مرخّصة لهذا الجهاز</string>
+    <string name="bind_body">يجب أن يقوم مورّدك بتثبيت VELTRIX OS على هذا الجهاز. تم نقل هذه النسخة أو استعادتها من جهاز آخر، أو تم تعديل بيانات الترخيص الخاصة بها.</string>
+    <string name="bind_contact">يرجى الاتصال بمورّدك. لم يتم فتح أي بيانات.</string>
+    <string name="bind_status">مرخّص لهذا الجهاز منذ</string>
 </resources>

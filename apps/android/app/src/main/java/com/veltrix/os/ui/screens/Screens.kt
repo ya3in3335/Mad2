@@ -443,6 +443,8 @@ fun LicenseScreen(vm: ScreensViewModel = hiltViewModel()) {
     Column(Modifier.fillMaxSize().padding(16.dp)) {
         BrandEmblem(Modifier.size(64.dp))
         Spacer(Modifier.height(12.dp))
+        if (vm.standalone) Info(stringResource(R.string.bind_status),
+            vm.license.boundAt?.let { java.time.Instant.ofEpochSecond(it).atZone(java.time.ZoneId.systemDefault()).toLocalDate().toString() } ?: "—")
         summary?.let { s ->
             Info(stringResource(R.string.lic_plan), s.planCode.replaceFirstChar { it.uppercase() } + " (" + s.type + ")")
             Info(stringResource(R.string.lic_status), s.effectiveStatus)
@@ -454,7 +456,7 @@ fun LicenseScreen(vm: ScreensViewModel = hiltViewModel()) {
         Spacer(Modifier.height(12.dp))
         Text(stringResource(R.string.lic_recovery), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(16.dp))
-        Button(onClick = { scope.launch { runCatching { vm.license.refresh() } } }) { Text(stringResource(R.string.action_refresh)) }
+        if (!vm.standalone) Button(onClick = { scope.launch { runCatching { vm.license.refresh() } } }) { Text(stringResource(R.string.action_refresh)) }
         // An offline license has no server seat to release.
         if (!vm.standalone) OutlinedButton(onClick = { requireBiometric(activity, activity.getString(R.string.lic_release)) { confirmRelease = true } }) { Text(stringResource(R.string.lic_release)) }
         else Text(stringResource(R.string.sa_localMode), style = MaterialTheme.typography.bodySmall)
@@ -639,7 +641,7 @@ fun BackupScreen(vm: ScreensViewModel = hiltViewModel()) {
         scope.launch {
             runCatching {
                 val bytes = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { context.contentResolver.openInputStream(uri)?.use { it.readBytes() } } ?: error("read")
-                vm.local.restoreBackup(bytes, password, vm.license.state.value is LicenseState.Valid && vm.standalone)
+                vm.local.restoreBackup(bytes, password, vm.standalone)
             }.onSuccess { message = R.string.sa_restoredHere }.onFailure(::fail)
             busy = false
         }

@@ -49,6 +49,8 @@ public sealed class DesktopServices
     public required SecureStore Secrets { get; init; }
     public required SecureTokenStore Tokens { get; init; }
     public required LicenseManager License { get; init; }
+    /// <summary>Trust-on-first-use device binding (anti-copy): verified before any local data is opened.</summary>
+    public required DeviceBindingManager Binding { get; init; }
     public required SessionService Session { get; init; }
     public required Func<LocalDb> Db { get; init; }
     public required SyncEngine Sync { get; init; }
@@ -58,11 +60,11 @@ public sealed class DesktopServices
     public required TimeProvider Time { get; init; }
     public required AppLog Log { get; init; }
     public required string Version { get; init; }
-    /// <summary>Local accounts, repository and backups for standalone (offline-licensed) installations.</summary>
+    /// <summary>Local accounts, repository and backups (standalone mode, the only customer mode).</summary>
     public required Core.Standalone.StandaloneService Standalone { get; init; }
 
-    /// <summary>The device runs on an offline license: single-device, local data only, no server and no sync.</summary>
-    public bool IsStandalone => License.IsStandalone;
+    /// <summary>Standalone mode: single device bound on first run, local data only, no server and no sync.</summary>
+    public bool IsStandalone => Binding.IsBound;
 
     public void SaveSettings() => SettingsStore.Save(Settings);
 

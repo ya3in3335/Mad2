@@ -15,13 +15,13 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.veltrix.os.data.api.AppSettings
-import com.veltrix.os.data.repo.LicenseRepository
 import com.veltrix.os.data.repo.SessionRepository
-import com.veltrix.os.data.security.DeviceIdentity
-import com.veltrix.os.data.security.LicenseState
+import com.veltrix.os.data.security.BindingStatus
+import com.veltrix.os.data.security.DeviceBindingService
 import com.veltrix.os.data.work.SyncWorker
 import com.veltrix.os.ui.auth.LoginScreen
 import com.veltrix.os.ui.main.MainScreen
+import com.veltrix.os.ui.onboarding.NotLicensedScreen
 import com.veltrix.os.ui.onboarding.OnboardingFlow
 import com.veltrix.os.ui.splash.AnimatedSplash
 import com.veltrix.os.ui.theme.VeltrixTheme
@@ -33,11 +33,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-enum class Stage { Splash, Onboarding, Login, Main }
+enum class Stage { Splash, NotLicensed, Onboarding, Login, Main }
 
 @HiltViewModel
 class AppViewModel @Inject constructor(
-    val settings: AppSettings, private val license: LicenseRepository, private val session: SessionRepository, private val identity: DeviceIdentity,
+    val settings: AppSettings, private val session: SessionRepository, private val binding: DeviceBindingService,
     private val standalone: com.veltrix.os.data.repo.StandaloneRepository,
 ) : ViewModel() {
     private val _stage = MutableStateFlow(Stage.Splash)
@@ -47,16 +47,15 @@ class AppViewModel @Inject constructor(
     private var next = Stage.Onboarding
 
     init {
-        // Real startup work: ensure device key, evaluate the signed license offline, read session.
+        // Real startup work: automatic device binding (first launch) or its verification — before any local data is opened.
         viewModelScope.launch(Dispatchers.IO) {
-            identity.publicKeySpki()
-            val state = license.evaluate()
-            if (license.standalone) standalone.ensureRegister()
-            next = when {
-                !settings.languageChosen || !settings.privacyAccepted || state is LicenseState.Missing || state is LicenseState.WrongDevice -> Stage.Onboarding
-                !settings.setupCompleted -> Stage.Onboarding
-                session.isSignedIn -> Stage.Main
-                else -> Stage.Login
+            next = if (!binding.verify().let { it == BindingStatus.Bound || it == BindingStatus.NewlyBound }) Stage.NotLicensed else {
+                standalone.ensureRegister()
+                when {
+                    !settings.languageChosen || !settings.privacyAccepted -> Stage.Onboarding
+                    session.isSignedIn -> Stage.Main
+                    else -> Stage.Login
+                }
             }
             _ready.value = true
         }
@@ -86,6 +85,7 @@ class MainActivity : AppCompatActivity() {
                 Crossfade(stage, animationSpec = tween(300), label = "stage") { s ->
                     when (s) {
                         Stage.Splash -> AnimatedSplash(ready) { vm.splashFinished() }
+                        Stage.NotLicensed -> NotLicensedScreen()
                         Stage.Onboarding -> OnboardingFlow(onDone = vm::onboarded)
                         Stage.Login -> LoginScreen(onSignedIn = vm::signedIn)
                         Stage.Main -> MainScreen()

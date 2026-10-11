@@ -149,3 +149,98 @@ public sealed class WpfPlatformUi(WpfLocalizer localizer) : IPlatformUi
                == MessageBoxResult.Yes;
     }
 }
+
+/// <summary>DPAPI, LocalMachine scope: any account on this PC can decrypt, no other PC can (used for the device binding).</summary>
+[SupportedOSPlatform("windows")]
+public sealed class DpapiMachineProtector : IDataProtector
+{
+    private static readonly byte[] Entropy = Encoding.UTF8.GetBytes("VELTRIX OS device binding v1");
+
+    public byte[] Protect(byte[] plaintext) => ProtectedData.Protect(plaintext, Entropy, DataProtectionScope.LocalMachine);
+    public byte[] Unprotect(byte[] ciphertext) => ProtectedData.Unprotect(ciphertext, Entropy, DataProtectionScope.LocalMachine);
+}
+
+/// <summary>
+/// Device binding storage on Windows. Two locations:
+/// <list type="bullet">
+/// <item>"file": %ProgramData%\VELTRIX\binding.dat (the installer grants Users modify rights on that folder); falls back to
+/// %LocalAppData%\VELTRIX OS\binding.dat when ProgramData is not writable.</item>
+/// <item>"registry": HKLM\SOFTWARE\VELTRIX, value Binding (the installer grants Users modify rights on that key); falls back
+/// to HKCU\Software\VELTRIX when HKLM is not writable (app runs asInvoker, i.e. not elevated).</item>
+/// </list>
+/// The installer's one-time token is %ProgramData%\VELTRIX\install.token (Program Files is not writable by the app, so the token
+/// is not kept in {app}).
+/// </summary>
+[SupportedOSPlatform("windows")]
+public sealed class WindowsBindingStore : Core.Licensing.IDeviceBindingStore
+{
+    private const string FileLoc = "file";
+    private const string RegLoc = "registry";
+    private const string SubKey = @"SOFTWARE\VELTRIX";
+    private const string ValueName = "Binding";
+
+    public static string MachineDir { get; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "VELTRIX");
+    private static string MachineFile => Path.Combine(MachineDir, "binding.dat");
+    private static string UserFile => Path.Combine(AppPaths.Root, "binding.dat");
+    public static string TokenPath => Path.Combine(MachineDir, "install.token");
+
+    public IReadOnlyList<string> Locations { get; } = [FileLoc, RegLoc];
+
+    public byte[]? Read(string location) => location == FileLoc
+        ? ReadFile(MachineFile) ?? ReadFile(UserFile)
+        : ReadReg(RegistryHive.LocalMachine) ?? ReadReg(RegistryHive.CurrentUser);
+
+    public bool Write(string location, byte[] data) => location == FileLoc
+        ? WriteFile(MachineFile, data) || WriteFile(UserFile, data)
+        : WriteReg(RegistryHive.LocalMachine, data) || WriteReg(RegistryHive.CurrentUser, data);
+
+    public string? ReadInstallToken()
+    {
+        try { return File.Exists(TokenPath) ? File.ReadAllText(TokenPath).Trim() is { Length: > 0 } t ? t : null : null; }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { return null; }
+    }
+
+    public bool DeleteInstallToken()
+    {
+        try { File.Delete(TokenPath); return true; }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { return false; }
+    }
+
+    private static byte[]? ReadFile(string path)
+    {
+        try { return File.Exists(path) ? File.ReadAllBytes(path) : null; }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { return null; }
+    }
+
+    private static bool WriteFile(string path, byte[] data)
+    {
+        try
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            File.WriteAllBytes(path, data);
+            return true;
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { return false; }
+    }
+
+    private static byte[]? ReadReg(RegistryHive hive)
+    {
+        try
+        {
+            using var key = RegistryKey.OpenBaseKey(hive, RegistryView.Registry64).OpenSubKey(SubKey);
+            return key?.GetValue(ValueName) as byte[];
+        }
+        catch (Exception e) when (e is System.Security.SecurityException or UnauthorizedAccessException or IOException) { return null; }
+    }
+
+    private static bool WriteReg(RegistryHive hive, byte[] data)
+    {
+        try
+        {
+            using var key = RegistryKey.OpenBaseKey(hive, RegistryView.Registry64).CreateSubKey(SubKey, writable: true);
+            key.SetValue(ValueName, data, RegistryValueKind.Binary);
+            return true;
+        }
+        catch (Exception e) when (e is System.Security.SecurityException or UnauthorizedAccessException or IOException) { return false; }
+    }
+}

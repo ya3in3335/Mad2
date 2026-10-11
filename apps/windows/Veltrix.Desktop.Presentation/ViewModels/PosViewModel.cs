@@ -54,7 +54,7 @@ public sealed partial class PosViewModel(DesktopServices s) : PageViewModel(s)
     [ObservableProperty] private string? _scanError;
 
     public bool HasShift => Shift is not null;
-    public bool LicenseAllowsSelling => S.License.Current?.CanSell ?? false;
+    public bool LicenseAllowsSelling => S.IsStandalone || (S.License.Current?.CanSell ?? false);
     public bool CanSell => HasShift && LicenseAllowsSelling;
     public bool CanDiscount => Can("pos.discount");
     public string Currency => _config.Currency;

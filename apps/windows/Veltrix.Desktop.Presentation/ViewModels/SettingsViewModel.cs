@@ -173,6 +173,17 @@ public sealed partial class SettingsViewModel(DesktopServices s, ShellViewModel 
             foreach (var e in issues) Issues.Add(new OutboxIssue(e.Seq, e.Type, e.Status, e.Attempts, e.LastError, e.ClientTime));
         }
         LoadUsers();
+        if (IsStandalone)
+        {
+            // Device-bound standalone installation: no plan, expiry, seats or online renewal.
+            var bound = S.Binding.Current?.Record?.BoundAt;
+            LicenseStatus = bound is { } at ? Loc.Format("dk.bind.status", at.ToLocalTime().ToString("d", Loc.Culture)) : Loc.Get("dk.license.valid");
+            LicensePlan = Loc.Get("dk.sa.localMode");
+            LicenseExpires = "—";
+            OfflineUntil = null;
+            Seats = null;
+            return true;
+        }
         var eval = S.License.Current ?? S.License.Evaluate();
         LicenseStatus = LicenseText.Describe(Loc, eval) ?? Loc.Get("dk.license.valid");
         var summary = S.License.Summary;

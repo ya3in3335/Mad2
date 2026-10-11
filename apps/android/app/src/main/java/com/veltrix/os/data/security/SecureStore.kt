@@ -75,5 +75,6 @@ class SecureStore @Inject constructor(@ApplicationContext context: Context) : Se
         const val CLOCK_WATERMARK = "clock_watermark"
         const val PROFILE = "user_profile"
         const val OFFLINE_VERIFIER = "offline_verifier"
+        const val DEVICE_BINDING = "device_binding"
     }
 }

@@ -17,7 +17,8 @@
 
 
             <!-- Top-level screens -->
-            <DataTemplate DataType="{x:Type vm:ActivationViewModel}"><views:ActivationView/></DataTemplate>
+            <DataTemplate DataType="{x:Type vm:NotLicensedViewModel}"><views:NotLicensedView/></DataTemplate>
+            <DataTemplate DataType="{x:Type vm:WelcomeViewModel}"><views:WelcomeView/></DataTemplate>
             <DataTemplate DataType="{x:Type vm:OnboardingViewModel}"><views:OnboardingView/></DataTemplate>
             <DataTemplate DataType="{x:Type vm:LoginViewModel}"><views:LoginView/></DataTemplate>
             <DataTemplate DataType="{x:Type vm:ShellViewModel}"><views:ShellView/></DataTemplate>

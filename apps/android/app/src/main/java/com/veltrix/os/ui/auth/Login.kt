@@ -86,7 +86,7 @@ class LoginViewModel @Inject constructor(private val session: SessionRepository,
     fun restore(bytes: ByteArray, password: String) = viewModelScope.launch {
         busy.value = true; localError.value = null
         try {
-            local.restoreBackup(bytes, password, license.state.value is com.veltrix.os.data.security.LicenseState.Valid && license.standalone)
+            local.restoreBackup(bytes, password, license.standalone)
             needsOwnerSetup.value = !local.auth.hasOwner
             restored.value = true
         } catch (e: BackupException) { localError.value = errorRes(e.key) to null } catch (e: LocalAuthException) { localError.value = errorRes(e.key) to null }

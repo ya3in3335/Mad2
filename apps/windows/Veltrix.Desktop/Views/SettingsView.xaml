@@ -59,9 +59,9 @@
                         <TextBlock Text="{Binding LicenseStatus}" TextWrapping="Wrap"/>
                         <TextBlock Margin="0,6,0,0"><Run Text="{DynamicResource lic.plan}"/>: <Run Text="{Binding LicensePlan, Mode=OneWay}"/></TextBlock>
                         <TextBlock><Run Text="{DynamicResource lic.expires}"/>: <Run Text="{Binding LicenseExpires, Mode=OneWay}"/></TextBlock>
-                        <TextBlock><Run Text="{DynamicResource lic.offlineUntil}"/>: <Run Text="{Binding OfflineUntil, Mode=OneWay}"/></TextBlock>
-                        <TextBlock><Run Text="{DynamicResource lic.seats}"/>: <Run Text="{Binding Seats, Mode=OneWay}"/></TextBlock>
-                        <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                        <TextBlock Visibility="{Binding IsOnlineMode, Converter={StaticResource BoolToVis}}"><Run Text="{DynamicResource lic.offlineUntil}"/>: <Run Text="{Binding OfflineUntil, Mode=OneWay}"/></TextBlock>
+                        <TextBlock Visibility="{Binding IsOnlineMode, Converter={StaticResource BoolToVis}}"><Run Text="{DynamicResource lic.seats}"/>: <Run Text="{Binding Seats, Mode=OneWay}"/></TextBlock>
+                        <StackPanel Orientation="Horizontal" Margin="0,10,0,0" Visibility="{Binding IsOnlineMode, Converter={StaticResource BoolToVis}}">
                             <Button Content="{DynamicResource dk.check}" Command="{Binding RenewLicenseCommand}" Margin="0,0,8,0"/>
                             <Button Content="{DynamicResource lic.release}" Command="{Binding ReleaseDeviceCommand}" Style="{StaticResource Button.Danger}"
                                     Visibility="{Binding IsOnlineMode, Converter={StaticResource BoolToVis}}"/>
