@@ -64,6 +64,7 @@ public sealed class WpfLocalizer(AppSettings settings) : ILocalizer
 public sealed class WpfPlatformUi(WpfLocalizer localizer) : IPlatformUi
 {
     private const string ThemeMarker = "/Themes/Colors.";
+    private const string ThemeExtrasMarker = "/Themes/Theme.";
     private const string StringsMarker = "/Localization/Strings.";
 
     public bool SystemReducedMotion => !SystemParameters.ClientAreaAnimation;
@@ -96,10 +97,18 @@ public sealed class WpfPlatformUi(WpfLocalizer localizer) : IPlatformUi
 
     public void ApplyTheme(string theme)
     {
+        var name = theme == "light" ? "Light" : "Dark";
+        Swap(ThemeMarker, $"pack://application:,,,/Themes/Colors.{name}.xaml", 0);
+        // Hand-written companion palette (gradients, tints, elevation) follows the generated colours.
+        Swap(ThemeExtrasMarker, $"pack://application:,,,/Themes/Theme.{name}.xaml", 1);
+    }
+
+    private static void Swap(string marker, string uri, int insertAt)
+    {
         var dicts = Application.Current.Resources.MergedDictionaries;
-        var current = dicts.FirstOrDefault(d => d.Source?.OriginalString.Contains(ThemeMarker, StringComparison.Ordinal) == true);
-        var next = new ResourceDictionary { Source = new Uri($"pack://application:,,,/Themes/Colors.{(theme == "light" ? "Light" : "Dark")}.xaml") };
-        if (current is null) dicts.Insert(0, next);
+        var current = dicts.FirstOrDefault(d => d.Source?.OriginalString.Contains(marker, StringComparison.Ordinal) == true);
+        var next = new ResourceDictionary { Source = new Uri(uri) };
+        if (current is null) dicts.Insert(Math.Min(insertAt, dicts.Count), next);
         else dicts[dicts.IndexOf(current)] = next;
     }
 

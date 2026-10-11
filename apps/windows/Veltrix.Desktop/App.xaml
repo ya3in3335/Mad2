@@ -7,10 +7,11 @@
              ShutdownMode="OnExplicitShutdown">
     <Application.Resources>
         <ResourceDictionary>
-            <!-- Order matters: [0] theme colours, [1] generated strings, [2] desktop strings, [3] styles.
+            <!-- Order matters: theme colours (generated) + theme extras, then strings, then styles (last).
                  The theme and language dictionaries are swapped at runtime (WpfPlatformUi). -->
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/Themes/Colors.Dark.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/Themes/Theme.Dark.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/Localization/Strings.en.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/Localization/Strings.Desktop.en.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/Localization/Strings.Erp.en.xaml"/>

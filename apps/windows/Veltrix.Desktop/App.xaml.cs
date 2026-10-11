@@ -23,6 +23,9 @@ public partial class App : Application
 {
     private static Mutex? _singleInstance;
     private DesktopServices? _services;
+
+    /// <summary>Running services, for view code-behind that needs app-wide visual preferences (e.g. reduced motion).</summary>
+    internal static DesktopServices? Services => (Current as App)?._services;
     private AppLog? _log;
 
     protected override async void OnStartup(StartupEventArgs e)

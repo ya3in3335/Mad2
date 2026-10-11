@@ -7,32 +7,57 @@
             <StackPanel>
                 <HeaderedContentControl Header="{DynamicResource nav.dashboard}" Style="{StaticResource PageHeader}"/>
                 <!-- KPI cards -->
-                <ItemsControl ItemsSource="{Binding Kpis}">
+                <ItemsControl ItemsSource="{Binding Kpis}" AlternationCount="4" Focusable="False">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate><UniformGrid Columns="4"/></ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border Style="{StaticResource Card}" Margin="0,0,12,12">
-                                <StackPanel>
-                                    <TextBlock Text="{Binding Title}" Style="{StaticResource Text.Caption}" FontSize="13"/>
-                                    <TextBlock Text="{Binding Display}" Style="{StaticResource Text.Kpi}" Margin="0,6,0,0"/>
-                                    <TextBlock Text="{Binding Hint}" Style="{StaticResource Text.Caption}" Margin="0,4,0,0"
-                                               Visibility="{Binding Hint, Converter={StaticResource NotNullToVis}}"/>
-                                    <Rectangle Height="3" RadiusX="1.5" RadiusY="1.5" Margin="0,10,0,0" HorizontalAlignment="Left" Width="36">
-                                        <Rectangle.Style>
-                                            <Style TargetType="Rectangle">
-                                                <Setter Property="Fill" Value="{DynamicResource Brush.accent}"/>
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding Warning}" Value="True">
-                                                        <Setter Property="Fill" Value="{DynamicResource Brush.warning}"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Rectangle.Style>
-                                    </Rectangle>
-                                </StackPanel>
-                            </Border>
+                            <!-- KPI card: elevation layer + card; accent cycles blue / cyan / violet / green, warning overrides. -->
+                            <Grid x:Name="KpiRoot" Margin="0,0,14,14">
+                                <Grid.Style>
+                                    <Style TargetType="Grid">
+                                        <Setter Property="Tag" Value="{DynamicResource Brush.primary}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding (ItemsControl.AlternationIndex), RelativeSource={RelativeSource AncestorType=ContentPresenter}}" Value="1">
+                                                <Setter Property="Tag" Value="{DynamicResource Brush.accent}"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding (ItemsControl.AlternationIndex), RelativeSource={RelativeSource AncestorType=ContentPresenter}}" Value="2">
+                                                <Setter Property="Tag" Value="{DynamicResource Brush.violet}"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding (ItemsControl.AlternationIndex), RelativeSource={RelativeSource AncestorType=ContentPresenter}}" Value="3">
+                                                <Setter Property="Tag" Value="{DynamicResource Brush.success}"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Warning}" Value="True">
+                                                <Setter Property="Tag" Value="{DynamicResource Brush.warning}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Grid.Style>
+                                <Border Style="{StaticResource Card.Shadow}"/>
+                                <Border Style="{StaticResource Card}" Padding="18,16">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Title}" Style="{StaticResource Text.Caption}" FontSize="13" FontWeight="SemiBold"/>
+                                            <TextBlock Text="{Binding Display}" Style="{StaticResource Text.Kpi}" Margin="0,8,0,0" FlowDirection="LeftToRight" HorizontalAlignment="Left"/>
+                                            <TextBlock Text="{Binding Hint}" Style="{StaticResource Text.Caption}" Margin="0,4,0,0"
+                                                       Visibility="{Binding Hint, Converter={StaticResource NotNullToVis}}"/>
+                                            <Rectangle Height="3" RadiusX="1.5" RadiusY="1.5" Margin="0,12,0,0" HorizontalAlignment="Left" Width="40"
+                                                       Fill="{Binding Tag, ElementName=KpiRoot}"/>
+                                        </StackPanel>
+                                        <Grid Grid.Column="1" Width="42" Height="42" VerticalAlignment="Top" Margin="12,0,0,0">
+                                            <Border CornerRadius="12" Background="{Binding Tag, ElementName=KpiRoot}" Opacity="0.16"/>
+                                            <Border CornerRadius="12" BorderBrush="{Binding Tag, ElementName=KpiRoot}" BorderThickness="1" Opacity="0.35"/>
+                                            <TextBlock Text="{Binding TitleKey, Converter={StaticResource ResourceKey}, ConverterParameter=KpiGlyph.}" Style="{StaticResource Text.Glyph}"
+                                                       FontSize="18" Foreground="{Binding Tag, ElementName=KpiRoot}"/>
+                                        </Grid>
+                                    </Grid>
+                                </Border>
+                            </Grid>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
@@ -44,6 +69,7 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <!-- 30-day sales bars -->
+                    <Border Style="{StaticResource Card.Shadow}"/>
                     <Border Style="{StaticResource Card}">
                         <StackPanel>
                             <TextBlock Text="{DynamicResource dk.dash.last30}" Style="{StaticResource Text.Section}"/>
@@ -53,7 +79,7 @@
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Border VerticalAlignment="Bottom" Margin="2,0" CornerRadius="3,3,0,0" ToolTip="{Binding Label}"
+                                        <Border VerticalAlignment="Bottom" Margin="2,0" CornerRadius="4,4,1,1" ToolTip="{Binding Label}"
                                                 Height="{Binding Ratio, Converter={StaticResource RatioToLength}, ConverterParameter=170}"
                                                 Background="{StaticResource Brush.BladeLeft}"/>
                                     </DataTemplate>
@@ -62,6 +88,7 @@
                         </StackPanel>
                     </Border>
                     <!-- Top products -->
+                    <Border Grid.Column="2" Style="{StaticResource Card.Shadow}"/>
                     <Border Grid.Column="2" Style="{StaticResource Card}">
                         <StackPanel>
                             <TextBlock Text="{DynamicResource rep.topProducts}" Style="{StaticResource Text.Section}"/>
@@ -70,7 +97,7 @@
                                     <DataTemplate>
                                         <StackPanel Margin="0,4">
                                             <DockPanel>
-                                                <TextBlock DockPanel.Dock="Right" Text="{Binding Value, StringFormat=N2}" Style="{StaticResource Text.Caption}"/>
+                                                <TextBlock DockPanel.Dock="Right" Text="{Binding Value, StringFormat=N2}" Style="{StaticResource Text.Caption}" FlowDirection="LeftToRight" Typography.NumeralAlignment="Tabular"/>
                                                 <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis"/>
                                             </DockPanel>
                                             <Border Height="4" CornerRadius="2" HorizontalAlignment="Left" Margin="0,4,0,0" Background="{StaticResource Brush.BladeRight}"
@@ -90,7 +117,7 @@
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <DockPanel Margin="0,4">
-                                        <TextBlock DockPanel.Dock="Right" Text="{Binding Value, StringFormat=N2}" Width="140" TextAlignment="Right"/>
+                                        <TextBlock DockPanel.Dock="Right" Text="{Binding Value, StringFormat=N2}" Width="140" TextAlignment="Right" FlowDirection="LeftToRight" Typography.NumeralAlignment="Tabular"/>
                                         <TextBlock Text="{Binding Name}" Width="180" TextTrimming="CharacterEllipsis"/>
                                         <Border Height="8" CornerRadius="4" HorizontalAlignment="Left" Background="{StaticResource Brush.BladeLeft}"
                                                 Width="{Binding Ratio, Converter={StaticResource RatioToLength}, ConverterParameter=420}"/>

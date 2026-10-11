@@ -3,44 +3,81 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="232"/>
+            <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- Navigation rail -->
-        <Border Background="{DynamicResource Brush.surface}" BorderBrush="{DynamicResource Brush.border}" BorderThickness="0,0,1,0">
+        <!-- Navigation rail (collapsible: 248 ↔ 72 px; Tag = collapsed state) -->
+        <Border x:Name="Sidebar" Width="248" Background="{DynamicResource Brush.sidebar}" BorderBrush="{DynamicResource Brush.border}" BorderThickness="0,0,1,0">
             <DockPanel>
-                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="18,20,12,20">
-                    <Viewbox Width="30" Height="30">
+                <Grid DockPanel.Dock="Top" Margin="16,18,12,18">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Viewbox x:Name="BrandMark" Width="32" Height="32" VerticalAlignment="Center">
                         <Canvas Width="512" Height="512">
                             <Path Data="{StaticResource Logo.LeftBlade}" Fill="{StaticResource Brush.BladeLeft}"/>
                             <Path Data="{StaticResource Logo.RightBlade}" Fill="{StaticResource Brush.BladeRight}"/>
                             <Ellipse Canvas.Left="286" Canvas.Top="370" Width="28" Height="28" Fill="#00D9FF"/>
                         </Canvas>
                     </Viewbox>
-                    <StackPanel Margin="10,0,0,0" VerticalAlignment="Center">
-                        <TextBlock Text="VELTRIX OS" FontWeight="SemiBold" FontSize="15"/>
-                        <TextBlock Text="{Binding TenantName}" Style="{StaticResource Text.Caption}" TextTrimming="CharacterEllipsis" MaxWidth="150"/>
+                    <StackPanel x:Name="BrandText" Grid.Column="1" Margin="10,0,6,0" VerticalAlignment="Center">
+                        <TextBlock Text="VELTRIX OS" FontFamily="{StaticResource Font.Display}" FontWeight="Bold" FontSize="15" FlowDirection="LeftToRight"
+                                   HorizontalAlignment="Left"/>
+                        <TextBlock Text="{Binding TenantName}" Style="{StaticResource Text.Caption}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
                     </StackPanel>
-                </StackPanel>
+                    <Button x:Name="CollapseButton" Grid.Column="2" Style="{StaticResource Button.Icon}" Width="32" Height="32" Click="OnToggleSidebar"
+                            Content="{StaticResource Glyph.Menu}" ToolTip="Menu" AutomationProperties.Name="Menu"/>
+                </Grid>
 
-                <StackPanel DockPanel.Dock="Bottom" Margin="12">
-                    <TextBlock Text="{Binding UserName}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" Margin="6,0"/>
-                    <TextBlock Style="{StaticResource Text.Caption}" Margin="6,2,6,8">
+                <StackPanel DockPanel.Dock="Bottom" Margin="12,8,12,14">
+                    <Rectangle Height="1" Fill="{DynamicResource Brush.border}" Margin="4,0,4,10"/>
+                    <Button Command="{Binding SignOutCommand}" Style="{StaticResource Button.Ghost}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                            MinHeight="40" Padding="12,6" ToolTip="{DynamicResource action.signOut}" AutomationProperties.Name="{DynamicResource action.signOut}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{StaticResource Glyph.SignOut}" Style="{StaticResource Text.Glyph}" Width="22" Foreground="{DynamicResource Brush.danger}"/>
+                            <TextBlock x:Name="SignOutText" Text="{DynamicResource action.signOut}" Margin="12,0,0,0" VerticalAlignment="Center"
+                                       Foreground="{DynamicResource Brush.textSecondary}"/>
+                        </StackPanel>
+                    </Button>
+                    <TextBlock x:Name="VersionText" Style="{StaticResource Text.Caption}" Margin="12,6,6,0" FontSize="11">
                         <Run Text="{DynamicResource app.version}"/> <Run Text="{Binding Version, Mode=OneWay}"/>
                     </TextBlock>
-                    <Button Content="{DynamicResource action.signOut}" Command="{Binding SignOutCommand}" HorizontalAlignment="Stretch"/>
                 </StackPanel>
 
-                <ListBox ItemsSource="{Binding NavItems}" SelectedItem="{Binding Selected}" Margin="10,0" KeyboardNavigation.TabNavigation="Once"
+                <ListBox x:Name="NavList" ItemsSource="{Binding NavItems}" SelectedItem="{Binding Selected}" Margin="10,0" KeyboardNavigation.TabNavigation="Once"
+                         ItemContainerStyle="{StaticResource Item.Nav}" ScrollViewer.VerticalScrollBarVisibility="Auto"
                          AutomationProperties.Name="Navigation">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <StackPanel Orientation="Horizontal">
-                                <Path Data="{Binding Icon, Converter={StaticResource ResourceKey}}" Width="20" Height="20" Stretch="Uniform"
-                                      Stroke="{DynamicResource Brush.accent}" StrokeThickness="1.8" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
-                                <TextBlock Text="{Binding Title}" Margin="12,0,0,0" VerticalAlignment="Center" FontSize="14"/>
-                            </StackPanel>
+                            <DockPanel ToolTip="{Binding Title}" ToolTipService.Placement="Right"
+                                       ToolTipService.IsEnabled="{Binding Tag, RelativeSource={RelativeSource AncestorType=ListBox}}">
+                                <TextBlock Text="{Binding Key, Converter={StaticResource ResourceKey}, ConverterParameter=Glyph.}" FontSize="17" Width="22">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock" BasedOn="{StaticResource Text.Glyph}">
+                                            <Setter Property="Foreground" Value="{DynamicResource Brush.textSecondary}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
+                                                    <Setter Property="Foreground" Value="{DynamicResource Brush.accent}"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                <TextBlock Text="{Binding Title}" Margin="14,0,0,0" VerticalAlignment="Center" FontSize="14" TextTrimming="CharacterEllipsis">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource AncestorType=ListBox}}" Value="True">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </DockPanel>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
@@ -48,22 +85,22 @@
         </Border>
 
         <DockPanel Grid.Column="1">
-            <!-- Status bar -->
-            <Border DockPanel.Dock="Top" Padding="24,10" BorderBrush="{DynamicResource Brush.border}" BorderThickness="0,0,0,1">
+            <!-- Top bar: page title · sync/connectivity · date/time · theme · user -->
+            <Border DockPanel.Dock="Top" MinHeight="64" Padding="28,10,20,10" Background="{DynamicResource Brush.topbar}"
+                    BorderBrush="{DynamicResource Brush.border}" BorderThickness="0,0,0,1">
                 <DockPanel>
-                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                        <TextBlock Text="{Binding SyncStatus}" Style="{StaticResource Text.Caption}" VerticalAlignment="Center" Margin="0,0,12,0" MaxWidth="320"
-                                   TextTrimming="CharacterEllipsis"/>
-                        <Button Command="{Binding SyncNowCommand}" Style="{StaticResource Button.Ghost}" ToolTip="{DynamicResource action.sync}"
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding SyncStatus}" Style="{StaticResource Text.Caption}" VerticalAlignment="Center" Margin="0,0,8,0" MaxWidth="280"
+                                   TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
+                        <Button Command="{Binding SyncNowCommand}" Style="{StaticResource Button.Icon}" ToolTip="{DynamicResource action.sync}"
                                 Visibility="{Binding IsStandalone, Converter={StaticResource InvBoolToVis}}"
                                 AutomationProperties.Name="{DynamicResource action.sync}">
-                            <Path x:Name="SyncIcon" Data="{StaticResource Icon.Sync}" Width="18" Height="18" Stretch="Uniform" Stroke="{DynamicResource Brush.accent}"
+                            <Path x:Name="SyncIcon" Data="{StaticResource Icon.Sync}" Width="16" Height="16" Stretch="Uniform" Stroke="{DynamicResource Brush.accent}"
                                   StrokeThickness="2" RenderTransformOrigin="0.5,0.5">
                                 <Path.RenderTransform><RotateTransform x:Name="SyncRotation"/></Path.RenderTransform>
                             </Path>
                         </Button>
-                        <Border CornerRadius="10" Padding="10,3" Margin="12,0,0,0" VerticalAlignment="Center" Background="{DynamicResource Brush.surfaceRaised}"
-                                Visibility="{Binding IsStandalone, Converter={StaticResource InvBoolToVis}}">
+                        <Border Style="{StaticResource Chip}" Margin="8,0,0,0" Visibility="{Binding IsStandalone, Converter={StaticResource InvBoolToVis}}">
                             <StackPanel Orientation="Horizontal">
                                 <Ellipse Width="8" Height="8" VerticalAlignment="Center">
                                     <Ellipse.Style>
@@ -89,24 +126,48 @@
                                         </Style>
                                     </TextBlock.Style>
                                 </TextBlock>
-                                <TextBlock Margin="8,0,0,0" FontSize="12" Foreground="{DynamicResource Brush.warning}"
+                                <TextBlock Margin="8,0,0,0" FontSize="12" Foreground="{DynamicResource Brush.warning}" FlowDirection="LeftToRight"
                                            Text="{Binding PendingOperations, StringFormat={}{0} ⇅}"
                                            Visibility="{Binding PendingOperations, Converter={StaticResource NotNullToVis}}"/>
                             </StackPanel>
                         </Border>
+
+                        <Rectangle Width="1" Height="24" Fill="{DynamicResource Brush.border}" Margin="14,0"/>
+
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,6,0">
+                            <TextBlock Text="{StaticResource Glyph.Calendar}" Style="{StaticResource Text.Glyph}" FontSize="14" Foreground="{DynamicResource Brush.textSecondary}"/>
+                            <StackPanel Margin="8,0,0,0" VerticalAlignment="Center">
+                                <TextBlock x:Name="ClockTime" FontWeight="SemiBold" FontSize="13" Typography.NumeralAlignment="Tabular"/>
+                                <TextBlock x:Name="ClockDate" Style="{StaticResource Text.Caption}" FontSize="11" TextWrapping="NoWrap"/>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <Button x:Name="ThemeToggle" Style="{StaticResource Button.Icon}" Margin="8,0,0,0" Click="OnToggleTheme"
+                                ToolTip="{DynamicResource set.theme}" AutomationProperties.Name="{DynamicResource set.theme}"/>
+
+                        <Border Style="{StaticResource Chip}" Margin="8,0,0,0" Padding="4,4,12,4">
+                            <StackPanel Orientation="Horizontal">
+                                <Border Width="26" Height="26" CornerRadius="13" Background="{StaticResource Brush.BladeLeft}">
+                                    <TextBlock Text="{StaticResource Glyph.User}" Style="{StaticResource Text.Glyph}" FontSize="12" Foreground="White"/>
+                                </Border>
+                                <TextBlock Text="{Binding UserName}" FontWeight="SemiBold" FontSize="13" Margin="8,0,0,0" VerticalAlignment="Center"
+                                           MaxWidth="160" TextTrimming="CharacterEllipsis"/>
+                            </StackPanel>
+                        </Border>
                     </StackPanel>
-                    <TextBlock Text="{Binding CurrentPage.TitleKey, Converter={StaticResource ResourceKey}}" Style="{StaticResource Text.Caption}" FontSize="13"
-                               VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding CurrentPage.TitleKey, Converter={StaticResource ResourceKey}}" FontFamily="{StaticResource Font.Display}"
+                               FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
                 </DockPanel>
             </Border>
 
             <!-- License banner (renew soon, read-only, grace expired) -->
-            <Border DockPanel.Dock="Top" Margin="24,12,24,0" Visibility="{Binding LicenseBanner, Converter={StaticResource NotNullToVis}}">
+            <Border DockPanel.Dock="Top" Margin="28,14,28,0" Visibility="{Binding LicenseBanner, Converter={StaticResource NotNullToVis}}">
                 <Border.Style>
                     <Style TargetType="Border" BasedOn="{StaticResource Banner}">
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding LicenseBannerIsError}" Value="True">
                                 <Setter Property="BorderBrush" Value="{DynamicResource Brush.danger}"/>
+                                <Setter Property="Background" Value="{DynamicResource Brush.dangerSoft}"/>
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
@@ -114,7 +175,7 @@
                 <TextBlock Text="{Binding LicenseBanner}" TextWrapping="Wrap"/>
             </Border>
 
-            <ContentControl x:Name="PageHost" Content="{Binding CurrentPage}" Margin="24,16,24,20" Focusable="False"/>
+            <ContentControl x:Name="PageHost" Content="{Binding CurrentPage}" Margin="28,20,28,22" Focusable="False"/>
         </DockPanel>
     </Grid>
 </UserControl>

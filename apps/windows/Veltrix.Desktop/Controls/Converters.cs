@@ -42,11 +42,11 @@ public sealed class RatioToLengthConverter : IValueConverter
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => Binding.DoNothing;
 }
 
-/// <summary>Resolves a resource key held by the view model (icons, localized strings).</summary>
+/// <summary>Resolves a resource key held by the view model (icons, localized strings). An optional string parameter is used as a key prefix.</summary>
 public sealed class ResourceKeyConverter : IValueConverter
 {
     public object? Convert(object value, Type targetType, object parameter, CultureInfo culture) =>
-        value is string key ? Application.Current.TryFindResource(key) : null;
+        value is string key ? Application.Current.TryFindResource(parameter is string prefix ? prefix + key : key) : null;
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => Binding.DoNothing;
 }
 
