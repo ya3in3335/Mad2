@@ -21,6 +21,9 @@ public sealed class AppSettings
     public string? LastUserEmail { get; set; }
     public int ReceiptPaperMm { get; set; } = 80;
     public bool FirstLaunchDone { get; set; }
+    /// <summary>Assign an in-store EAN-13 when a product is saved without a barcode.</summary>
+    public bool AutoGenerateBarcode { get; set; } = true;
+    public LabelPrintSettings Labels { get; set; } = new();
 
     public static string DefaultLanguage(CultureInfo culture) => culture.TwoLetterISOLanguageName switch
     {
@@ -28,6 +31,23 @@ public sealed class AppSettings
         "fr" => "fr",
         _ => "en",
     };
+}
+
+/// <summary>Barcode label printing preferences (last printer and size are remembered).</summary>
+public sealed class LabelPrintSettings
+{
+    public string? PrinterName { get; set; }
+    /// <summary>"40x30", "50x30", "58x40" or "custom".</summary>
+    public string Preset { get; set; } = "40x30";
+    public double CustomWidthMm { get; set; } = 40;
+    public double CustomHeightMm { get; set; } = 30;
+    /// <summary>Print on A4 label sheets instead of a roll of individual labels.</summary>
+    public bool SheetMode { get; set; }
+    public int SheetRows { get; set; } = 8;
+    public int SheetColumns { get; set; } = 3;
+    public double SheetMarginMm { get; set; } = 8;
+    public double SheetGapMm { get; set; } = 2;
+    public bool ShowShopName { get; set; } = true;
 }
 
 public static class Languages
@@ -74,6 +94,7 @@ public sealed class SettingsStore(string path)
         s.Language = Languages.Normalize(s.Language);
         s.Theme = s.Theme == "light" ? "light" : "dark";
         if (s.ReceiptPaperMm is not (58 or 80)) s.ReceiptPaperMm = 80;
+        s.Labels ??= new LabelPrintSettings();
         return s;
     }
 

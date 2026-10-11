@@ -126,6 +126,17 @@ public sealed class StandaloneTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task Pos_lookup_finds_generated_in_store_barcode()
+    {
+        var (store, pos, _, _) = await SeedAsync();
+        var code = await new Veltrix.Desktop.Core.Barcodes.InStoreBarcodeGenerator(Db).NextAsync();
+        var p = await store.UpsertProductAsync(new UpsertProductRequest("GEN", "Generated", null, null, "Standard", "Active", null, null, null,
+            StandaloneStore.TaxCategories[0].Id, 90m, null, 50m, true, false, false, false, 0, 0, null, null, [code], null), null);
+        Assert.Equal(p.Id, (await pos.FindByCodeAsync(code, default))!.Id);
+        Assert.NotEqual(code, await new Veltrix.Desktop.Core.Barcodes.InStoreBarcodeGenerator(Db).NextAsync());
+    }
+
+    [Fact]
     public async Task Standalone_pos_reads_and_writes_only_the_local_database()
     {
         var (_, pos, coffee, _) = await SeedAsync();

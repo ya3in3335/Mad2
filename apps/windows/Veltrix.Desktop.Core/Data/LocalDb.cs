@@ -253,5 +253,6 @@ public sealed class LocalDb(DbContextOptions<LocalDb> options) : DbContext(optio
         public const string ServerSettingPrefix = "server.";
         public const string ReceiptCounter = "pos.receiptCounter";
         public const string StandaloneRegister = "standalone.registerId";
+        public const string InStoreBarcodeCounter = "barcode.inStoreCounter";
     }
 }
