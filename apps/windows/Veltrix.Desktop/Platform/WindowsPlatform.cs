@@ -66,6 +66,9 @@ public sealed class WpfPlatformUi(WpfLocalizer localizer) : IPlatformUi
     private const string ThemeMarker = "/Themes/Colors.";
     private const string ThemeExtrasMarker = "/Themes/Theme.";
     private const string StringsMarker = "/Localization/Strings.";
+    private const string AccentMarker = "/Themes/Accents/Accent.";
+    private string _themeName = "Dark";
+    private string _accentFile = Accents.Get(null).File;
 
     public bool SystemReducedMotion => !SystemParameters.ClientAreaAnimation;
 
@@ -101,7 +104,18 @@ public sealed class WpfPlatformUi(WpfLocalizer localizer) : IPlatformUi
         Swap(ThemeMarker, $"pack://application:,,,/Themes/Colors.{name}.xaml", 0);
         // Hand-written companion palette (gradients, tints, elevation) follows the generated colours.
         Swap(ThemeExtrasMarker, $"pack://application:,,,/Themes/Theme.{name}.xaml", 1);
+        _themeName = name;
+        SwapAccent();
     }
+
+    public void ApplyAccent(string accent)
+    {
+        _accentFile = Accents.Get(accent).File;
+        SwapAccent();
+    }
+
+    // Accent keys override the theme dictionaries, so the accent dictionary always sits right after Theme.*.xaml.
+    private void SwapAccent() => Swap(AccentMarker, $"pack://application:,,,/Themes/Accents/Accent.{_accentFile}.{_themeName}.xaml", 2);
 
     private static void Swap(string marker, string uri, int insertAt)
     {

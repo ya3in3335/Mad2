@@ -16,6 +16,59 @@
                             <RadioButton Content="{DynamicResource set.themeLight}" IsChecked="{Binding IsDarkTheme, Converter={StaticResource Not}}" GroupName="theme"/>
                         </StackPanel>
                         <CheckBox Content="{DynamicResource set.reducedMotion}" IsChecked="{Binding ReducedMotion}" Margin="0,16,0,0"/>
+                        <!-- Accent colour: round swatches, live preview (applied as soon as one is picked). -->
+                        <TextBlock Text="{DynamicResource dk.accent.title}" Style="{StaticResource Text.Label}" Margin="0,16,0,2"/>
+                        <TextBlock Text="{DynamicResource dk.accent.hint}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                        <ListBox ItemsSource="{Binding AccentOptions}" SelectedValuePath="Code" SelectedValue="{Binding Accent}"
+                                 AutomationProperties.Name="{DynamicResource dk.accent.title}"
+                                 Background="Transparent" BorderThickness="0" Padding="0"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled" KeyboardNavigation.DirectionalNavigation="Cycle">
+                            <ListBox.ItemsPanel>
+                                <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
+                            </ListBox.ItemsPanel>
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="ListBoxItem">
+                                    <Setter Property="Margin" Value="0,0,8,8"/>
+                                    <Setter Property="Cursor" Value="Hand"/>
+                                    <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                                    <Setter Property="ToolTip" Value="{Binding NameKey, Converter={StaticResource ResourceKey}}"/>
+                                    <Setter Property="AutomationProperties.Name" Value="{Binding NameKey, Converter={StaticResource ResourceKey}}"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="ListBoxItem">
+                                                <Grid Width="40" Height="40" Background="Transparent">
+                                                    <Ellipse x:Name="Ring" StrokeThickness="2" Stroke="{DynamicResource Brush.textPrimary}" Opacity="0"/>
+                                                    <Ellipse x:Name="Hover" StrokeThickness="2" Stroke="{DynamicResource Brush.borderStrong}" Opacity="0"/>
+                                                    <Ellipse Margin="5">
+                                                        <Ellipse.Fill>
+                                                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                                <GradientStop Color="{Binding Start}" Offset="0"/>
+                                                                <GradientStop Color="{Binding Mid}" Offset="0.5"/>
+                                                                <GradientStop Color="{Binding End}" Offset="1"/>
+                                                            </LinearGradientBrush>
+                                                        </Ellipse.Fill>
+                                                    </Ellipse>
+                                                    <Path x:Name="Check" Data="M5,10.5 L8.5,14 L15,6.5" Width="20" Height="20" Stretch="None"
+                                                          HorizontalAlignment="Center" VerticalAlignment="Center" Stroke="{Binding OnAccent}"
+                                                          StrokeThickness="2.2" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Visibility="Collapsed"/>
+                                                </Grid>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Hover" Property="Opacity" Value="1"/></Trigger>
+                                                    <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Hover" Property="Stroke" Value="{DynamicResource Brush.focus}"/><Setter TargetName="Hover" Property="Opacity" Value="1"/></Trigger>
+                                                    <Trigger Property="IsSelected" Value="True">
+                                                        <Setter TargetName="Ring" Property="Opacity" Value="1"/>
+                                                        <Setter TargetName="Check" Property="Visibility" Value="Visible"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+                        </ListBox>
+                        <TextBlock Style="{StaticResource Text.Caption}">
+                            <Run Text="{DynamicResource dk.accent.selected}"/><Run Text=": "/><Run Text="{Binding Accent, Mode=OneWay, Converter={StaticResource ResourceKey}, ConverterParameter=dk.accent.}"/>
+                        </TextBlock>
                     </StackPanel>
                 </Border>
                 <!-- Server (online mode) / printer -->

@@ -1,18 +1,8 @@
 <!-- Glass Neon (silver) companion to Colors.Light.xaml: light (frosted white glass on a soft silver canvas, graphite accents).
-     Swapped together with Colors.*.xaml by WpfPlatformUi.ApplyTheme. Keep the key set identical to Theme.Dark.xaml. -->
+     Swapped together with Colors.*.xaml by WpfPlatformUi.ApplyTheme. Accent-derived keys (backdrop, neon edges, gradients, glows, focus, selection) live in Accents/Accent.*.xaml
+     and override this file. Keep the key set identical to Theme.Dark.xaml. -->
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <!-- Window backdrop: static (non-animated) radial glows behind all content. -->
-    <DrawingBrush x:Key="Brush.backdrop" Stretch="Fill">
-        <DrawingBrush.Drawing>
-            <DrawingGroup>
-                <GeometryDrawing><GeometryDrawing.Geometry><RectangleGeometry Rect="0,0,1,1"/></GeometryDrawing.Geometry><GeometryDrawing.Brush><LinearGradientBrush StartPoint="0,0" EndPoint="1,1"><GradientStop Color="#F6F7FA" Offset="0"/><GradientStop Color="#ECEEF3" Offset="0.5"/><GradientStop Color="#E3E6ED" Offset="1"/></LinearGradientBrush></GeometryDrawing.Brush></GeometryDrawing>
-                <GeometryDrawing><GeometryDrawing.Geometry><RectangleGeometry Rect="0,0,1,1"/></GeometryDrawing.Geometry><GeometryDrawing.Brush><RadialGradientBrush Center="0.1,0.0" GradientOrigin="0.1,0.0" RadiusX="0.6" RadiusY="0.6"><GradientStop Color="#66FFFFFF" Offset="0"/><GradientStop Color="#00FFFFFF" Offset="1"/></RadialGradientBrush></GeometryDrawing.Brush></GeometryDrawing>
-                <GeometryDrawing><GeometryDrawing.Geometry><RectangleGeometry Rect="0,0,1,1"/></GeometryDrawing.Geometry><GeometryDrawing.Brush><RadialGradientBrush Center="0.95,1.0" GradientOrigin="0.95,1.0" RadiusX="0.65" RadiusY="0.65"><GradientStop Color="#1A8A90A0" Offset="0"/><GradientStop Color="#008A90A0" Offset="1"/></RadialGradientBrush></GeometryDrawing.Brush></GeometryDrawing>
-                <GeometryDrawing><GeometryDrawing.Geometry><RectangleGeometry Rect="0,0,1,1"/></GeometryDrawing.Geometry><GeometryDrawing.Brush><RadialGradientBrush Center="0.6,0.45" GradientOrigin="0.6,0.45" RadiusX="0.45" RadiusY="0.45"><GradientStop Color="#0D6A7080" Offset="0"/><GradientStop Color="#006A7080" Offset="1"/></RadialGradientBrush></GeometryDrawing.Brush></GeometryDrawing>
-            </DrawingGroup>
-        </DrawingBrush.Drawing>
-    </DrawingBrush>
 
     <!-- Glass surfaces -->
     <SolidColorBrush x:Key="Brush.surfaceHover" Color="#0F0E1016"/>
@@ -29,72 +19,19 @@
         <GradientStop Color="#E0FFFFFF" Offset="0"/>
         <GradientStop Color="#B8FFFFFF" Offset="1"/>
     </LinearGradientBrush>
-    <!-- 1 px neon edge: silver → gray at ~35 % -->
-    <LinearGradientBrush x:Key="Brush.cardBorder" StartPoint="0,0" EndPoint="1,1">
-        <GradientStop Color="#593A3F4C" Offset="0"/>
-        <GradientStop Color="#2E8A90A0" Offset="0.5"/>
-        <GradientStop Color="#4D6A7080" Offset="1"/>
-    </LinearGradientBrush>
-    <LinearGradientBrush x:Key="Brush.ghostBorder" StartPoint="0,0" EndPoint="1,1">
-        <GradientStop Color="#993A3F4C" Offset="0"/>
-        <GradientStop Color="#738A90A0" Offset="1"/>
-    </LinearGradientBrush>
-    <LinearGradientBrush x:Key="Brush.hairline" StartPoint="0,0" EndPoint="1,0">
-        <GradientStop Color="#002E3340" Offset="0"/>
-        <GradientStop Color="#992E3340" Offset="0.3"/>
-        <GradientStop Color="#998A90A0" Offset="0.7"/>
-        <GradientStop Color="#008A90A0" Offset="1"/>
-    </LinearGradientBrush>
 
     <!-- Interaction overlays and tints -->
     <SolidColorBrush x:Key="Brush.overlayHover" Color="#0D0E1016"/>
     <SolidColorBrush x:Key="Brush.overlayPress" Color="#1F0E1016"/>
-    <SolidColorBrush x:Key="Brush.focusRing" Color="#552E3340"/>
     <SolidColorBrush x:Key="Brush.rowAlt" Color="#080E1016"/>
-    <SolidColorBrush x:Key="Brush.rowHover" Color="#0F2E3340"/>
-    <SolidColorBrush x:Key="Brush.selection" Color="#1F2E3340"/>
-    <SolidColorBrush x:Key="Brush.primarySoft" Color="#1A2E3340"/>
-    <SolidColorBrush x:Key="Brush.accentSoft" Color="#143A404E"/>
-    <SolidColorBrush x:Key="Brush.violetSoft" Color="#1A6A7080"/>
     <SolidColorBrush x:Key="Brush.successSoft" Color="#1A1E7A55"/>
     <SolidColorBrush x:Key="Brush.warningSoft" Color="#1F8A5A00"/>
     <SolidColorBrush x:Key="Brush.dangerSoft" Color="#14B4364C"/>
     <SolidColorBrush x:Key="Brush.dangerBorder" Color="#80B4364C"/>
     <SolidColorBrush x:Key="Brush.scrollThumb" Color="#330E1016"/>
-    <SolidColorBrush x:Key="Brush.scrollThumbHover" Color="#802E3340"/>
     <SolidColorBrush x:Key="Brush.chip" Color="#B3FFFFFF"/>
     <SolidColorBrush x:Key="Brush.chipBorder" Color="#D3D6DE"/>
-    <LinearGradientBrush x:Key="Brush.navActive" StartPoint="0,0" EndPoint="1,0">
-        <GradientStop Color="#262E3340" Offset="0"/>
-        <GradientStop Color="#108A90A0" Offset="0.6"/>
-        <GradientStop Color="#008A90A0" Offset="1"/>
-    </LinearGradientBrush>
-
-    <!-- Neon gradients. Text on primaryGradient uses Brush.onPrimary (>= 6:1 on every stop). -->
-    <SolidColorBrush x:Key="Brush.onPrimary" Color="#FFFFFF"/>
-    <LinearGradientBrush x:Key="Brush.primaryGradient" StartPoint="0,0" EndPoint="1,1">
-        <GradientStop Color="#4A5060" Offset="0"/>
-        <GradientStop Color="#2E3340" Offset="0.5"/>
-        <GradientStop Color="#1A1D25" Offset="1"/>
-    </LinearGradientBrush>
-    <LinearGradientBrush x:Key="Brush.accentBar" StartPoint="0,0" EndPoint="0,1">
-        <GradientStop Color="#2E3340" Offset="0"/>
-        <GradientStop Color="#8A90A0" Offset="1"/>
-    </LinearGradientBrush>
-    <LinearGradientBrush x:Key="Brush.textGradient" StartPoint="0,0" EndPoint="1,0">
-        <GradientStop Color="#1A1D25" Offset="0"/>
-        <GradientStop Color="#4A5060" Offset="0.5"/>
-        <GradientStop Color="#2E3340" Offset="1"/>
-    </LinearGradientBrush>
-    <LinearGradientBrush x:Key="Brush.totalPanel" StartPoint="0,0" EndPoint="1,1">
-        <GradientStop Color="#E6FFFFFF" Offset="0"/>
-        <GradientStop Color="#D9F4F5F8" Offset="0.55"/>
-        <GradientStop Color="#E6EEF0F4" Offset="1"/>
-    </LinearGradientBrush>
 
     <!-- Glow / elevation (only on child-less backing elements so text keeps ClearType; never on rows or list items) -->
-    <DropShadowEffect x:Key="Shadow.Card" Color="#3A3F4C" BlurRadius="16" ShadowDepth="0" Direction="270" Opacity="0.14"/>
     <DropShadowEffect x:Key="Shadow.Popup" Color="#1B1D25" BlurRadius="22" ShadowDepth="8" Direction="270" Opacity="0.2"/>
-    <DropShadowEffect x:Key="Shadow.Primary" Color="#2E3340" BlurRadius="16" ShadowDepth="0" Direction="270" Opacity="0.35"/>
-    <DropShadowEffect x:Key="Shadow.Glow" Color="#2E3340" BlurRadius="8" ShadowDepth="0" Direction="270" Opacity="0.5"/>
 </ResourceDictionary>

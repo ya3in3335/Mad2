@@ -189,4 +189,19 @@
     <sys:String x:Key="cam.err.port">منفذ غير صالح (1–65535).</sys:String>
     <sys:String x:Key="cam.err.channel">قناة غير صالحة (1–256).</sys:String>
     <sys:String x:Key="cam.err.notLan">يُسمح بعناوين الشبكة المحلية فقط (10.x و172.16–31.x و192.168.x و169.254.x).</sys:String>
+    <sys:String x:Key="dk.accent.title">لون التمييز</sys:String>
+    <sys:String x:Key="dk.accent.hint">يُطبَّق فورًا على الأزرار والتحديدات والتوهّج.</sys:String>
+    <sys:String x:Key="dk.accent.selected">محدَّد</sys:String>
+    <sys:String x:Key="dk.accent.silver">فضي</sys:String>
+    <sys:String x:Key="dk.accent.cyan">سماوي</sys:String>
+    <sys:String x:Key="dk.accent.blue">أزرق كهربائي</sys:String>
+    <sys:String x:Key="dk.accent.violet">بنفسجي</sys:String>
+    <sys:String x:Key="dk.accent.magenta">أرجواني</sys:String>
+    <sys:String x:Key="dk.accent.rose">أحمر وردي</sys:String>
+    <sys:String x:Key="dk.accent.orange">برتقالي</sys:String>
+    <sys:String x:Key="dk.accent.amber">كهرماني</sys:String>
+    <sys:String x:Key="dk.accent.lime">ليموني</sys:String>
+    <sys:String x:Key="dk.accent.emerald">زمردي</sys:String>
+    <sys:String x:Key="dk.accent.teal">أزرق مخضر</sys:String>
+    <sys:String x:Key="dk.accent.aurora">شفق</sys:String>
 </ResourceDictionary>

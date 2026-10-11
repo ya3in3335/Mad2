@@ -18,6 +18,7 @@ public sealed partial class SettingsViewModel(DesktopServices s, ShellViewModel 
 
     public IReadOnlyList<LanguageOption> LanguageOptions { get; } = Languages.Supported.Select(l => new LanguageOption(l.Code, l.NativeName)).ToList();
     public IReadOnlyList<int> PaperWidths { get; } = [58, 80];
+    public IReadOnlyList<AccentInfo> AccentOptions { get; } = Accents.All;
     public ObservableCollection<OutboxIssue> Issues { get; } = [];
     public ShellViewModel Shell { get; } = shell;
 
@@ -121,6 +122,7 @@ public sealed partial class SettingsViewModel(DesktopServices s, ShellViewModel 
             S.SaveSettings();
             S.Ui.ApplyLanguage(code);
             OnPropertyChanged();
+            OnPropertyChanged(nameof(Accent)); // refreshes the localized accent name
             _ = ReloadAsync();
         }
     }
@@ -133,6 +135,21 @@ public sealed partial class SettingsViewModel(DesktopServices s, ShellViewModel 
             S.Settings.Theme = value ? "dark" : "light";
             S.SaveSettings();
             S.Ui.ApplyTheme(S.Settings.Theme);
+            OnPropertyChanged();
+        }
+    }
+
+    /// <summary>Accent palette code; applied immediately (live preview) and persisted.</summary>
+    public string Accent
+    {
+        get => Accents.Normalize(S.Settings.Accent);
+        set
+        {
+            var code = Accents.Normalize(value);
+            if (code == S.Settings.Accent) return;
+            S.Settings.Accent = code;
+            S.SaveSettings();
+            S.Ui.ApplyAccent(code);
             OnPropertyChanged();
         }
     }

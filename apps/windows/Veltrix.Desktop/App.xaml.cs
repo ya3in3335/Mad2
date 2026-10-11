@@ -51,6 +51,7 @@ public partial class App : Application
         var services = _services = Compose();
         var ui = (WpfPlatformUi)services.Ui;
         ui.ApplyTheme(services.Settings.Theme);
+        ui.ApplyAccent(services.Settings.Accent); // before the splash so it already glows in the chosen accent
         ui.ApplyLanguage(services.Settings.Language);
 
         var app = new AppViewModel(services);

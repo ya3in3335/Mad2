@@ -29,6 +29,8 @@ public interface IPlatformUi
 {
     void ApplyLanguage(string code);
     void ApplyTheme(string theme);
+    /// <summary>Swaps the accent palette (Accents.All code) for the current theme.</summary>
+    void ApplyAccent(string accent);
     /// <summary>Prints monospaced text (receipts). Returns false when the user cancelled or no printer is available.</summary>
     bool PrintText(string title, string text, int widthChars);
     /// <summary>Asks for a destination file. Returns null when cancelled.</summary>

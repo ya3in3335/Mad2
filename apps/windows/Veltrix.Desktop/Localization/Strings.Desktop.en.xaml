@@ -189,4 +189,19 @@
     <sys:String x:Key="cam.err.port">Invalid port (1–65535).</sys:String>
     <sys:String x:Key="cam.err.channel">Invalid channel (1–256).</sys:String>
     <sys:String x:Key="cam.err.notLan">Only local network addresses are allowed (10.x, 172.16–31.x, 192.168.x, 169.254.x).</sys:String>
+    <sys:String x:Key="dk.accent.title">Accent color</sys:String>
+    <sys:String x:Key="dk.accent.hint">Applies instantly to buttons, highlights and glows.</sys:String>
+    <sys:String x:Key="dk.accent.selected">Selected</sys:String>
+    <sys:String x:Key="dk.accent.silver">Silver</sys:String>
+    <sys:String x:Key="dk.accent.cyan">Cyan</sys:String>
+    <sys:String x:Key="dk.accent.blue">Electric blue</sys:String>
+    <sys:String x:Key="dk.accent.violet">Violet</sys:String>
+    <sys:String x:Key="dk.accent.magenta">Magenta</sys:String>
+    <sys:String x:Key="dk.accent.rose">Rose red</sys:String>
+    <sys:String x:Key="dk.accent.orange">Orange</sys:String>
+    <sys:String x:Key="dk.accent.amber">Amber</sys:String>
+    <sys:String x:Key="dk.accent.lime">Lime</sys:String>
+    <sys:String x:Key="dk.accent.emerald">Emerald</sys:String>
+    <sys:String x:Key="dk.accent.teal">Teal</sys:String>
+    <sys:String x:Key="dk.accent.aurora">Aurora</sys:String>
 </ResourceDictionary>

@@ -10,6 +10,8 @@ public sealed class AppSettings
     public string? ServerUrl { get; set; }
     public string Language { get; set; } = "en";
     public string Theme { get; set; } = "dark";
+    /// <summary>Accent palette code (see <see cref="Accents"/>); settings files written before accents existed get the default.</summary>
+    public string Accent { get; set; } = Accents.Default;
     /// <summary>Null: follow the operating system setting.</summary>
     public bool? ReducedMotion { get; set; }
     public Guid InstallationId { get; set; }
