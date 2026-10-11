@@ -19,6 +19,8 @@ public sealed class LocalProduct
     public decimal LowStockThreshold { get; set; }
     /// <summary>Purchase cost (schema v2; maintained locally in standalone mode for margin reporting).</summary>
     public decimal PurchasePrice { get; set; }
+    /// <summary>Moving-average unit cost (schema v3), updated by purchase receipts; 0 until the first receipt.</summary>
+    public decimal AverageCost { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
 }
 
@@ -157,7 +159,7 @@ public sealed class KeyValue
 
 public sealed class LocalDb(DbContextOptions<LocalDb> options) : DbContext(options)
 {
-    public const int SchemaVersion = 2;
+    public const int SchemaVersion = 3;
 
     public DbSet<LocalProduct> Products => Set<LocalProduct>();
     public DbSet<LocalCustomer> Customers => Set<LocalCustomer>();
@@ -169,6 +171,31 @@ public sealed class LocalDb(DbContextOptions<LocalDb> options) : DbContext(optio
     public DbSet<OutboxEntry> Outbox => Set<OutboxEntry>();
     public DbSet<ParkedCart> ParkedCarts => Set<ParkedCart>();
     public DbSet<KeyValue> Values => Set<KeyValue>();
+    // schema v3: local ERP
+    public DbSet<LocalSupplier> Suppliers => Set<LocalSupplier>();
+    public DbSet<LocalPurchase> Purchases => Set<LocalPurchase>();
+    public DbSet<LocalPurchaseLine> PurchaseLines => Set<LocalPurchaseLine>();
+    public DbSet<LocalPayment> Payments => Set<LocalPayment>();
+    public DbSet<LocalExpenseCategory> ExpenseCategories => Set<LocalExpenseCategory>();
+    public DbSet<LocalExpense> Expenses => Set<LocalExpense>();
+    public DbSet<LocalAccount> Accounts => Set<LocalAccount>();
+    public DbSet<LocalJournalEntry> JournalEntries => Set<LocalJournalEntry>();
+    public DbSet<LocalJournalLine> JournalLines => Set<LocalJournalLine>();
+    public DbSet<LocalClosedPeriod> ClosedPeriods => Set<LocalClosedPeriod>();
+    public DbSet<LocalEmployee> Employees => Set<LocalEmployee>();
+    public DbSet<LocalSalaryAdvance> SalaryAdvances => Set<LocalSalaryAdvance>();
+    public DbSet<LocalPayrollRun> PayrollRuns => Set<LocalPayrollRun>();
+    public DbSet<LocalPayslip> Payslips => Set<LocalPayslip>();
+    public DbSet<LocalSaleReturn> SaleReturns => Set<LocalSaleReturn>();
+    public DbSet<LocalSaleReturnLine> SaleReturnLines => Set<LocalSaleReturnLine>();
+    public DbSet<LocalCashMovement> CashMovements => Set<LocalCashMovement>();
+
+    /// <summary>Tables added by schema v3 (created in place when upgrading a v2 database).</summary>
+    public static readonly IReadOnlyList<string> V3Tables =
+    [
+        "Suppliers", "Purchases", "PurchaseLines", "Payments", "ExpenseCategories", "Expenses", "Accounts", "JournalEntries", "JournalLines",
+        "ClosedPeriods", "Employees", "SalaryAdvances", "PayrollRuns", "Payslips", "SaleReturns", "SaleReturnLines", "CashMovements",
+    ];
 
     public static DbContextOptions<LocalDb> OptionsFor(string connectionString) =>
         new DbContextOptionsBuilder<LocalDb>().UseSqlite(connectionString).Options;
@@ -191,6 +218,23 @@ public sealed class LocalDb(DbContextOptions<LocalDb> options) : DbContext(optio
         });
         b.Entity<ParkedCart>().HasKey(x => x.Id);
         b.Entity<KeyValue>().HasKey(x => x.Key);
+        b.Entity<LocalSupplier>(e => { e.HasKey(x => x.Id); e.HasIndex(x => x.Name); });
+        b.Entity<LocalPurchase>(e => { e.HasKey(x => x.Id); e.HasIndex(x => x.SupplierId); e.HasIndex(x => x.Date); e.HasIndex(x => x.Number).IsUnique(); });
+        b.Entity<LocalPurchaseLine>(e => { e.HasKey(x => x.Id); e.HasIndex(x => x.PurchaseId); });
+        b.Entity<LocalPayment>(e => { e.HasKey(x => x.Id); e.HasIndex(x => new { x.PartyType, x.PartyId }); });
+        b.Entity<LocalExpenseCategory>().HasKey(x => x.Id);
+        b.Entity<LocalExpense>(e => { e.HasKey(x => x.Id); e.HasIndex(x => x.Date); });
+        b.Entity<LocalAccount>().HasKey(x => x.Code);
+        b.Entity<LocalJournalEntry>(e => { e.HasKey(x => x.Id); e.HasIndex(x => x.Date); e.HasIndex(x => x.Number).IsUnique(); });
+        b.Entity<LocalJournalLine>(e => { e.HasKey(x => x.Id); e.HasIndex(x => x.EntryId); e.HasIndex(x => new { x.AccountCode, x.Date }); });
+        b.Entity<LocalClosedPeriod>().HasKey(x => x.Period);
+        b.Entity<LocalEmployee>(e => { e.HasKey(x => x.Id); e.HasIndex(x => x.Name); });
+        b.Entity<LocalSalaryAdvance>(e => { e.HasKey(x => x.Id); e.HasIndex(x => x.EmployeeId); });
+        b.Entity<LocalPayrollRun>(e => { e.HasKey(x => x.Id); e.HasIndex(x => new { x.Year, x.Month }).IsUnique(); });
+        b.Entity<LocalPayslip>(e => { e.HasKey(x => x.Id); e.HasIndex(x => x.RunId); });
+        b.Entity<LocalSaleReturn>(e => { e.HasKey(x => x.Id); e.HasIndex(x => x.SaleId); });
+        b.Entity<LocalSaleReturnLine>(e => { e.HasKey(x => x.Id); e.HasIndex(x => x.ReturnId); });
+        b.Entity<LocalCashMovement>(e => { e.HasKey(x => x.Id); e.HasIndex(x => x.Date); e.HasIndex(x => x.ShiftId); });
 
         // SQLite has no native decimal/DateTimeOffset ordering; store as TEXT/ticks via converters where queried.
         foreach (var p in b.Model.GetEntityTypes().SelectMany(t => t.GetProperties()))
@@ -208,6 +252,8 @@ public sealed class LocalDb(DbContextOptions<LocalDb> options) : DbContext(optio
         var stored = await Values.FindAsync([Keys.SchemaVersion], ct);
         var version = created ? SchemaVersion : int.TryParse(stored?.Value, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var v) ? v : 1;
         if (version < 2) await MigrateToV2Async(ct);
+        if (version < 3) await MigrateToV3Async(ct);
+        await Erp.DefaultChart.EnsureSeededAsync(this, ct);
         if (stored is null) Values.Add(new KeyValue { Key = Keys.SchemaVersion, Value = SchemaVersion.ToString(System.Globalization.CultureInfo.InvariantCulture) });
         else stored.Value = SchemaVersion.ToString(System.Globalization.CultureInfo.InvariantCulture);
         await SaveChangesAsync(ct);
@@ -233,6 +279,37 @@ public sealed class LocalDb(DbContextOptions<LocalDb> options) : DbContext(optio
             CREATE INDEX IF NOT EXISTS "IX_SaleLines_SaleId" ON "SaleLines" ("SaleId");
             CREATE INDEX IF NOT EXISTS "IX_SaleLines_CreatedAt" ON "SaleLines" ("CreatedAt");
             """, ct);
+    }
+
+    /// <summary>v2 → v3: product moving-average cost and the ERP tables (additive only; existing rows are kept).</summary>
+    private async Task MigrateToV3Async(CancellationToken ct)
+    {
+        var conn = Database.GetDbConnection();
+        if (conn.State != System.Data.ConnectionState.Open) await conn.OpenAsync(ct);
+        long count;
+        await using (var cmd = conn.CreateCommand())
+        {
+            cmd.CommandText = "SELECT COUNT(*) FROM pragma_table_info('Products') WHERE name = 'AverageCost'";
+            count = Convert.ToInt64(await cmd.ExecuteScalarAsync(ct), System.Globalization.CultureInfo.InvariantCulture);
+        }
+        await using var tx = await Database.BeginTransactionAsync(ct);
+        if (count == 0)
+        {
+            await Database.ExecuteSqlRawAsync("ALTER TABLE \"Products\" ADD COLUMN \"AverageCost\" TEXT NOT NULL DEFAULT '0.0';", ct);
+            // Existing stock keeps its known purchase cost as the starting average.
+            await Database.ExecuteSqlRawAsync("UPDATE \"Products\" SET \"AverageCost\" = \"PurchasePrice\";", ct);
+        }
+        // The model's own DDL (so column types always match the mapping), restricted to the v3 tables and made idempotent.
+        foreach (var stmt in Database.GenerateCreateScript().Split(";", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            if (!V3Tables.Any(t => stmt.Contains($"\"{t}\" (", StringComparison.Ordinal))) continue;
+            var sql = stmt.Replace("CREATE TABLE ", "CREATE TABLE IF NOT EXISTS ").Replace("CREATE UNIQUE INDEX ", "CREATE UNIQUE INDEX IF NOT EXISTS ")
+                .Replace("CREATE INDEX ", "CREATE INDEX IF NOT EXISTS ");
+#pragma warning disable EF1002 // DDL generated by EF from the model, no user input
+            await Database.ExecuteSqlRawAsync(sql, ct);
+#pragma warning restore EF1002
+        }
+        await tx.CommitAsync(ct);
     }
 
     public async Task<string?> GetValueAsync(string key, CancellationToken ct = default) => (await Values.FindAsync([key], ct))?.Value;

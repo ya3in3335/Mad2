@@ -159,10 +159,24 @@ public sealed class PosService(ApiClient api, Func<LocalDb> dbFactory, TimeProvi
         if (Standalone)
         {
             if (local is null) return null;
-            var sales = await db.Sales.Where(x => x.ShiftId == shiftId).ToListAsync(ct);
-            var expected = local.OpeningFloat + sales.Sum(x => x.CashReceived - x.Change);
+            await using var tx = await db.Database.BeginTransactionAsync(ct);
+            var expected = await Erp.ErpService.ExpectedCashAsync(db, local, ct);
             local.Status = "Closed"; local.ClosedAt = now; local.CountedCash = countedCash;
+            // Over/short: Dr cash / Cr 6583 when there is more cash than expected, the reverse otherwise.
+            var variance = countedCash - expected;
+            if (variance != 0)
+            {
+                var date = Erp.Ledger.Today(time);
+                var b = new Erp.PostingBuilder().Debit(Erp.AccountRoles.Cash, variance).Credit(Erp.AccountRoles.CashOverShort, variance);
+                var je = await Erp.Ledger.PostAsync(db, date, "Cash count variance", Erp.JournalSources.Cash, shiftId, b, now, ct);
+                db.CashMovements.Add(new LocalCashMovement
+                {
+                    Id = Guid.NewGuid(), Number = await Erp.Ledger.NextNumberAsync(db, "CM", ct), Date = date, CreatedAt = now, ShiftId = shiftId, Amount = variance,
+                    Reason = "Cash count variance", Source = "ShiftVariance", SourceId = shiftId, JournalEntryId = je?.Id, CounterAccountCode = "6583",
+                });
+            }
             await db.SaveChangesAsync(ct);
+            await tx.CommitAsync(ct);
             return new ShiftDto(shiftId, local.RegisterId, Guid.Empty, Guid.Empty, local.OpenedAt, local.OpeningFloat, "Closed", now, null, countedCash, expected,
                 countedCash - expected, notes);
         }
@@ -243,13 +257,16 @@ public sealed class PosService(ApiClient api, Func<LocalDb> dbFactory, TimeProvi
             db.SaleLines.Add(new LocalSaleLine
             {
                 Id = Guid.NewGuid(), SaleId = saleId, ProductId = item.Product.Id, Sku = item.Product.Sku, Name = item.Product.Name, Quantity = item.Quantity,
-                UnitPrice = item.Product.SalePrice, Discount = t.Discount, Net = t.Net, Tax = t.Tax, Total = t.Total, UnitCost = p?.PurchasePrice ?? 0, CreatedAt = now,
+                UnitPrice = item.Product.SalePrice, Discount = t.Discount, Net = t.Net, Tax = t.Tax, Total = t.Total, UnitCost = p is null ? 0 : Erp.Costing.UnitCost(p), CreatedAt = now,
             });
             if (item.Product.TrackStock)
                 StandaloneStore.ApplyStock(db, await db.Stock.FindAsync([warehouseId, item.Product.Id], ct), warehouseId, item.Product.Id, -item.Quantity, now);
         }
+        var onAccount = payments.Where(p => p.Method == "OnAccount").Sum(p => p.Amount);
+        if (onAccount > 0 && customerId is null) throw new InvalidOperationException("erp.err.customerRequired");
         if (customerId is { } cid && await db.Customers.FindAsync([cid], ct) is { } customer)
-            customer.Balance += payments.Where(p => p.Method == "OnAccount").Sum(p => p.Amount);
+            customer.Balance += onAccount;
+        await PostLocalSaleAsync(db, cart, totals, settlement, payments, customerId, saleId, number, products, now, ct);
         db.Sales.Add(new LocalSale
         {
             Id = saleId, ClientNumber = number, ShiftId = shift.Id, RegisterId = registerId, CustomerId = customerId, OpId = opId, CreatedAt = now,
@@ -260,6 +277,39 @@ public sealed class PosService(ApiClient api, Func<LocalDb> dbFactory, TimeProvi
         await db.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
         return new CheckoutResult(number, false, receipt, null);
+    }
+
+    /// <summary>Sale journal entry (port of the server POS posting): Dr cash/card/bank/receivable, Cr sales, output VAT and rounding;
+    /// Dr cost of goods sold / Cr stock at moving-average cost.</summary>
+    private async Task PostLocalSaleAsync(LocalDb db, Cart cart, CartTotals totals, Settlement settlement, IReadOnlyList<PaymentLine> payments, Guid? customerId,
+        Guid saleId, string number, Dictionary<Guid, LocalProduct> products, DateTimeOffset now, CancellationToken ct)
+    {
+        decimal Sum(string m) => payments.Where(p => p.Method == m).Sum(p => p.Amount);
+        var cash = Sum("Cash") - settlement.Change;
+        var card = Sum("Card");
+        var onAccount = Sum("OnAccount");
+        var other = payments.Where(p => p.Method is not ("Cash" or "Card" or "OnAccount")).Sum(p => p.Amount);
+        decimal goods = 0, services = 0, cost = 0;
+        for (var i = 0; i < cart.Items.Count; i++)
+        {
+            var item = cart.Items[i];
+            var net = totals.Lines[i].Net;
+            if (item.Product.TrackStock) goods += net; else services += net;
+            if (item.Product.TrackStock && products.TryGetValue(item.Product.Id, out var p)) cost += Erp.Money.Round(item.Quantity * Erp.Costing.UnitCost(p));
+        }
+        var b = new Erp.PostingBuilder()
+            .Debit(Erp.AccountRoles.Cash, cash)
+            .Debit(Erp.AccountRoles.CardClearing, card)
+            .Debit(Erp.AccountRoles.Bank, other)
+            .Debit(Erp.AccountRoles.AccountsReceivable, onAccount, $"POS {number}", PartyKinds.Customer, customerId)
+            .Credit(Erp.AccountRoles.SalesRevenue, goods)
+            .Credit(Erp.AccountRoles.ServiceRevenue, services)
+            .Credit(Erp.AccountRoles.VatCollected, totals.Tax);
+        // Cash rounding (and any sub-cent difference) goes to the rounding account so the entry always balances.
+        var gap = Erp.Money.Round(cash + card + other + onAccount) - Erp.Money.Round(goods) - Erp.Money.Round(services) - Erp.Money.Round(totals.Tax);
+        b.Credit(Erp.AccountRoles.Rounding, gap);
+        b.Debit(Erp.AccountRoles.CostOfGoodsSold, cost).Credit(Erp.AccountRoles.Inventory, cost);
+        await Erp.Ledger.PostAsync(db, Erp.Ledger.Today(time), $"POS sale {number}", Erp.JournalSources.Pos, saleId, b, now, ct);
     }
 
     /// <summary>Standalone receipt number: <c>{register}-{yyMMdd}-{counter}</c>.</summary>

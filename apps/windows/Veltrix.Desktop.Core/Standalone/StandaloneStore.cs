@@ -92,7 +92,7 @@ public sealed class StandaloneStore(Func<LocalDb> dbFactory, TimeProvider time)
     }
 
     public static ProductDto ToDto(LocalProduct p) => new(p.Id, p.Sku, p.Name, p.NameAr, null, p.Type, p.Status, p.CategoryId, null, null,
-        TaxCategories.FirstOrDefault(t => t.RatePercent == p.TaxRatePercent)?.Id, p.TaxRatePercent, p.SalePrice, null, p.PurchasePrice, p.PurchasePrice, p.TrackStock, false, false, false, p.LowStockThreshold, 0, null, null, false,
+        TaxCategories.FirstOrDefault(t => t.RatePercent == p.TaxRatePercent)?.Id, p.TaxRatePercent, p.SalePrice, null, p.PurchasePrice, Erp.Costing.UnitCost(p), p.TrackStock, false, false, false, p.LowStockThreshold, 0, null, null, false,
         p.Barcodes.Split('\n', StringSplitOptions.RemoveEmptyEntries), [], p.UpdatedAt);
 
     // ------------------------------------------------------------------ customers
@@ -165,7 +165,8 @@ public sealed class StandaloneStore(Func<LocalDb> dbFactory, TimeProvider time)
         var rows = list.Select(p =>
         {
             var q = stock.TryGetValue(p.Id, out var st) ? st.Quantity : 0;
-            return new StockBalanceDto(wid, WarehouseName, p.Id, p.Sku, p.Name, q, 0, q, p.PurchasePrice, q * p.PurchasePrice, p.LowStockThreshold, null,
+            var cost = Erp.Costing.UnitCost(p);
+            return new StockBalanceDto(wid, WarehouseName, p.Id, p.Sku, p.Name, q, 0, q, cost, Erp.Money.Round(q * cost), p.LowStockThreshold, null,
                 st?.UpdatedAt ?? p.UpdatedAt);
         }).Where(r => !inStockOnly || r.Quantity > 0).ToList();
         return new PagedResponse<StockBalanceDto>(rows.Skip(Math.Max(0, page - 1) * pageSize).Take(pageSize).ToList(), page, pageSize, rows.Count);
@@ -179,15 +180,25 @@ public sealed class StandaloneStore(Func<LocalDb> dbFactory, TimeProvider time)
                 Math.Max(0, s.LowStockThreshold * 2 - s.Quantity))).ToList();
     }
 
-    /// <summary>Adds (positive) or removes (negative) stock, e.g. goods received or a count correction.</summary>
+    /// <summary>Adds (positive) or removes (negative) stock, e.g. a count correction. The value moves between stock (30) and
+    /// inventory adjustments (6581) at the current unit cost, in the same transaction as the quantity.</summary>
     public async Task AdjustStockAsync(Guid productId, decimal quantityChange, CancellationToken ct = default)
     {
         if (quantityChange == 0) return;
         var wid = await WarehouseIdAsync(ct);
         await using var db = dbFactory();
-        if (await db.Products.FindAsync([productId], ct) is null) throw new InvalidOperationException("Unknown product.");
-        ApplyStock(db, await db.Stock.FindAsync([wid, productId], ct), wid, productId, quantityChange, time.GetUtcNow());
+        await using var tx = await db.Database.BeginTransactionAsync(ct);
+        var p = await db.Products.FindAsync([productId], ct) ?? throw new InvalidOperationException("Unknown product.");
+        var now = time.GetUtcNow();
+        ApplyStock(db, await db.Stock.FindAsync([wid, productId], ct), wid, productId, quantityChange, now);
+        if (p.TrackStock)
+        {
+            var value = Erp.Money.Round(quantityChange * Erp.Costing.UnitCost(p));
+            var b = new Erp.PostingBuilder().Debit(Erp.AccountRoles.Inventory, value).Credit(Erp.AccountRoles.InventoryAdjustment, value, p.Sku);
+            await Erp.Ledger.PostAsync(db, Erp.Ledger.Today(time), $"Stock adjustment {p.Sku} {quantityChange:0.###}", Erp.JournalSources.Inventory, p.Id, b, now, ct);
+        }
         await db.SaveChangesAsync(ct);
+        await tx.CommitAsync(ct);
     }
 
     internal static void ApplyStock(LocalDb db, LocalStock? row, Guid warehouseId, Guid productId, decimal change, DateTimeOffset now)
