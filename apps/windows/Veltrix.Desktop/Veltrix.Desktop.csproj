@@ -33,6 +33,22 @@
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="System.Security.Cryptography.ProtectedData" />
+    <PackageReference Include="LibVLCSharp.WPF" />
+    <PackageReference Include="VideoLAN.LibVLC.Windows" />
+  </ItemGroup>
+  <!-- CCTV (RTSP live view): ship only the 64-bit libVLC and only the modules needed for RTSP H.264/H.265 cameras and JPEG/PNG
+       snapshots (~27 MB instead of ~300 MB for all three architectures with every plugin). -->
+  <PropertyGroup>
+    <VlcWindowsX86Enabled>false</VlcWindowsX86Enabled>
+    <VlcWindowsArm64Enabled>false</VlcWindowsArm64Enabled>
+  </PropertyGroup>
+  <ItemGroup>
+    <VlcWindowsX64IncludeFiles Include="libvlc.dll;libvlccore.dll" />
+    <VlcWindowsX64IncludeFiles Include="plugins\access\liblive555_plugin.dll;plugins\access\librtp_plugin.dll;plugins\access\libhttp_plugin.dll;plugins\access\libtcp_plugin.dll;plugins\access\libudp_plugin.dll;plugins\access\libfilesystem_plugin.dll" />
+    <VlcWindowsX64IncludeFiles Include="plugins\codec\libavcodec_plugin.dll;plugins\codec\libd3d11va_plugin.dll;plugins\codec\libdxva2_plugin.dll;plugins\codec\libjpeg_plugin.dll;plugins\codec\libpng_plugin.dll;plugins\codec\librawvideo_plugin.dll" />
+    <VlcWindowsX64IncludeFiles Include="plugins\demux\libes_plugin.dll;plugins\demux\libh26x_plugin.dll;plugins\demux\libmjpeg_plugin.dll;plugins\demux\libps_plugin.dll;plugins\demux\librawvid_plugin.dll;plugins\demux\libts_plugin.dll" />
+    <VlcWindowsX64IncludeFiles Include="plugins\packetizer\%2A;plugins\video_chroma\%2A;plugins\d3d11\%2A;plugins\d3d9\%2A;plugins\logger\%2A;plugins\video_filter\libdeinterlace_plugin.dll" />
+    <VlcWindowsX64IncludeFiles Include="plugins\video_output\libdirect3d11_plugin.dll;plugins\video_output\libdirect3d9_plugin.dll;plugins\video_output\libwingdi_plugin.dll;plugins\video_output\libglwin32_plugin.dll;plugins\video_output\libgl_plugin.dll;plugins\video_output\libwgl_plugin.dll;plugins\video_output\libglinterop_dxva2_plugin.dll;plugins\video_output\libvmem_plugin.dll;plugins\video_output\libvdummy_plugin.dll;plugins\video_output\libdrawable_plugin.dll" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Assets\symbol-256.png" />

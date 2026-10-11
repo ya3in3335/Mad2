@@ -14,6 +14,9 @@
     <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="10.0.12" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageVersion Include="System.Security.Cryptography.ProtectedData" Version="10.0.12" />
+    <!-- CCTV live view (Windows client): managed wrapper + native libVLC (win-x64 subset copied, see Veltrix.Desktop.csproj). -->
+    <PackageVersion Include="LibVLCSharp.WPF" Version="3.10.1" />
+    <PackageVersion Include="VideoLAN.LibVLC.Windows" Version="3.0.23.1" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
