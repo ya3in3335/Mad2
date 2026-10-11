@@ -19,7 +19,7 @@
                 </Ellipse>
             </Canvas>
             <Canvas x:Name="Particles" IsHitTestVisible="False" ClipToBounds="True"/>
-            <Viewbox Margin="40,28,40,64" Stretch="Uniform">
+            <Viewbox Margin="40,28,40,64" Stretch="Uniform" FlowDirection="LeftToRight">
                 <Canvas Width="512" Height="700">
                     <Canvas.Resources>
                         <LinearGradientBrush x:Key="LeftGrad" StartPoint="84,104" EndPoint="260,432" MappingMode="Absolute">

@@ -6,7 +6,7 @@
             <Border.RenderTransform><TranslateTransform x:Name="Shake"/></Border.RenderTransform>
             <StackPanel>
                 <Viewbox Width="64" Height="64" HorizontalAlignment="Center">
-                    <Canvas Width="512" Height="512">
+                    <Canvas FlowDirection="LeftToRight" Width="512" Height="512">
                         <Path Data="{StaticResource Logo.LeftBlade}" Fill="{StaticResource Brush.BladeLeft}"/>
                         <Path Data="{StaticResource Logo.RightBlade}" Fill="{StaticResource Brush.BladeRight}"/>
                         <Ellipse Canvas.Left="286" Canvas.Top="370" Width="28" Height="28" Fill="#E6E9F0"/>

@@ -10,7 +10,7 @@
         <Border Background="{StaticResource Brush.Hero}">
             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="32">
                 <Viewbox Width="180" Height="180">
-                    <Canvas Width="512" Height="512">
+                    <Canvas FlowDirection="LeftToRight" Width="512" Height="512">
                         <Path Data="{StaticResource Logo.LeftBlade}" Fill="{StaticResource Brush.BladeLeft}"/>
                         <Path Data="{StaticResource Logo.RightBlade}" Fill="{StaticResource Brush.BladeRight}"/>
                         <Ellipse Canvas.Left="286" Canvas.Top="370" Width="28" Height="28" Fill="#E6E9F0"/>
