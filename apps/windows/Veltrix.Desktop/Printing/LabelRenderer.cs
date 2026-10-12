@@ -76,11 +76,15 @@ public static class LabelRenderer
         doc.Pages.Add(content);
     }
 
-    private static FormattedText Text(string text, Typeface face, double sizeMm, double maxWidthMm)
+    private static bool HasArabic(string s) => s.Any(c => c is >= '\u0600' and <= '\u06FF' or >= '\u0750' and <= '\u077F' or >= '\uFB50' and <= '\uFEFF');
+
+    private static FormattedText Text(string text, Typeface face, double sizeMm, double maxWidthMm, int maxLines = 1)
     {
-        var ft = new FormattedText(text, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, face, D(sizeMm), Brushes.Black, 1.0)
+        var rtl = HasArabic(text);
+        var ft = new FormattedText(text, rtl ? CultureInfo.GetCultureInfo("ar-DZ") : CultureInfo.InvariantCulture,
+            rtl ? FlowDirection.RightToLeft : FlowDirection.LeftToRight, face, D(sizeMm), Brushes.Black, 1.0)
         {
-            MaxLineCount = 1,
+            MaxLineCount = maxLines,
             Trimming = TextTrimming.CharacterEllipsis,
         };
         if (maxWidthMm > 0) ft.MaxTextWidth = D(maxWidthMm);
@@ -95,7 +99,7 @@ public static class LabelRenderer
         var w = cell.Width - 2 * pad;
         var top = cell.Y + pad;
         var bottom = cell.Y + cell.Height - pad;
-        var unit = Math.Clamp(cell.Height / 30.0, 0.7, 1.6);
+        var unit = Math.Clamp(Math.Min(cell.Height / 30.0, cell.Width / 40.0), 0.6, 1.6);
 
         dc.PushClip(new RectangleGeometry(new Rect(D(cell.X), D(cell.Y), D(cell.Width), D(cell.Height))));
         var y = top;
@@ -103,12 +107,13 @@ public static class LabelRenderer
         {
             var shop = Text(label.ShopName!.Trim(), Regular, 2.2 * unit, w);
             shop.TextAlignment = TextAlignment.Center;
-            dc.DrawText(shop, new Point(D(x), D(y)));
-            y += 2.2 * unit * 1.2;
+            dc.DrawText(shop, new Point(D(x) + (shop.FlowDirection == FlowDirection.RightToLeft ? D(w) : 0), D(y)));
+            y += shop.Height / LabelLayout.DipPerMm;
         }
-        var name = Text(label.DisplayName, Bold, 2.9 * unit, w);
-        dc.DrawText(name, new Point(D(x), D(y)));
-        y += 2.9 * unit * 1.25;
+        // Name: up to 2 lines on tall labels, measured so the barcode never overlaps it.
+        var name = Text(label.DisplayName, Bold, 2.9 * unit, w, cell.Height >= 35 ? 2 : 1);
+        dc.DrawText(name, new Point(D(x) + (name.FlowDirection == FlowDirection.RightToLeft ? D(w) : 0), D(y)));
+        y += name.Height / LabelLayout.DipPerMm + 0.3;
 
         var priceSize = 4.8 * unit;
         var price = Text(label.PriceText, Bold, priceSize, 0);
@@ -119,7 +124,8 @@ public static class LabelRenderer
         var digitH = digitSize * 1.15;
         var barTop = y + 0.4;
         var barBottom = priceTop - digitH - 0.3;
-        if (barBottom - barTop >= 3 && !string.IsNullOrWhiteSpace(label.Code))
+        if (barBottom - barTop < 4) barBottom = barTop + 4; // always keep a scannable bar height; price sits beside the digits
+        if (!string.IsNullOrWhiteSpace(label.Code))
             DrawBarcode(dc, BarcodeEncoder.Encode(label.Code), x, w, barTop, barBottom - barTop, digitSize);
         dc.Pop();
     }

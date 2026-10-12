@@ -91,6 +91,26 @@ public sealed partial class ProductsViewModel(DesktopServices s) : ListPageViewM
     /// <summary>Opens the label printing dialog for the given (multi-)selection; supplied by the view.</summary>
     public LabelPrintViewModel CreateLabelPrint(IEnumerable<ProductDto> products) => new(S, products);
 
+    /// <summary>Gives every product that has no barcode an in-store EAN-13 (saved), so each label always carries a scannable code.</summary>
+    public async Task<List<ProductDto>> EnsureBarcodesAsync(IReadOnlyList<ProductDto> products)
+    {
+        var result = new List<ProductDto>(products.Count);
+        foreach (var p in products)
+        {
+            if (p.Barcodes.Any(b => !string.IsNullOrWhiteSpace(b))) { result.Add(p); continue; }
+            var editor = ProductEditor.For(p);
+            editor.AddBarcode(await Generator.NextAsync());
+            var req = editor.ToRequest();
+            var saved = S.IsStandalone
+                ? await S.Standalone.Store.UpsertProductAsync(req, p.Id)
+                : await S.Api.PutAsync<ProductDto>($"/api/v1/catalog/products/{p.Id}", req);
+            var idx = Items.ToList().FindIndex(x => x.Id == saved.Id);
+            if (idx >= 0) Items[idx] = saved;
+            result.Add(saved);
+        }
+        return result;
+    }
+
     protected override async Task<PagedResponse<ProductDto>> FetchAsync(int page, string search, CancellationToken ct)
     {
         if (S.IsStandalone)
@@ -120,7 +140,7 @@ public sealed partial class ProductsViewModel(DesktopServices s) : ListPageViewM
     {
         if (Editor is null) return;
         if (Editor.InvalidEan13() is { } bad) throw new InvalidOperationException(Loc.Format("dk.barcode.invalidEan", bad));
-        if (S.Settings.AutoGenerateBarcode && Editor.BarcodeList().Count == 0 && !string.IsNullOrWhiteSpace(Editor.Sku) && !string.IsNullOrWhiteSpace(Editor.Name))
+        if (S.Settings.AutoGenerateBarcode && Editor.BarcodeList().Count == 0 && !string.IsNullOrWhiteSpace(Editor.Name))
             Editor.AddBarcode(await Generator.NextAsync());
         var req = Editor.ToRequest();
         var saved = S.IsStandalone

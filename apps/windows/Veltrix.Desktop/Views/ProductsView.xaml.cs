@@ -11,7 +11,7 @@ public partial class ProductsView : UserControl
     public ProductsView() => InitializeComponent();
 
     /// <summary>Opens the label dialog for the selected products (multi-select with Ctrl/Shift).</summary>
-    private void PrintLabels_Click(object sender, RoutedEventArgs e)
+    private async void PrintLabels_Click(object sender, RoutedEventArgs e)
     {
         if (DataContext is not ProductsViewModel vm) return;
         var products = Grid.SelectedItems.OfType<ProductDto>().ToList();
@@ -21,6 +21,8 @@ public partial class ProductsView : UserControl
             vm.StatusMessage = (Application.Current.TryFindResource("dk.labels.noSelection") as string) ?? "";
             return;
         }
+        try { products = await vm.EnsureBarcodesAsync(products); }
+        catch (Exception ex) { vm.StatusMessage = ex.Message; return; }
         var labels = vm.CreateLabelPrint(products);
         var window = new LabelPrintWindow(labels) { Owner = Window.GetWindow(this) };
         WpfPlatformUi.ApplyTo(window, labels.Language);
