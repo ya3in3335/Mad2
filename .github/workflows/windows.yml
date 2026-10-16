@@ -29,13 +29,15 @@ jobs:
         run: dotnet test tests/unit/Veltrix.Desktop.Tests -c Release
       - name: Publish desktop app
         run: dotnet publish apps/windows/Veltrix.Desktop/Veltrix.Desktop.csproj -c Release -r win-x64 --self-contained true -p:VeltrixVersion=${{ env.VELTRIX_VERSION }} -p:VeltrixVendorPublicKey=${{ inputs.vendor_public_key }} -o publish
+      - name: Publish terminal connector service
+        run: dotnet publish apps/windows/Veltrix.Connector/Veltrix.Connector.csproj -c Release -r win-x64 --self-contained true -p:VeltrixVersion=${{ env.VELTRIX_VERSION }} -o publish-connector
       - name: Install Inno Setup
         run: choco install innosetup --no-progress -y
       - name: Build installer
         shell: pwsh
         run: |
           $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
-          & $iscc "/DAppVersion=$env:VELTRIX_VERSION" "/DPublishDir=$env:GITHUB_WORKSPACE\publish" "/O$env:GITHUB_WORKSPACE\out" apps\windows\installer\VeltrixOS.iss
+          & $iscc "/DAppVersion=$env:VELTRIX_VERSION" "/DPublishDir=$env:GITHUB_WORKSPACE\publish" "/DConnectorDir=$env:GITHUB_WORKSPACE\publish-connector" "/O$env:GITHUB_WORKSPACE\out" apps\windows\installer\VeltrixOS.iss
           if ($LASTEXITCODE -ne 0) { throw "ISCC failed" }
           Get-FileHash out\*.exe -Algorithm SHA256 | ForEach-Object { "$($_.Hash.ToLower())  $(Split-Path $_.Path -Leaf)" } | Out-File out\SHA256SUMS.txt -Encoding ascii
           Get-ChildItem out

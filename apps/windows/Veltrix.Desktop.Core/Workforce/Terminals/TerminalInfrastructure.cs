@@ -152,3 +152,40 @@ public sealed class NamedMutexIngestionLock(string name = NamedMutexIngestionLoc
         }
     }
 }
+
+/// <summary>
+/// Hand-off between the desktop app and the connector service: the app (user session) publishes where its database lives; the service
+/// (LocalSystem) reads it on every start / tick. Kept in a machine-wide folder the installer makes writable for users. No secrets inside.
+/// </summary>
+public sealed record ConnectorConfig(string DatabasePath, DateTimeOffset UpdatedAt, string? AppVersion = null)
+{
+    public const string FileName = "connector.json";
+    private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web) { WriteIndented = true };
+
+    public static string DefaultDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "VELTRIX", "Connector");
+
+    public static ConnectorConfig? Read(string directory)
+    {
+        try
+        {
+            var path = Path.Combine(directory, FileName);
+            return File.Exists(path) ? JsonSerializer.Deserialize<ConnectorConfig>(File.ReadAllText(path), Json) : null;
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or JsonException) { return null; }
+    }
+
+    /// <summary>Best effort (false when the folder is missing or not writable, e.g. the service was never installed).</summary>
+    public bool TryWrite(string directory)
+    {
+        try
+        {
+            if (!Directory.Exists(directory)) return false;
+            var path = Path.Combine(directory, FileName);
+            var tmp = path + ".tmp";
+            File.WriteAllText(tmp, JsonSerializer.Serialize(this, Json));
+            File.Move(tmp, path, overwrite: true);
+            return true;
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { return false; }
+    }
+}

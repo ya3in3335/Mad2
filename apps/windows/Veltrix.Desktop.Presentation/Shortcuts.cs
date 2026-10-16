@@ -58,6 +58,8 @@ public static class ShortcutMap
         ["wf.leave"] = typeof(WfLeaveViewModel),
         ["wf.overtime"] = typeof(WfOvertimeViewModel),
         ["wf.access"] = typeof(WfAccessViewModel),
+        ["wf.terminals"] = typeof(WfTerminalsViewModel),
+        ["wf.review"] = typeof(WfReviewViewModel),
         ["wf.devices"] = typeof(WfDevicesViewModel),
         ["wf.payroll"] = typeof(WfPayrollViewModel),
         ["wf.reports"] = typeof(WfReportsViewModel),
@@ -139,6 +141,9 @@ public static class ShortcutMap
         Add("wf.shifts", "Ctrl+Shift+P", "sc.wf.prevPeriod", "PreviousCommand");
         Add("wf.shifts", "Ctrl+Shift+N", "sc.wf.nextPeriod", "NextCommand");
         Add("wf.shifts", "Ctrl+D", "sc.wf.today", "GoTodayCommand");
+        Add("wf.terminals", "Ctrl+N", "sc.new", "NewCommand");
+        Add("wf.terminals", "Ctrl+S", "sc.save", "SaveCommand", when: "IsEditing");
+        Add("wf.terminals", "Ctrl+T", "sc.wf.test", "DiagnoseCommand", when: "Selected");
         Add("wf.devices", "Ctrl+N", "sc.new", "NewCommand");
         Add("wf.devices", "Ctrl+S", "sc.save", "SaveCommand", when: "IsEditing");
         Add("wf.devices", "Ctrl+T", "sc.wf.test", "TestCommand", when: "Selected");

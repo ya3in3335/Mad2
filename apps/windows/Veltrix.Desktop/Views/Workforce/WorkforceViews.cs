@@ -88,3 +88,33 @@ public partial class WfSettingsView : UserControl
 {
     public WfSettingsView() => InitializeComponent();
 }
+
+public partial class WfTerminalsView : UserControl
+{
+    public WfTerminalsView()
+    {
+        InitializeComponent();
+        // Write-only password: the box is cleared whenever the view model resets it (selection change, after save).
+        DataContextChanged += (_, e) =>
+        {
+            if (e.OldValue is WfTerminalsViewModel old) old.PropertyChanged -= OnVmChanged;
+            if (e.NewValue is WfTerminalsViewModel vm) vm.PropertyChanged += OnVmChanged;
+        };
+    }
+
+    private void OnVmChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(WfTerminalsViewModel.Password) && sender is WfTerminalsViewModel { Password.Length: 0 } && PasswordBox.Password.Length > 0)
+            PasswordBox.Clear();
+    }
+
+    private void OnPasswordChanged(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is WfTerminalsViewModel vm) vm.Password = PasswordBox.Password;
+    }
+}
+
+public partial class WfReviewView : UserControl
+{
+    public WfReviewView() => InitializeComponent();
+}

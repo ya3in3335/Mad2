@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <AssemblyName>VeltrixConnector</AssemblyName>
+    <RootNamespace>Veltrix.Connector</RootNamespace>
+    <Description>VELTRIX OS attendance-terminal connector (Windows service): polls terminals, buffers offline, ingests into the local database.</Description>
+    <VeltrixVersion Condition="'$(VeltrixVersion)' == ''">0.1.0</VeltrixVersion>
+    <Version>$(VeltrixVersion)</Version>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Veltrix.Desktop.Core\Veltrix.Desktop.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" />
+    <PackageReference Include="Microsoft.Extensions.Logging.EventLog" />
+  </ItemGroup>
+</Project>

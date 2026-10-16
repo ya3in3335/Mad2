@@ -29,6 +29,8 @@ public static class WorkforceNav
         new("wf.overtime", "wf.nav.overtime", [WorkforcePermissions.CorrectionsApprove]),
         // Door configuration and logs are organisation-wide; scoped roles holding the emergency permission still get the page (unlock only).
         new("wf.access", "wf.nav.access", [WorkforcePermissions.AccessView], GlobalOnly: true, Alternative: WorkforcePermissions.EmergencyUnlock),
+        new("wf.terminals", "wf.nav.terminals", [WorkforcePermissions.DevicesManage], GlobalOnly: true),
+        new("wf.review", "wf.nav.review", [WorkforcePermissions.CorrectionsApprove], GlobalOnly: true),
         new("wf.devices", "wf.nav.devices", [WorkforcePermissions.DevicesManage], GlobalOnly: true),
         new("wf.payroll", "wf.nav.payroll", [WorkforcePermissions.PayrollView]),
         new("wf.reports", "wf.nav.reports", [WorkforcePermissions.ReportsView]),
@@ -60,6 +62,8 @@ public static class WorkforceNav
         "wf.leave" => new WfLeaveViewModel(s),
         "wf.overtime" => new WfOvertimeViewModel(s),
         "wf.access" => new WfAccessViewModel(s),
+        "wf.terminals" => new WfTerminalsViewModel(s),
+        "wf.review" => new WfReviewViewModel(s),
         "wf.devices" => new WfDevicesViewModel(s),
         "wf.payroll" => new WfPayrollViewModel(s),
         "wf.reports" => new WfReportsViewModel(s),

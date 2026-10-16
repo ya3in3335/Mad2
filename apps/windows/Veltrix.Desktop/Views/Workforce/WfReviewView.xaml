@@ -1,0 +1,58 @@
+<UserControl x:Class="Veltrix.Desktop.Views.Workforce.WfReviewView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:Veltrix.Desktop.Controls">
+    <DockPanel>
+        <HeaderedContentControl DockPanel.Dock="Top" Header="{DynamicResource wf.nav.review}" Style="{StaticResource PageHeader}">
+            <StackPanel Orientation="Horizontal">
+                <CheckBox Content="{DynamicResource wf.rev.includeClosed}" IsChecked="{Binding IncludeClosed}" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                <Button Content="{DynamicResource action.refresh}" Command="{Binding RefreshCommand}"/>
+            </StackPanel>
+        </HeaderedContentControl>
+        <TextBlock DockPanel.Dock="Top" Text="{DynamicResource wf.rev.hint}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,0,0,10"/>
+        <TextBlock DockPanel.Dock="Bottom" Text="{Binding StatusMessage}" Style="{StaticResource Text.Status}" Margin="0,8,0,0"/>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="360"/>
+            </Grid.ColumnDefinitions>
+            <Grid>
+                <DataGrid ItemsSource="{Binding Items}" SelectedItem="{Binding Selected}" IsReadOnly="True" AutoGenerateColumns="False"
+                          Visibility="{Binding IsReady, Converter={StaticResource BoolToVis}}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="{DynamicResource wf.col.Time}" Binding="{Binding Time}" Width="130"/>
+                        <DataGridTextColumn Header="{DynamicResource wf.rev.device}" Binding="{Binding Device}" Width="*"/>
+                        <DataGridTextColumn Header="{DynamicResource wf.term.terminalUser}" Binding="{Binding User}" Width="90"/>
+                        <DataGridTextColumn Header="{DynamicResource wf.term.card}" Binding="{Binding Card}" Width="90"/>
+                        <DataGridTextColumn Header="{DynamicResource wf.term.method}" Binding="{Binding Method}" Width="70"/>
+                        <DataGridTextColumn Header="{DynamicResource wf.rev.reason}" Binding="{Binding Reason}" Width="150"/>
+                        <DataGridTextColumn Header="{DynamicResource wf.rev.suggested}" Binding="{Binding Suggested}" Width="130"/>
+                        <DataGridTextColumn Header="{DynamicResource wf.col.Status}" Binding="{Binding Result}" Width="140"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+                <c:PageState/>
+            </Grid>
+            <Border Grid.Column="2" Style="{StaticResource Card}" Visibility="{Binding Selected, Converter={StaticResource NotNullToVis}}">
+                <StackPanel>
+                    <TextBlock Text="{Binding Selected.Reason}" Style="{StaticResource Text.Section}" TextWrapping="Wrap"/>
+                    <TextBlock Text="{DynamicResource wf.rev.employee}" Style="{StaticResource Text.Label}"/>
+                    <ComboBox ItemsSource="{Binding EmployeeChoices}" SelectedValuePath="Value" DisplayMemberPath="Text" SelectedValue="{Binding EmployeeId}"/>
+                    <Button Content="{DynamicResource wf.rev.map}" Command="{Binding MapCommand}" Margin="0,8,0,0" HorizontalAlignment="Left"
+                            Visibility="{Binding Selected.CanMap, Converter={StaticResource BoolToVis}}"/>
+                    <TextBlock Text="{DynamicResource wf.rev.correctedDate}" Style="{StaticResource Text.Label}"/>
+                    <DatePicker SelectedDate="{Binding CorrectedDate}"/>
+                    <TextBlock Text="{DynamicResource wf.rev.correctedTime}" Style="{StaticResource Text.Label}"/>
+                    <TextBox Text="{Binding CorrectedTime}" FlowDirection="LeftToRight"/>
+                    <TextBlock Text="{DynamicResource wf.rev.note}" Style="{StaticResource Text.Label}"/>
+                    <TextBox Text="{Binding Note}" TextWrapping="Wrap" AcceptsReturn="True" MinHeight="54"/>
+                    <TextBlock Text="{Binding FormError}" Style="{StaticResource Text.Error}" TextWrapping="Wrap" Visibility="{Binding FormError, Converter={StaticResource NotNullToVis}}"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                        <Button Content="{DynamicResource wf.rev.accept}" Command="{Binding AcceptCommand}" Style="{StaticResource Button.Primary}"/>
+                        <Button Content="{DynamicResource wf.rev.reject}" Command="{Binding RejectCommand}" Style="{StaticResource Button.Ghost}" Margin="8,0,0,0"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </DockPanel>
+</UserControl>

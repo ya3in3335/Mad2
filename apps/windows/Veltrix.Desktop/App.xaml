@@ -56,6 +56,8 @@
             <DataTemplate DataType="{x:Type vm:WfLeaveViewModel}"><wf:WfLeaveView/></DataTemplate>
             <DataTemplate DataType="{x:Type vm:WfOvertimeViewModel}"><wf:WfOvertimeView/></DataTemplate>
             <DataTemplate DataType="{x:Type vm:WfAccessViewModel}"><wf:WfAccessView/></DataTemplate>
+            <DataTemplate DataType="{x:Type vm:WfTerminalsViewModel}"><wf:WfTerminalsView/></DataTemplate>
+            <DataTemplate DataType="{x:Type vm:WfReviewViewModel}"><wf:WfReviewView/></DataTemplate>
             <DataTemplate DataType="{x:Type vm:WfDevicesViewModel}"><wf:WfDevicesView/></DataTemplate>
             <DataTemplate DataType="{x:Type vm:WfPayrollViewModel}"><wf:WfPayrollView/></DataTemplate>
             <DataTemplate DataType="{x:Type vm:WfReportsViewModel}"><wf:WfReportsView/></DataTemplate>

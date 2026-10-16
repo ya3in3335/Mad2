@@ -70,6 +70,8 @@ public sealed class DesktopServices
     public required Core.Standalone.StandaloneService Standalone { get; init; }
     /// <summary>CCTV over the shop LAN (cameras, sale photos). Null when the video runtime is unavailable.</summary>
     public Core.Cameras.CameraService? Cameras { get; init; }
+    /// <summary>Single-writer lock of terminal ingestion shared with the connector service (machine-wide mutex on Windows).</summary>
+    public Core.Workforce.Terminals.IIngestionLock IngestionLock { get; init; } = new Core.Workforce.Terminals.InProcessIngestionLock();
 
     /// <summary>Owner of the shop: local owner account, or an online profile with full permissions.</summary>
     public bool IsOwner => Session.LocalUser is { } lu ? lu.IsOwner

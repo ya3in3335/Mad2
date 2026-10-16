@@ -259,7 +259,7 @@ public sealed class WorkforceUiTests : IAsyncLifetime
     [Fact]
     public void Workforce_navigation_follows_the_role_permissions()
     {
-        string[] all = ["wf.dashboard", "wf.employees", "wf.kiosk", "wf.history", "wf.live", "wf.shifts", "wf.leave", "wf.overtime", "wf.access", "wf.devices",
+        string[] all = ["wf.dashboard", "wf.employees", "wf.kiosk", "wf.history", "wf.live", "wf.shifts", "wf.leave", "wf.overtime", "wf.access", "wf.terminals", "wf.review", "wf.devices",
             "wf.payroll", "wf.reports", "wf.settings"];
         Assert.Equal(all, WorkforceNav.Entries.Select(e => e.Key));
         Assert.Equal(all, WorkforceNav.VisibleKeysForRole(LocalRoles.Owner));
@@ -272,6 +272,8 @@ public sealed class WorkforceUiTests : IAsyncLifetime
         Assert.Contains("wf.overtime", manager);
         Assert.Contains("wf.access", manager);
         Assert.DoesNotContain("wf.devices", manager);
+        Assert.DoesNotContain("wf.terminals", manager);
+        Assert.DoesNotContain("wf.review", manager);
         Assert.DoesNotContain("wf.settings", manager);
         Assert.DoesNotContain("wf.payroll", manager);
         Assert.DoesNotContain("wf.overtime", WorkforceNav.VisibleKeysForRole(LocalRoles.AttendanceSupervisor));
