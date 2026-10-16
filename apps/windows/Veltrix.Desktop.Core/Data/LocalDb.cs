@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Veltrix.Desktop.Core.Data;
 
@@ -188,7 +189,7 @@ public sealed class KeyValue
 
 public sealed class LocalDb(DbContextOptions<LocalDb> options) : DbContext(options)
 {
-    public const int SchemaVersion = 4;
+    public const int SchemaVersion = 5;
 
     public DbSet<LocalProduct> Products => Set<LocalProduct>();
     public DbSet<LocalCustomer> Customers => Set<LocalCustomer>();
@@ -221,6 +222,35 @@ public sealed class LocalDb(DbContextOptions<LocalDb> options) : DbContext(optio
     // schema v4: CCTV
     public DbSet<LocalCamera> Cameras => Set<LocalCamera>();
     public DbSet<LocalSaleSnapshot> SaleSnapshots => Set<LocalSaleSnapshot>();
+    // schema v5: workforce & attendance
+    public DbSet<WfDepartment> WfDepartments => Set<WfDepartment>();
+    public DbSet<WfPosition> WfPositions => Set<WfPosition>();
+    public DbSet<WfEmployeeDocument> WfEmployeeDocuments => Set<WfEmployeeDocument>();
+    public DbSet<WfEmployeeAudit> WfEmployeeAudits => Set<WfEmployeeAudit>();
+    public DbSet<WfCredential> WfCredentials => Set<WfCredential>();
+    public DbSet<WfAttendanceEvent> WfAttendanceEvents => Set<WfAttendanceEvent>();
+    public DbSet<WfCorrectionRequest> WfCorrectionRequests => Set<WfCorrectionRequest>();
+    public DbSet<WfShiftTemplate> WfShiftTemplates => Set<WfShiftTemplate>();
+    public DbSet<WfRotation> WfRotations => Set<WfRotation>();
+    public DbSet<WfShiftAssignment> WfShiftAssignments => Set<WfShiftAssignment>();
+    public DbSet<WfShiftOverride> WfShiftOverrides => Set<WfShiftOverride>();
+    public DbSet<WfHoliday> WfHolidays => Set<WfHoliday>();
+    public DbSet<WfSwapRequest> WfSwapRequests => Set<WfSwapRequest>();
+    public DbSet<WfLeaveType> WfLeaveTypes => Set<WfLeaveType>();
+    public DbSet<WfLeaveRequest> WfLeaveRequests => Set<WfLeaveRequest>();
+    public DbSet<WfLeaveLedger> WfLeaveLedger => Set<WfLeaveLedger>();
+    public DbSet<WfPayItem> WfPayItems => Set<WfPayItem>();
+    public DbSet<WfStatutoryRule> WfStatutoryRules => Set<WfStatutoryRule>();
+    public DbSet<WfPayrollPrep> WfPayrollPreps => Set<WfPayrollPrep>();
+    public DbSet<WfPayrollPrepLine> WfPayrollPrepLines => Set<WfPayrollPrepLine>();
+    public DbSet<WfDevice> WfDevices => Set<WfDevice>();
+    public DbSet<WfDeviceInbox> WfDeviceInbox => Set<WfDeviceInbox>();
+    public DbSet<WfZone> WfZones => Set<WfZone>();
+    public DbSet<WfDoor> WfDoors => Set<WfDoor>();
+    public DbSet<WfAccessGroup> WfAccessGroups => Set<WfAccessGroup>();
+    public DbSet<WfAccessGroupMember> WfAccessGroupMembers => Set<WfAccessGroupMember>();
+    public DbSet<WfZonePresence> WfZonePresence => Set<WfZonePresence>();
+    public DbSet<WfAccessLog> WfAccessLogs => Set<WfAccessLog>();
 
     /// <summary>Tables added by schema v3 (created in place when upgrading a v2 database).</summary>
     public static readonly IReadOnlyList<string> V3Tables =
@@ -231,6 +261,27 @@ public sealed class LocalDb(DbContextOptions<LocalDb> options) : DbContext(optio
 
     /// <summary>Tables added by schema v4 (cameras and per-sale snapshots).</summary>
     public static readonly IReadOnlyList<string> V4Tables = ["Cameras", "SaleSnapshots"];
+
+    /// <summary>Tables added by schema v5 (workforce &amp; attendance).</summary>
+    public static readonly IReadOnlyList<string> V5Tables =
+    [
+        "WfDepartments", "WfPositions", "WfEmployeeDocuments", "WfEmployeeAudits", "WfCredentials", "WfAttendanceEvents", "WfCorrectionRequests",
+        "WfShiftTemplates", "WfRotations", "WfShiftAssignments", "WfShiftOverrides", "WfHolidays", "WfSwapRequests", "WfLeaveTypes", "WfLeaveRequests",
+        "WfLeaveLedger", "WfPayItems", "WfStatutoryRules", "WfPayrollPreps", "WfPayrollPrepLines", "WfDevices", "WfDeviceInbox", "WfZones", "WfDoors",
+        "WfAccessGroups", "WfAccessGroupMembers", "WfZonePresence", "WfAccessLogs",
+    ];
+
+    /// <summary>Columns added to existing tables by schema v5: (table, column, SQLite DDL type with default).</summary>
+    public static readonly IReadOnlyList<(string Table, string Column, string Ddl)> V5Columns =
+    [
+        ("Employees", "PhotoPath", "TEXT NULL"), ("Employees", "Email", "TEXT NULL"), ("Employees", "DepartmentId", "TEXT NULL"),
+        ("Employees", "PositionId", "TEXT NULL"), ("Employees", "Workplace", "TEXT NULL"), ("Employees", "ManagerId", "TEXT NULL"),
+        ("Employees", "ContractType", "TEXT NULL"), ("Employees", "ContractStart", "TEXT NULL"), ("Employees", "ContractEnd", "TEXT NULL"),
+        ("Employees", "TerminationDate", "TEXT NULL"), ("Employees", "Status", "TEXT NOT NULL DEFAULT 'Active'"),
+        ("Employees", "EmergencyContactName", "TEXT NULL"), ("Employees", "EmergencyContactPhone", "TEXT NULL"), ("Employees", "Notes", "TEXT NULL"),
+        ("Employees", "PayBasis", "TEXT NOT NULL DEFAULT 'Monthly'"), ("Employees", "HourlyRate", "TEXT NOT NULL DEFAULT '0.0'"),
+        ("Payslips", "Deductions", "TEXT NOT NULL DEFAULT '0.0'"), ("PayrollRuns", "TotalDeductions", "TEXT NOT NULL DEFAULT '0.0'"),
+    ];
 
     public static DbContextOptions<LocalDb> OptionsFor(string connectionString) =>
         new DbContextOptionsBuilder<LocalDb>().UseSqlite(connectionString).Options;
@@ -272,6 +323,47 @@ public sealed class LocalDb(DbContextOptions<LocalDb> options) : DbContext(optio
         b.Entity<LocalCashMovement>(e => { e.HasKey(x => x.Id); e.HasIndex(x => x.Date); e.HasIndex(x => x.ShiftId); });
         b.Entity<LocalCamera>(e => { e.HasKey(x => x.Id); e.HasIndex(x => x.SortOrder); });
         b.Entity<LocalSaleSnapshot>(e => { e.HasKey(x => x.SaleId); e.HasIndex(x => x.TakenAt); });
+        b.Entity<WfDepartment>().HasKey(x => x.Id);
+        b.Entity<WfPosition>().HasKey(x => x.Id);
+        b.Entity<WfEmployeeDocument>(e => { e.HasKey(x => x.Id); e.HasIndex(x => x.EmployeeId); });
+        b.Entity<WfEmployeeAudit>(e => { e.HasKey(x => x.Seq); e.Property(x => x.Seq).ValueGeneratedOnAdd(); e.HasIndex(x => x.EmployeeId); });
+        b.Entity<WfCredential>(e => { e.HasKey(x => x.Id); e.HasIndex(x => x.EmployeeId); e.HasIndex(x => new { x.Kind, x.Value }); });
+        b.Entity<WfAttendanceEvent>(e =>
+        {
+            e.HasKey(x => x.Seq);
+            e.Property(x => x.Seq).ValueGeneratedOnAdd();
+            e.HasIndex(x => x.Id).IsUnique();
+            e.HasIndex(x => new { x.EmployeeId, x.OccurredTicks });
+            e.HasIndex(x => new { x.DeviceId, x.DeviceEventId });
+        });
+        b.Entity<WfCorrectionRequest>(e => { e.HasKey(x => x.Id); e.HasIndex(x => x.EmployeeId); });
+        b.Entity<WfShiftTemplate>().HasKey(x => x.Id);
+        b.Entity<WfRotation>().HasKey(x => x.Id);
+        b.Entity<WfShiftAssignment>(e => { e.HasKey(x => x.Id); e.HasIndex(x => x.EmployeeId); });
+        b.Entity<WfShiftOverride>(e => { e.HasKey(x => x.Id); e.HasIndex(x => new { x.EmployeeId, x.Date }); });
+        b.Entity<WfHoliday>(e => { e.HasKey(x => x.Id); e.HasIndex(x => x.Date); });
+        b.Entity<WfSwapRequest>().HasKey(x => x.Id);
+        b.Entity<WfLeaveType>(e => { e.HasKey(x => x.Id); e.HasIndex(x => x.Code).IsUnique(); });
+        b.Entity<WfLeaveRequest>(e => { e.HasKey(x => x.Id); e.HasIndex(x => x.EmployeeId); });
+        b.Entity<WfLeaveLedger>(e => { e.HasKey(x => x.Id); e.HasIndex(x => new { x.EmployeeId, x.LeaveTypeId }); e.HasIndex(x => x.RefKey).IsUnique(); });
+        b.Entity<WfPayItem>().HasKey(x => x.Id);
+        b.Entity<WfStatutoryRule>().HasKey(x => x.Id);
+        b.Entity<WfPayrollPrep>(e => { e.HasKey(x => x.Id); e.HasIndex(x => new { x.Year, x.Month }); });
+        b.Entity<WfPayrollPrepLine>(e => { e.HasKey(x => x.Id); e.HasIndex(x => x.PrepId); });
+        b.Entity<WfDevice>().HasKey(x => x.Id);
+        b.Entity<WfDeviceInbox>(e =>
+        {
+            e.HasKey(x => x.Seq);
+            e.Property(x => x.Seq).ValueGeneratedOnAdd();
+            e.HasIndex(x => new { x.DeviceId, x.DeviceEventId }).IsUnique();
+            e.HasIndex(x => x.Status);
+        });
+        b.Entity<WfZone>().HasKey(x => x.Id);
+        b.Entity<WfDoor>().HasKey(x => x.Id);
+        b.Entity<WfAccessGroup>().HasKey(x => x.Id);
+        b.Entity<WfAccessGroupMember>().HasKey(x => new { x.GroupId, x.EmployeeId });
+        b.Entity<WfZonePresence>().HasKey(x => new { x.EmployeeId, x.ZoneId });
+        b.Entity<WfAccessLog>(e => { e.HasKey(x => x.Seq); e.Property(x => x.Seq).ValueGeneratedOnAdd(); e.HasIndex(x => x.DoorId); });
 
         // SQLite has no native decimal/DateTimeOffset ordering; store as TEXT/ticks via converters where queried.
         foreach (var p in b.Model.GetEntityTypes().SelectMany(t => t.GetProperties()))
@@ -291,6 +383,7 @@ public sealed class LocalDb(DbContextOptions<LocalDb> options) : DbContext(optio
         if (version < 2) await MigrateToV2Async(ct);
         if (version < 3) await MigrateToV3Async(ct);
         if (version < 4) await CreateModelTablesAsync(V4Tables, ct);
+        if (version < 5) await MigrateToV5Async(ct);
         await Erp.DefaultChart.EnsureSeededAsync(this, ct);
         if (stored is null) Values.Add(new KeyValue { Key = Keys.SchemaVersion, Value = SchemaVersion.ToString(System.Globalization.CultureInfo.InvariantCulture) });
         else stored.Value = SchemaVersion.ToString(System.Globalization.CultureInfo.InvariantCulture);
@@ -338,6 +431,31 @@ public sealed class LocalDb(DbContextOptions<LocalDb> options) : DbContext(optio
             await Database.ExecuteSqlRawAsync("UPDATE \"Products\" SET \"AverageCost\" = \"PurchasePrice\";", ct);
         }
         await CreateModelTablesAsync(V3Tables, ct);
+        await tx.CommitAsync(ct);
+    }
+
+    /// <summary>v4 → v5: workforce profile columns on Employees, statutory deduction columns on payroll, and the workforce tables (additive only).</summary>
+    private async Task MigrateToV5Async(CancellationToken ct)
+    {
+        var conn = Database.GetDbConnection();
+        if (conn.State != System.Data.ConnectionState.Open) await conn.OpenAsync(ct);
+        await using var tx = await Database.BeginTransactionAsync(ct);
+        foreach (var (table, column, ddl) in V5Columns)
+        {
+            long count;
+            await using (var cmd = conn.CreateCommand())
+            {
+                cmd.Transaction = tx.GetDbTransaction();
+                cmd.CommandText = $"SELECT COUNT(*) FROM pragma_table_info('{table}') WHERE name = '{column}'";
+                count = Convert.ToInt64(await cmd.ExecuteScalarAsync(ct), System.Globalization.CultureInfo.InvariantCulture);
+            }
+#pragma warning disable EF1002 // constant identifiers from V5Columns, no user input
+            if (count == 0) await Database.ExecuteSqlRawAsync($"ALTER TABLE \"{table}\" ADD COLUMN \"{column}\" {ddl};", ct);
+#pragma warning restore EF1002
+        }
+        // Existing employees keep their active flag as status.
+        await Database.ExecuteSqlRawAsync("UPDATE \"Employees\" SET \"Status\" = 'Terminated' WHERE \"IsActive\" = 0 AND \"Status\" = 'Active';", ct);
+        await CreateModelTablesAsync(V5Tables, ct);
         await tx.CommitAsync(ct);
     }
 

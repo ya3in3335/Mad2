@@ -41,15 +41,27 @@ public sealed partial class ErpService
         Require(input.Salary >= 0, "erp.err.salary");
         var e = id is { } existing ? await db.Employees.FindAsync([existing], ct) ?? throw new InvalidOperationException("erp.err.unknownEmployee") : null;
         if (e is null)
-            db.Employees.Add(e = new LocalEmployee { Id = Guid.NewGuid(), Code = "E" + (await db.Employees.CountAsync(ct) + 1).ToString("0000", CultureInfo.InvariantCulture) });
+            db.Employees.Add(e = new LocalEmployee { Id = Guid.NewGuid(), Code = await NextEmployeeCodeAsync(db, ct) });
         e.Name = input.Name.Trim();
         e.Role = O(input.Role);
         e.Phone = O(input.Phone);
         e.Salary = Money.Round(input.Salary);
         e.HireDate = input.HireDate;
         e.IsActive = input.IsActive;
+        if (!e.IsActive && e.Status == EmployeeStatuses.Active) e.Status = EmployeeStatuses.Terminated;
+        else if (e.IsActive && e.Status == EmployeeStatuses.Terminated) e.Status = EmployeeStatuses.Active;
         return e;
     }, ct);
+
+    /// <summary>Next free employee number E0001, E0002 … (shared by the ERP and the workforce module).</summary>
+    internal static async Task<string> NextEmployeeCodeAsync(LocalDb db, CancellationToken ct)
+    {
+        var codes = (await db.Employees.Select(x => x.Code).ToListAsync(ct)).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var n = codes.Count + 1;
+        string code;
+        while (codes.Contains(code = "E" + n.ToString("0000", CultureInfo.InvariantCulture))) n++;
+        return code;
+    }
 
     /// <summary>Salary advance: Dr 425 / Cr 530 or 512. Deducted by the next payroll run.</summary>
     public Task<LocalSalaryAdvance> GiveAdvanceAsync(Guid employeeId, decimal amount, string method, DateOnly date, CancellationToken ct = default) =>
@@ -80,31 +92,47 @@ public sealed partial class ErpService
     /// Monthly payroll (internal calculation): gross = monthly salary of each active employee hired by the month end; outstanding advances are
     /// deducted (oldest first, never more than the gross); net = gross − advances. Posts Dr 631 gross / Cr 421 net, Cr 425 advances.
     /// </summary>
-    public Task<LocalPayrollRun> RunPayrollAsync(int year, int month, CancellationToken ct = default) => InTransactionAsync(async (db, now) =>
+    public Task<LocalPayrollRun> RunPayrollAsync(int year, int month, CancellationToken ct = default) => RunPayrollAsync(year, month, null, ct);
+
+    /// <summary>
+    /// Payroll run with prepared amounts (workforce payroll preparation): <paramref name="amounts"/> gives each employee's gross and statutory
+    /// deductions; only those employees are paid. Posts Dr 631 gross / Cr 421 net, Cr 425 advances, Cr 431 statutory deductions.
+    /// </summary>
+    internal Task<LocalPayrollRun> RunPayrollAsync(int year, int month, IReadOnlyDictionary<Guid, (decimal Gross, decimal Deductions)>? amounts,
+        CancellationToken ct = default) => InTransactionAsync(async (db, now) =>
     {
         Require(year is >= 2000 and <= 2100 && month is >= 1 and <= 12, "erp.err.period");
         Require(!await db.PayrollRuns.AnyAsync(r => r.Year == year && r.Month == month, ct), "erp.err.payrollExists");
         var end = new DateOnly(year, month, 1).AddMonths(1).AddDays(-1);
-        var employees = (await db.Employees.Where(e => e.IsActive).ToListAsync(ct)).Where(e => e.HireDate <= end && e.Salary > 0).OrderBy(e => e.Name).ToList();
+        var employees = amounts is null
+            ? (await db.Employees.Where(e => e.IsActive).ToListAsync(ct)).Where(e => e.HireDate <= end && e.Salary > 0).OrderBy(e => e.Name).ToList()
+            : (await db.Employees.ToListAsync(ct)).Where(e => amounts.TryGetValue(e.Id, out var a) && a.Gross > 0).OrderBy(e => e.Name).ToList();
         Require(employees.Count > 0, "erp.err.noEmployees");
         var run = new LocalPayrollRun { Id = Guid.NewGuid(), Number = await Ledger.NextNumberAsync(db, "PAYR", ct), Year = year, Month = month, Date = end, Status = PayrollStatuses.Posted };
         var outstanding = (await db.SalaryAdvances.Where(a => a.PayrollRunId == null).ToListAsync(ct)).Where(a => a.Date <= end).ToLookup(a => a.EmployeeId);
         var b = new PostingBuilder();
         foreach (var e in employees)
         {
+            var (gross, statutory) = amounts is null ? (e.Salary, 0m) : amounts[e.Id];
             decimal deducted = 0;
             foreach (var a in outstanding[e.Id].OrderBy(a => a.Date).ThenBy(a => a.Number, StringComparer.Ordinal))
             {
-                if (deducted + a.Amount > e.Salary) break;
+                if (deducted + a.Amount > gross - statutory) break;
                 deducted += a.Amount;
                 a.PayrollRunId = run.Id;
             }
-            var slip = new LocalPayslip { Id = Guid.NewGuid(), RunId = run.Id, EmployeeId = e.Id, EmployeeName = e.Name, Gross = e.Salary, Advances = deducted, Net = e.Salary - deducted };
+            var slip = new LocalPayslip
+            {
+                Id = Guid.NewGuid(), RunId = run.Id, EmployeeId = e.Id, EmployeeName = e.Name, Gross = gross, Advances = deducted, Deductions = statutory,
+                Net = gross - statutory - deducted,
+            };
             db.Payslips.Add(slip);
             run.TotalGross += slip.Gross;
             run.TotalAdvances += slip.Advances;
+            run.TotalDeductions += slip.Deductions;
             run.TotalNet += slip.Net;
-            b.Credit(AccountRoles.SalariesPayable, slip.Net, e.Name, PartyKinds.Employee, e.Id).Credit(AccountRoles.EmployeeAdvances, slip.Advances, e.Name, PartyKinds.Employee, e.Id);
+            b.Credit(AccountRoles.SalariesPayable, slip.Net, e.Name, PartyKinds.Employee, e.Id).Credit(AccountRoles.EmployeeAdvances, slip.Advances, e.Name, PartyKinds.Employee, e.Id)
+                .Credit(AccountRoles.PayrollDeductionsPayable, slip.Deductions, e.Name, PartyKinds.Employee, e.Id);
         }
         b.Debit(AccountRoles.Salaries, run.TotalGross, $"{year:0000}-{month:00}");
         run.JournalEntryId = (await Ledger.PostAsync(db, end, $"Payroll {run.Number} {year:0000}-{month:00}", JournalSources.Payroll, run.Id, b, now, ct))?.Id;

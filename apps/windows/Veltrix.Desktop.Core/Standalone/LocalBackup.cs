@@ -11,7 +11,8 @@ namespace Veltrix.Desktop.Core.Standalone;
 /// <summary>Everything a standalone installation needs to continue on another device.</summary>
 public sealed record BackupPayload(int Version, DateTimeOffset CreatedAt, string? TenantId, string? TenantName, string UsersJson,
     List<LocalProduct> Products, List<LocalCustomer> Customers, List<LocalStock> Stock, List<LocalRegister> Registers, List<LocalShift> Shifts,
-    List<LocalSale> Sales, List<LocalSaleLine> SaleLines, List<KeyValue> Values, ErpBackup? Erp = null);
+    List<LocalSale> Sales, List<LocalSaleLine> SaleLines, List<KeyValue> Values, ErpBackup? Erp = null,
+    Dictionary<string, JsonElement>? Workforce = null);
 
 /// <summary>Local ERP tables (format version 2). Absent in version-1 backups.</summary>
 public sealed record ErpBackup(List<LocalSupplier> Suppliers, List<LocalPurchase> Purchases, List<LocalPurchaseLine> PurchaseLines, List<LocalPayment> Payments,
@@ -27,7 +28,7 @@ public sealed record ErpBackup(List<LocalSupplier> Suppliers, List<LocalPurchase
 /// </summary>
 public static class LocalBackup
 {
-    public const int FormatVersion = 2;
+    public const int FormatVersion = 3;
     public const string FileExtension = ".vlxbak";
     private static readonly byte[] Magic = "VLXBAK01"u8.ToArray();
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
@@ -99,7 +100,39 @@ public static class LocalBackup
                 await db.ClosedPeriods.AsNoTracking().ToListAsync(ct), await db.Employees.AsNoTracking().ToListAsync(ct),
                 await db.SalaryAdvances.AsNoTracking().ToListAsync(ct), await db.PayrollRuns.AsNoTracking().ToListAsync(ct), await db.Payslips.AsNoTracking().ToListAsync(ct),
                 await db.SaleReturns.AsNoTracking().ToListAsync(ct), await db.SaleReturnLines.AsNoTracking().ToListAsync(ct),
-                await db.CashMovements.AsNoTracking().ToListAsync(ct)));
+                await db.CashMovements.AsNoTracking().ToListAsync(ct)),
+            await CaptureWorkforceAsync(db, ct));
+
+    /// <summary>Workforce tables (format version 3), keyed by table name. Every v5 table must be listed here.</summary>
+    private static readonly IReadOnlyList<WorkforceTable> WorkforceTables =
+    [
+        T(d => d.WfDepartments, "WfDepartments"), T(d => d.WfPositions, "WfPositions"), T(d => d.WfEmployeeDocuments, "WfEmployeeDocuments"),
+        T(d => d.WfEmployeeAudits, "WfEmployeeAudits"), T(d => d.WfCredentials, "WfCredentials"), T(d => d.WfAttendanceEvents, "WfAttendanceEvents"),
+        T(d => d.WfCorrectionRequests, "WfCorrectionRequests"), T(d => d.WfShiftTemplates, "WfShiftTemplates"), T(d => d.WfRotations, "WfRotations"),
+        T(d => d.WfShiftAssignments, "WfShiftAssignments"), T(d => d.WfShiftOverrides, "WfShiftOverrides"), T(d => d.WfHolidays, "WfHolidays"),
+        T(d => d.WfSwapRequests, "WfSwapRequests"), T(d => d.WfLeaveTypes, "WfLeaveTypes"), T(d => d.WfLeaveRequests, "WfLeaveRequests"),
+        T(d => d.WfLeaveLedger, "WfLeaveLedger"), T(d => d.WfPayItems, "WfPayItems"), T(d => d.WfStatutoryRules, "WfStatutoryRules"),
+        T(d => d.WfPayrollPreps, "WfPayrollPreps"), T(d => d.WfPayrollPrepLines, "WfPayrollPrepLines"), T(d => d.WfDevices, "WfDevices"),
+        T(d => d.WfDeviceInbox, "WfDeviceInbox"), T(d => d.WfZones, "WfZones"), T(d => d.WfDoors, "WfDoors"), T(d => d.WfAccessGroups, "WfAccessGroups"),
+        T(d => d.WfAccessGroupMembers, "WfAccessGroupMembers"), T(d => d.WfZonePresence, "WfZonePresence"), T(d => d.WfAccessLogs, "WfAccessLogs"),
+    ];
+
+    /// <summary>Names of the workforce tables carried by a backup (tests assert this covers every schema v5 table).</summary>
+    public static IReadOnlyList<string> WorkforceTableNames => WorkforceTables.Select(t => t.Name).ToList();
+
+    private sealed record WorkforceTable(string Name, Func<LocalDb, CancellationToken, Task<JsonElement>> Capture, Action<LocalDb> Clear, Action<LocalDb, JsonElement> Restore);
+
+    private static WorkforceTable T<TEntity>(Func<LocalDb, DbSet<TEntity>> set, string name) where TEntity : class => new(name,
+        async (db, ct) => JsonSerializer.SerializeToElement(await set(db).AsNoTracking().ToListAsync(ct), Json),
+        db => set(db).RemoveRange(set(db)),
+        (db, json) => set(db).AddRange(json.Deserialize<List<TEntity>>(Json) ?? []));
+
+    private static async Task<Dictionary<string, JsonElement>> CaptureWorkforceAsync(LocalDb db, CancellationToken ct)
+    {
+        var result = new Dictionary<string, JsonElement>();
+        foreach (var t in WorkforceTables) result[t.Name] = await t.Capture(db, ct);
+        return result;
+    }
 
     /// <summary>Replaces all local business data with the backup, atomically.</summary>
     public static async Task RestoreAsync(LocalDb db, BackupPayload p, CancellationToken ct = default)
@@ -117,6 +150,7 @@ public static class LocalBackup
         db.JournalLines.RemoveRange(db.JournalLines);
         db.ClosedPeriods.RemoveRange(db.ClosedPeriods);
         db.Employees.RemoveRange(db.Employees);
+        foreach (var t in WorkforceTables) t.Clear(db);
         db.SalaryAdvances.RemoveRange(db.SalaryAdvances);
         db.PayrollRuns.RemoveRange(db.PayrollRuns);
         db.Payslips.RemoveRange(db.Payslips);
@@ -149,6 +183,9 @@ public static class LocalBackup
             db.Employees.AddRange(e.Employees); db.SalaryAdvances.AddRange(e.SalaryAdvances); db.PayrollRuns.AddRange(e.PayrollRuns); db.Payslips.AddRange(e.Payslips);
             db.SaleReturns.AddRange(e.SaleReturns); db.SaleReturnLines.AddRange(e.SaleReturnLines); db.CashMovements.AddRange(e.CashMovements);
         }
+        if (p.Workforce is { } w)
+            foreach (var t in WorkforceTables)
+                if (w.TryGetValue(t.Name, out var json)) t.Restore(db, json);
         await db.SaveChangesAsync(ct);
         // A version-1 backup has no chart of accounts: seed the default one so postings keep working.
         await Erp.DefaultChart.EnsureSeededAsync(db, ct);

@@ -185,6 +185,29 @@ public sealed class LocalEmployee
     public decimal Salary { get; set; }
     public DateOnly HireDate { get; set; }
     public bool IsActive { get; set; } = true;
+
+    // ---- schema v5: workforce profile (all nullable / defaulted so older rows stay valid). Code is the employee number.
+    public string? PhotoPath { get; set; }
+    public string? Email { get; set; }
+    public Guid? DepartmentId { get; set; }
+    public Guid? PositionId { get; set; }
+    /// <summary>Branch / workplace label.</summary>
+    public string? Workplace { get; set; }
+    /// <summary>Direct manager (another employee).</summary>
+    public Guid? ManagerId { get; set; }
+    /// <summary>CDI, CDD, Interim, Apprentice, Part-time … (free text).</summary>
+    public string? ContractType { get; set; }
+    public DateOnly? ContractStart { get; set; }
+    public DateOnly? ContractEnd { get; set; }
+    public DateOnly? TerminationDate { get; set; }
+    /// <summary>Active, Suspended, OnLeave, Terminated (see <c>EmployeeStatuses</c>).</summary>
+    public string Status { get; set; } = "Active";
+    public string? EmergencyContactName { get; set; }
+    public string? EmergencyContactPhone { get; set; }
+    public string? Notes { get; set; }
+    /// <summary>Monthly or Hourly.</summary>
+    public string PayBasis { get; set; } = "Monthly";
+    public decimal HourlyRate { get; set; }
 }
 
 public sealed class LocalSalaryAdvance
@@ -215,6 +238,8 @@ public sealed class LocalPayrollRun
     public DateOnly Date { get; set; }
     public decimal TotalGross { get; set; }
     public decimal TotalAdvances { get; set; }
+    /// <summary>Schema v5: statutory deductions withheld (credited to 431).</summary>
+    public decimal TotalDeductions { get; set; }
     public decimal TotalNet { get; set; }
     public string Status { get; set; } = PayrollStatuses.Posted;
     public Guid? JournalEntryId { get; set; }
@@ -231,6 +256,8 @@ public sealed class LocalPayslip
     public string EmployeeName { get; set; } = "";
     public decimal Gross { get; set; }
     public decimal Advances { get; set; }
+    /// <summary>Schema v5: statutory deductions withheld (user-configured rules; zero when none are enabled).</summary>
+    public decimal Deductions { get; set; }
     public decimal Net { get; set; }
 }
 

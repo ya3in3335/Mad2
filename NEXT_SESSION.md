@@ -12,3 +12,4 @@ Open:
 8. ✅ Auto device binding (elevated installer --bind), barcode labels, splash motion, local ERP (101 tests), modern UI restyle (52cf3f5, build OK, not yet viewed on Windows).
 9. ⬜ Phone↔PC Wi-Fi sync; ⬜ Arabic user guide + cleanup of server-era parts.
 10. ✅ Glass-neon silver/gray restyle (Windows). NOTE: Themes/Colors.*.xaml are now hand-edited — do NOT re-run scripts/gen-i18n.py for colors without first porting the palette into packages/design-tokens/tokens.json.
+11. ✅ Workforce M1 (Core engine, schema v5, 211 tests): employees/attendance/shifts/leave/payroll-prep/devices(virtual,HID,serial,TCP)/access control/RBAC. Next: M2 Windows UI screens; M3 Android (kiosk + self-service); vendor SDK adapters pending; door-log dedupe after crash; employer contributions posting.

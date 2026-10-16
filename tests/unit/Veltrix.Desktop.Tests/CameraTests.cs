@@ -254,7 +254,7 @@ public sealed class CameraTests : IAsyncLifetime
         await using (var db = Db())
         {
             Assert.Equal(1, await db.Sales.CountAsync());
-            Assert.Equal("4", await db.GetValueAsync(LocalDb.Keys.SchemaVersion));
+            Assert.Equal(LocalDb.SchemaVersion.ToString(), await db.GetValueAsync(LocalDb.Keys.SchemaVersion));
         }
         await Repo().SaveAsync(Cam(CameraBrand.Dahua));
         Assert.Single(await Repo().ListAsync());

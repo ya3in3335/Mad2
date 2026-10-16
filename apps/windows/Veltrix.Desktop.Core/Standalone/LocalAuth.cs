@@ -15,15 +15,32 @@ public static class LocalRoles
     /// <summary>Permissions granted to a local cashier (the owner gets "*").</summary>
     public static readonly IReadOnlyList<string> CashierPermissions =
         ["pos.sell", "catalog.view", "customers.view", "customers.manage", "sales.view", "inventory.view", "cash.register"];
+
+    // Workforce roles (VELTRIX Workforce & Attendance). Their permissions come from Workforce.WorkforcePermissions.
+    public const string HrAdmin = "hr_admin";
+    public const string DeptManager = "dept_manager";
+    public const string AttendanceSupervisor = "attendance_supervisor";
+    public const string Employee = "employee";
+    public const string Auditor = "auditor";
+
+    public static readonly IReadOnlyList<string> All = [Owner, Cashier, HrAdmin, DeptManager, AttendanceSupervisor, Employee, Auditor];
+
+    /// <summary>Permission list of a local role (the owner gets "*").</summary>
+    public static IReadOnlyList<string> PermissionsFor(string role) => role switch
+    {
+        Owner => ["*"],
+        Cashier => CashierPermissions,
+        _ => Workforce.WorkforcePermissions.ForRole(role),
+    };
 }
 
 /// <summary>A user of a standalone (offline-licensed) installation. Only the salted PBKDF2 hash of the secret is stored.</summary>
-public sealed record LocalUser(Guid Id, string Name, string Role, string SecretHash, DateTimeOffset CreatedAt, bool IsActive = true)
+public sealed record LocalUser(Guid Id, string Name, string Role, string SecretHash, DateTimeOffset CreatedAt, bool IsActive = true, Guid? EmployeeId = null)
 {
     public bool IsOwner => Role == LocalRoles.Owner;
 
     public UserProfileDto ToProfile() => new(Id, Name, Name, null, false, [Role],
-        IsOwner ? ["*"] : LocalRoles.CashierPermissions, null, null, false);
+        LocalRoles.PermissionsFor(Role), null, null, false);
 }
 
 /// <summary>Salted PBKDF2-SHA256 hashes: <c>pbkdf2-sha256$iterations$salt(b64)$hash(b64)</c>.</summary>
@@ -103,23 +120,25 @@ public sealed class LocalAuthService(SecureStore store, TimeProvider time, int i
         }
     }
 
-    public LocalUser AddUser(string name, string secret, string role)
+    /// <param name="employeeId">Links the account to an employee record (required for department managers and employees, whose workforce scope derives from it).</param>
+    public LocalUser AddUser(string name, string secret, string role, Guid? employeeId = null)
     {
-        if (role is not (LocalRoles.Owner or LocalRoles.Cashier)) throw new ArgumentException("Unknown role.", nameof(role));
+        if (!LocalRoles.All.Contains(role)) throw new ArgumentException("Unknown role.", nameof(role));
+        if (role is LocalRoles.DeptManager or LocalRoles.Employee && employeeId is null) throw new ArgumentException("This role must be linked to an employee.", nameof(employeeId));
         lock (_gate)
         {
             if (!HasOwner) throw new InvalidOperationException("Create the owner account first.");
-            return AddUserCore(name, secret, role);
+            return AddUserCore(name, secret, role, employeeId);
         }
     }
 
-    private LocalUser AddUserCore(string name, string secret, string role)
+    private LocalUser AddUserCore(string name, string secret, string role, Guid? employeeId = null)
     {
         if (ValidateName(name) is { } n) throw new InvalidOperationException(n);
         if (ValidateSecret(secret) is { } s) throw new InvalidOperationException(s);
         var users = Load().ToList();
         if (users.Any(u => Same(u.Name, name))) throw new InvalidOperationException("dk.sa.err.nameTaken");
-        var user = new LocalUser(Guid.NewGuid(), name.Trim(), role, PasswordHasher.Hash(secret, iterations), time.GetUtcNow());
+        var user = new LocalUser(Guid.NewGuid(), name.Trim(), role, PasswordHasher.Hash(secret, iterations), time.GetUtcNow(), EmployeeId: employeeId);
         users.Add(user);
         Save(users);
         return user;
