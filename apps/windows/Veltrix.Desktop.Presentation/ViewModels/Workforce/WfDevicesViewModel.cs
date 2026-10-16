@@ -62,7 +62,7 @@ public sealed partial class WfDevicesViewModel(DesktopServices s) : WorkforcePag
 
     protected override async Task<bool> LoadAsync(CancellationToken ct)
     {
-        var devices = await Wf.DevicesAsync(Actor, ct);
+        var devices = await Wf.DevicesAsync(Actor, ct: ct);
         Fill(Items, devices.Select(ToRow));
         Fill(DoorChoices, [new Choice<Guid?>(null, "—"), .. (await Wf.DoorsAsync(Actor, ct)).Select(d => new Choice<Guid?>(d.Id, d.Name))]);
         return Items.Count > 0;

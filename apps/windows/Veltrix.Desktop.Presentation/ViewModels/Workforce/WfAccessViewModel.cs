@@ -75,7 +75,7 @@ public sealed partial class WfAccessViewModel : WorkforcePageViewModel
         Fill(Zones, await Wf.ZonesAsync(Actor, ct));
         Fill(Doors, await Wf.DoorsAsync(Actor, ct));
         Fill(Groups, await Wf.AccessGroupsAsync(Actor, ct));
-        Fill(Controllers, [new Choice<Guid?>(null, "—"), .. (await Wf.DevicesAsync(Actor, ct)).Select(d => new Choice<Guid?>(d.Id, d.Name))]);
+        Fill(Controllers, [new Choice<Guid?>(null, "—"), .. (await Wf.DevicesAsync(Actor, ct: ct)).Select(d => new Choice<Guid?>(d.Id, d.Name))]);
         _people = await Wf.DirectoryAsync(Actor, ct);
         await LoadLogsAsync(ct);
         if (SelectedGroup is null) FillGroupChecks(null, []);

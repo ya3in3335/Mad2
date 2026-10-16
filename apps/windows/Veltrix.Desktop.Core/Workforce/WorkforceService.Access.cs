@@ -161,16 +161,18 @@ public sealed partial class WorkforceService
         try { using var _ = JsonDocument.Parse(string.IsNullOrWhiteSpace(input.ConfigJson) ? "{}" : input.ConfigJson); }
         catch (JsonException) { throw new InvalidOperationException("wf.err.deviceConfig"); }
         var d = id is { } x ? await db.WfDevices.FindAsync([x], ct) ?? throw new InvalidOperationException("wf.err.unknown") : null;
+        Require(d is null || d.Kind != DeviceKinds.Terminal, "wf.err.useTerminalForm");
         if (d is null) db.WfDevices.Add(d = new WfDevice { Id = Guid.NewGuid(), CreatedAt = now });
         (d.Name, d.Kind, d.ConfigJson, d.Direction, d.DoorId, d.IsEnabled) = (input.Name.Trim(), input.Kind, input.ConfigJson, input.Direction, input.DoorId, input.IsEnabled);
         return d;
     }, ct);
 
-    public async Task<IReadOnlyList<WfDevice>> DevicesAsync(WorkforceActor actor, CancellationToken ct = default)
+    /// <summary>Registered devices; removed ones (kept for history) only with <paramref name="includeRemoved"/>.</summary>
+    public async Task<IReadOnlyList<WfDevice>> DevicesAsync(WorkforceActor actor, bool includeRemoved = false, CancellationToken ct = default)
     {
         AuthorizeGlobal(actor, WorkforcePermissions.AccessView);
         await using var db = dbFactory();
-        return (await db.WfDevices.AsNoTracking().ToListAsync(ct)).OrderBy(d => d.Name).ToList();
+        return (await db.WfDevices.AsNoTracking().Where(d => includeRemoved || !d.IsRemoved).ToListAsync(ct)).OrderBy(d => d.Name).ToList();
     }
 
     /// <summary>Health monitoring: last seen on success, error counter + last error on failure.</summary>

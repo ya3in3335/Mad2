@@ -11,6 +11,9 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
     <!-- Workforce: serial (RS-232/USB-CDC) card readers. Pinned here because this milestone owns only the Core project. -->
     <PackageReference Include="System.IO.Ports" />
+    <!-- Terminal credentials: DPAPI LocalMachine (the connector service runs as LocalSystem); named-mutex ACL shared by app and service. -->
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" />
+    <PackageReference Include="System.Threading.AccessControl" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Veltrix.Desktop.Tests" />

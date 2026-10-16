@@ -108,8 +108,30 @@ public sealed record TerminalEvent(
 public sealed record TerminalImportPage(IReadOnlyList<TerminalEvent> Events, string? NextCursor, bool HasMore);
 
 /// <summary>Connection settings handed to an adapter. <see cref="Password"/> is decrypted only in memory, just before use.</summary>
-public sealed record TerminalConnection(string? Host, int? Port, string? Protocol, string? UserName, string? Password)
+/// <param name="CertificateSha256">Optional pin of a self-signed HTTPS certificate (SHA-256 hex); otherwise normal TLS validation applies.</param>
+/// <param name="RemoteDeviceId">Vendor-side device id when the endpoint is a server managing several terminals (BioStar 2).</param>
+public sealed record TerminalConnection(string? Host, int? Port, string? Protocol, string? UserName, string? Password, string? CertificateSha256 = null,
+    string? RemoteDeviceId = null)
 {
+    /// <summary>HTTP handler: optional digest credentials and certificate pinning for self-signed terminals.</summary>
+    public HttpClientHandler CreateHandler(Uri baseUri, bool digest)
+    {
+        var h = new HttpClientHandler();
+        if (digest)
+        {
+            h.Credentials = new System.Net.CredentialCache { { baseUri, "Digest", new System.Net.NetworkCredential(UserName ?? "", Password ?? "") } };
+            h.PreAuthenticate = true;
+        }
+        if (CertificateSha256 is { Length: > 0 } pin)
+        {
+            var expected = pin.Replace(":", "", StringComparison.Ordinal).Trim();
+            h.ServerCertificateCustomValidationCallback = (_, cert, _, errors) =>
+                errors == System.Net.Security.SslPolicyErrors.None
+                || cert is not null && string.Equals(cert.GetCertHashString(System.Security.Cryptography.HashAlgorithmName.SHA256), expected, StringComparison.OrdinalIgnoreCase);
+        }
+        return h;
+    }
+
     public Uri BaseUri(int defaultHttpPort)
     {
         if (string.IsNullOrWhiteSpace(Host)) throw new TerminalException(TerminalErrorKind.Unreachable, "No host configured.");
