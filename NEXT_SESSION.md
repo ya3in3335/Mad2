@@ -14,18 +14,11 @@ Open:
 10. ✅ Glass-neon silver/gray restyle (Windows). NOTE: Themes/Colors.*.xaml are now hand-edited — do NOT re-run scripts/gen-i18n.py for colors without first porting the palette into packages/design-tokens/tokens.json.
 11. ✅ Workforce M1 (Core engine, schema v5, 211 tests): employees/attendance/shifts/leave/payroll-prep/devices(virtual,HID,serial,TCP)/access control/RBAC. Next: M2 Windows UI screens; M3 Android (kiosk + self-service); vendor SDK adapters pending; door-log dedupe after crash; employer contributions posting.
 12. ✅ Workforce M2 Windows UI (13 screens, 218 tests). TODO next: Android M3; door-log dedupe; employer contributions posting.
-13. 🟡 Workforce B–D (Biometric terminals, per "Professional Biometric Time Attendance Integration" prompt) — WIP, UNTESTED.
-   Product decision: Android = admin-only (no phone NFC/QR/PIN/kiosk). Windows connector = only punch source besides terminals.
-   Saved (Core builds OK; no new tests yet; no real hardware; no vendor SDKs):
-   - apps/windows/Veltrix.Desktop.Core/Workforce/Terminals/: TerminalContract.cs, TerminalInfrastructure.cs, SimulatedTerminal.cs,
-     HikvisionIsapiAdapter.cs, SupremaBioStar2Adapter.cs (unverified vs real devices — do NOT claim compatibility), TerminalConnectorLoop.cs
-   - Workforce/WorkforceService.Terminals.cs, WorkforceService.Access.cs; VMs WfDevicesViewModel.cs, WfAccessViewModel.cs (edited, unchecked)
-   Remaining (in order):
-   a. Finish coordinator/connector loop; ingestion pipeline (terminal auth, branch check, employee map, tz/drift normalize, provenance,
-      idempotent dedupe key, out-of-order/overnight/missing → review queue, never silent drop); encrypted device creds (DPAPI).
-   b. New project apps/windows/Veltrix.Connector (Worker Service, Windows Service) + Inno install/uninstall service + add to Veltrix.slnx.
-   c. Device Management UI (add/edit/test/sync/events/disable/remove/diagnose); ZKTeco = placeholder until SDK provided.
-   d. Tests: simulator-based (dup, out-of-order, overnight, offline buffer, reconnect, unknown employee, clock drift). Door-log dedupe.
-   e. docs/HARDWARE_INTEGRATION.md (tested-on: unit/simulator/real-hardware table).
-   f. Phase E: Android admin-only rework — revert/strip NFC/QR/PIN/kiosk from WIP commit 2048fdd. Phase F: PDF/Excel/CSV reports.
-   Resume: `export DOTNET_ROOT=/opt/dotnet PATH=/opt/dotnet:$PATH; dotnet build Veltrix.slnx; dotnet test tests/unit/Veltrix.Desktop.Tests` (last full run: 220/220 before B–D WIP).
+13. ✅ Workforce B–D Windows connector (commit fff5408; 233/233 tests; simulator only — NO real hardware; Hikvision/Suprema adapters unverified; ZKTeco = "SDK not installed").
+   Done: Terminals/* adapters + simulator + TerminalConnectorLoop; ingestion pipeline + review queue (WorkforceService.Terminals.cs);
+   apps/windows/Veltrix.Connector (Windows service VeltrixConnector, reads %ProgramData%\VELTRIX\Connector\connector.json, validates DB path);
+   app fallback loop (App.xaml.cs StartTerminalConnector); screens wf.terminals + wf.review (WfTerminalsViewModel.cs, WfTerminalsView/WfReviewView.xaml);
+   Inno installs/stops/deletes the service; windows.yml publishes publish-connector; docs/HARDWARE_INTEGRATION.md; tests WorkforceTerminalTests.cs.
+   Not yet run on Windows: service install, DPAPI, named mutex, new screens (only compiled + resource keys checked).
+   Next: E) Android admin-only (strip NFC/QR/PIN/kiosk from WIP 2048fdd); F) PDF/Excel/CSV reports; door-log dedupe; employer contributions posting.
+   Resume: export DOTNET_ROOT=/opt/dotnet PATH=/opt/dotnet:$PATH; dotnet test tests/unit/Veltrix.Desktop.Tests
