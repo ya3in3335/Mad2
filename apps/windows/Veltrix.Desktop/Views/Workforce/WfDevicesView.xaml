@@ -1,0 +1,122 @@
+<UserControl x:Class="Veltrix.Desktop.Views.Workforce.WfDevicesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:Veltrix.Desktop.Controls"
+             xmlns:vm="clr-namespace:Veltrix.Desktop.Presentation.ViewModels;assembly=Veltrix.Desktop.Presentation">
+    <DockPanel>
+        <HeaderedContentControl DockPanel.Dock="Top" Header="{DynamicResource wf.nav.devices}" Style="{StaticResource PageHeader}">
+            <StackPanel Orientation="Horizontal">
+                <Button Content="{DynamicResource action.refresh}" Command="{Binding RefreshCommand}"/>
+                <Button Content="{DynamicResource wf.dev.register}" Command="{Binding NewCommand}" Style="{StaticResource Button.Primary}" Margin="8,0,0,0"/>
+            </StackPanel>
+        </HeaderedContentControl>
+        <TextBlock DockPanel.Dock="Bottom" Text="{Binding StatusMessage}" Style="{StaticResource Text.Status}" Margin="0,8,0,0"/>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="400"/>
+            </Grid.ColumnDefinitions>
+            <Grid>
+                <DataGrid ItemsSource="{Binding Items}" SelectedItem="{Binding Selected}" IsReadOnly="True" AutoGenerateColumns="False"
+                          Visibility="{Binding IsReady, Converter={StaticResource BoolToVis}}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="{DynamicResource wf.emp.name}" Binding="{Binding Name}" Width="*"/>
+                        <DataGridTextColumn Header="{DynamicResource wf.dev.kind}" Binding="{Binding KindLabel}" Width="150"/>
+                        <DataGridTextColumn Header="{DynamicResource wf.access.direction}" Binding="{Binding Direction}" Width="70"/>
+                        <DataGridCheckBoxColumn Header="{DynamicResource wf.dev.enabled}" Binding="{Binding IsEnabled, Mode=OneWay}" Width="70"/>
+                        <DataGridTextColumn Header="{DynamicResource wf.col.Status}" Binding="{Binding Status}" Width="170"/>
+                        <DataGridTextColumn Header="{DynamicResource wf.col.LastSeenAt}" Binding="{Binding LastSeen}" Width="130" ElementStyle="{StaticResource Cell.Number}"/>
+                        <DataGridTextColumn Header="{DynamicResource wf.col.ErrorCount}" Binding="{Binding ErrorCount}" Width="70" ElementStyle="{StaticResource Cell.Number}"/>
+                        <DataGridTextColumn Header="{DynamicResource wf.col.LastError}" Binding="{Binding LastError}" Width="180"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+                <c:PageState/>
+            </Grid>
+
+            <Border Grid.Column="2" Style="{StaticResource Card}" Visibility="{Binding IsEditing, Converter={StaticResource BoolToVis}}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <TextBlock Text="{DynamicResource wf.dev.device}" Style="{StaticResource Text.Section}"/>
+                        <TextBlock Text="{DynamicResource wf.emp.name}" Style="{StaticResource Text.Label}"/>
+                        <TextBox Text="{Binding Name}"/>
+                        <TextBlock Text="{DynamicResource wf.dev.kind}" Style="{StaticResource Text.Label}"/>
+                        <ComboBox ItemsSource="{x:Static vm:WfDevicesViewModel.Kinds}" SelectedItem="{Binding Kind}"/>
+                        <TextBlock Text="{DynamicResource wf.access.direction}" Style="{StaticResource Text.Label}"/>
+                        <ComboBox ItemsSource="{x:Static vm:WfDevicesViewModel.Directions}" SelectedItem="{Binding Direction}"/>
+                        <TextBlock Text="{DynamicResource wf.col.Door}" Style="{StaticResource Text.Label}"/>
+                        <ComboBox ItemsSource="{Binding DoorChoices}" SelectedValuePath="Value" DisplayMemberPath="Text" SelectedValue="{Binding DoorId}"/>
+                        <CheckBox Content="{DynamicResource wf.dev.enabled}" IsChecked="{Binding IsEnabled}" Margin="0,10,0,0"/>
+
+                        <TextBlock Text="{DynamicResource wf.dev.virtualHint}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,10,0,0"
+                                   Visibility="{Binding IsVirtual, Converter={StaticResource BoolToVis}}"/>
+                        <StackPanel Visibility="{Binding IsWedge, Converter={StaticResource BoolToVis}}">
+                            <TextBlock Text="{DynamicResource wf.dev.wedgeHint}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,10,0,0"/>
+                            <TextBlock Text="{DynamicResource wf.dev.minLength}" Style="{StaticResource Text.Label}"/>
+                            <TextBox Text="{Binding WedgeMinLength}" FlowDirection="LeftToRight"/>
+                            <TextBlock Text="{DynamicResource wf.dev.interKey}" Style="{StaticResource Text.Label}"/>
+                            <TextBox Text="{Binding WedgeInterKeyMs}" FlowDirection="LeftToRight"/>
+                            <TextBlock Text="{DynamicResource wf.dev.qrPrefix}" Style="{StaticResource Text.Label}"/>
+                            <TextBox Text="{Binding WedgeQrPrefix}" FlowDirection="LeftToRight"/>
+                        </StackPanel>
+                        <StackPanel Visibility="{Binding IsSerial, Converter={StaticResource BoolToVis}}">
+                            <TextBlock Text="{DynamicResource wf.dev.port}" Style="{StaticResource Text.Label}"/>
+                            <TextBox Text="{Binding SerialPort}" FlowDirection="LeftToRight"/>
+                            <TextBlock Text="{DynamicResource wf.dev.baud}" Style="{StaticResource Text.Label}"/>
+                            <TextBox Text="{Binding SerialBaud}" FlowDirection="LeftToRight"/>
+                        </StackPanel>
+                        <StackPanel Visibility="{Binding IsTcp, Converter={StaticResource BoolToVis}}">
+                            <TextBlock Text="{DynamicResource wf.dev.host}" Style="{StaticResource Text.Label}"/>
+                            <TextBox Text="{Binding TcpHost}" FlowDirection="LeftToRight"/>
+                            <TextBlock Text="{DynamicResource wf.dev.tcpPort}" Style="{StaticResource Text.Label}"/>
+                            <TextBox Text="{Binding TcpPort}" FlowDirection="LeftToRight"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsSerial}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
+                                        <DataTrigger Binding="{Binding IsTcp}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
+                            <TextBlock Text="{DynamicResource wf.dev.pattern}" Style="{StaticResource Text.Label}"/>
+                            <TextBox Text="{Binding LinePattern}" FlowDirection="LeftToRight" FontFamily="{StaticResource Font.Mono}"/>
+                            <TextBlock Text="{DynamicResource wf.dev.patternHint}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap"/>
+                        </StackPanel>
+                        <Border Style="{StaticResource Banner}" Margin="0,10,0,0" Visibility="{Binding IsVendor, Converter={StaticResource BoolToVis}}">
+                            <StackPanel>
+                                <TextBlock Text="{DynamicResource wf.dev.requiresSdk}" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                <TextBlock Text="{DynamicResource wf.dev.vendorNote}" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                <TextBlock Text="{x:Static vm:WfDevicesViewModel.VendorNotice}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,4,0,0"
+                                           FlowDirection="LeftToRight"/>
+                                <TextBlock Text="{DynamicResource wf.dev.vendor}" Style="{StaticResource Text.Label}"/>
+                                <TextBox Text="{Binding VendorName}"/>
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock Text="{Binding FormError}" Style="{StaticResource Text.Error}" TextWrapping="Wrap" Visibility="{Binding FormError, Converter={StaticResource NotNullToVis}}"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                            <Button Content="{DynamicResource action.save}" Command="{Binding SaveCommand}" Style="{StaticResource Button.Primary}"/>
+                            <Button Content="{DynamicResource wf.dev.test}" Command="{Binding TestCommand}" Margin="8,0,0,0"
+                                    Visibility="{Binding Selected, Converter={StaticResource NotNullToVis}}"/>
+                            <Button Content="{DynamicResource action.cancel}" Command="{Binding CancelCommand}" Style="{StaticResource Button.Ghost}" Margin="8,0,0,0"/>
+                        </StackPanel>
+                        <Border Margin="0,10,0,0" Padding="10,8" CornerRadius="{StaticResource Radius.Control}" Visibility="{Binding TestResult, Converter={StaticResource NotNullToVis}}">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Background" Value="{DynamicResource Brush.dangerSoft}"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding TestOk}" Value="True"><Setter Property="Background" Value="{DynamicResource Brush.successSoft}"/></DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <TextBlock Text="{Binding TestResult}" TextWrapping="Wrap"/>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </DockPanel>
+</UserControl>

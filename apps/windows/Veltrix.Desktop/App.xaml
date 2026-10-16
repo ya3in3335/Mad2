@@ -4,6 +4,7 @@
              xmlns:vm="clr-namespace:Veltrix.Desktop.Presentation.ViewModels;assembly=Veltrix.Desktop.Presentation"
              xmlns:erp="clr-namespace:Veltrix.Desktop.Views.Erp"
              xmlns:views="clr-namespace:Veltrix.Desktop.Views"
+             xmlns:wf="clr-namespace:Veltrix.Desktop.Views.Workforce"
              ShutdownMode="OnExplicitShutdown">
     <Application.Resources>
         <ResourceDictionary>
@@ -16,6 +17,7 @@
                 <ResourceDictionary Source="pack://application:,,,/Localization/Strings.en.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/Localization/Strings.Desktop.en.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/Localization/Strings.Erp.en.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/Localization/Strings.Workforce.en.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/Themes/Styles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
@@ -44,6 +46,20 @@
             <DataTemplate DataType="{x:Type vm:ReportsViewModel}"><views:ReportsView/></DataTemplate>
             <DataTemplate DataType="{x:Type vm:SettingsViewModel}"><views:SettingsView/></DataTemplate>
             <DataTemplate DataType="{x:Type vm:CamerasViewModel}"><views:CamerasView/></DataTemplate>
+            <!-- Workforce & attendance -->
+            <DataTemplate DataType="{x:Type vm:WfDashboardViewModel}"><wf:WfDashboardView/></DataTemplate>
+            <DataTemplate DataType="{x:Type vm:WfEmployeesViewModel}"><wf:WfEmployeesView/></DataTemplate>
+            <DataTemplate DataType="{x:Type vm:WfKioskViewModel}"><wf:WfKioskView/></DataTemplate>
+            <DataTemplate DataType="{x:Type vm:WfAttendanceViewModel}"><wf:WfAttendanceView/></DataTemplate>
+            <DataTemplate DataType="{x:Type vm:WfLiveViewModel}"><wf:WfLiveView/></DataTemplate>
+            <DataTemplate DataType="{x:Type vm:WfShiftPlannerViewModel}"><wf:WfShiftPlannerView/></DataTemplate>
+            <DataTemplate DataType="{x:Type vm:WfLeaveViewModel}"><wf:WfLeaveView/></DataTemplate>
+            <DataTemplate DataType="{x:Type vm:WfOvertimeViewModel}"><wf:WfOvertimeView/></DataTemplate>
+            <DataTemplate DataType="{x:Type vm:WfAccessViewModel}"><wf:WfAccessView/></DataTemplate>
+            <DataTemplate DataType="{x:Type vm:WfDevicesViewModel}"><wf:WfDevicesView/></DataTemplate>
+            <DataTemplate DataType="{x:Type vm:WfPayrollViewModel}"><wf:WfPayrollView/></DataTemplate>
+            <DataTemplate DataType="{x:Type vm:WfReportsViewModel}"><wf:WfReportsView/></DataTemplate>
+            <DataTemplate DataType="{x:Type vm:WfSettingsViewModel}"><wf:WfSettingsView/></DataTemplate>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

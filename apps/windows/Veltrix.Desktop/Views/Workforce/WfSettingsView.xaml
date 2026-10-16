@@ -1,0 +1,191 @@
+<UserControl x:Class="Veltrix.Desktop.Views.Workforce.WfSettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:Veltrix.Desktop.Controls"
+             xmlns:vm="clr-namespace:Veltrix.Desktop.Presentation.ViewModels;assembly=Veltrix.Desktop.Presentation">
+    <DockPanel>
+        <HeaderedContentControl DockPanel.Dock="Top" Header="{DynamicResource wf.nav.settings}" Style="{StaticResource PageHeader}">
+            <Button Content="{DynamicResource action.refresh}" Command="{Binding RefreshCommand}"/>
+        </HeaderedContentControl>
+        <TextBlock DockPanel.Dock="Bottom" Text="{Binding StatusMessage}" Style="{StaticResource Text.Status}" Margin="0,8,0,0"/>
+        <TextBlock DockPanel.Dock="Bottom" Text="{Binding FormError}" Style="{StaticResource Text.Error}" TextWrapping="Wrap"
+                   Visibility="{Binding FormError, Converter={StaticResource NotNullToVis}}"/>
+        <Grid>
+            <TabControl Visibility="{Binding IsReady, Converter={StaticResource BoolToVis}}">
+                <!-- Attendance & overtime policy -->
+                <TabItem Header="{DynamicResource wf.set.policy}" Visibility="{Binding CanPolicy, Converter={StaticResource BoolToVis}}">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <Grid Margin="0,8,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="16"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="16"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Style="{StaticResource Card}" VerticalAlignment="Top">
+                                <StackPanel>
+                                    <TextBlock Text="{DynamicResource wf.set.attendance}" Style="{StaticResource Text.Section}"/>
+                                    <TextBlock Text="{DynamicResource wf.set.duplicateWindow}" Style="{StaticResource Text.Label}"/>
+                                    <TextBox Text="{Binding DuplicateWindow}" FlowDirection="LeftToRight"/>
+                                    <TextBlock Text="{DynamicResource wf.set.earlyWindow}" Style="{StaticResource Text.Label}"/>
+                                    <TextBox Text="{Binding EarlyWindow}" FlowDirection="LeftToRight"/>
+                                    <TextBlock Text="{DynamicResource wf.set.lateWindow}" Style="{StaticResource Text.Label}"/>
+                                    <TextBox Text="{Binding LateWindow}" FlowDirection="LeftToRight"/>
+                                    <CheckBox Content="{DynamicResource wf.set.autoBreak}" IsChecked="{Binding AutoDeductBreak}" Margin="0,10,0,0"/>
+                                    <TextBlock Text="{DynamicResource wf.set.timeZone}" Style="{StaticResource Text.Label}"/>
+                                    <TextBox Text="{Binding TimeZoneId}" FlowDirection="LeftToRight"/>
+                                    <TextBlock Text="{DynamicResource wf.set.graceHint}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,10,0,0"/>
+                                    <TextBlock Text="{DynamicResource wf.set.minRest}" Style="{StaticResource Text.Label}"/>
+                                    <TextBox Text="{Binding MinRestHours}" FlowDirection="LeftToRight"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Grid.Column="2" Style="{StaticResource Card}" VerticalAlignment="Top">
+                                <StackPanel>
+                                    <TextBlock Text="{DynamicResource wf.set.overtime}" Style="{StaticResource Text.Section}"/>
+                                    <TextBlock Text="{DynamicResource wf.set.otBasis}" Style="{StaticResource Text.Label}"/>
+                                    <ComboBox ItemsSource="{x:Static vm:WfSettingsViewModel.OvertimeBases}" SelectedItem="{Binding OtBasis}"/>
+                                    <TextBlock Text="{DynamicResource wf.set.otThreshold}" Style="{StaticResource Text.Label}"/>
+                                    <TextBox Text="{Binding OtThreshold}" FlowDirection="LeftToRight"/>
+                                    <TextBlock Text="{DynamicResource wf.set.otMinimum}" Style="{StaticResource Text.Label}"/>
+                                    <TextBox Text="{Binding OtMinimum}" FlowDirection="LeftToRight"/>
+                                    <TextBlock Text="{DynamicResource wf.set.otStep}" Style="{StaticResource Text.Label}"/>
+                                    <TextBox Text="{Binding OtStep}" FlowDirection="LeftToRight"/>
+                                    <TextBlock Text="{DynamicResource wf.set.rounding}" Style="{StaticResource Text.Label}"/>
+                                    <ComboBox ItemsSource="{x:Static vm:WfSettingsViewModel.RoundingModes}" SelectedItem="{Binding OtRounding}"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Grid.Column="4" Style="{StaticResource Card}" VerticalAlignment="Top">
+                                <StackPanel>
+                                    <TextBlock Text="{DynamicResource wf.set.payroll}" Style="{StaticResource Text.Section}"/>
+                                    <TextBlock Text="{DynamicResource wf.set.monthlyHours}" Style="{StaticResource Text.Label}"/>
+                                    <TextBox Text="{Binding MonthlyHours}" FlowDirection="LeftToRight"/>
+                                    <TextBlock Text="{DynamicResource wf.set.tier1Minutes}" Style="{StaticResource Text.Label}"/>
+                                    <TextBox Text="{Binding Tier1Minutes}" FlowDirection="LeftToRight"/>
+                                    <UniformGrid Columns="2">
+                                        <StackPanel Margin="0,0,6,0">
+                                            <TextBlock Text="{DynamicResource wf.set.tier1}" Style="{StaticResource Text.Label}"/>
+                                            <TextBox Text="{Binding Tier1Multiplier}" FlowDirection="LeftToRight"/>
+                                        </StackPanel>
+                                        <StackPanel>
+                                            <TextBlock Text="{DynamicResource wf.set.tier2}" Style="{StaticResource Text.Label}"/>
+                                            <TextBox Text="{Binding Tier2Multiplier}" FlowDirection="LeftToRight"/>
+                                        </StackPanel>
+                                        <StackPanel Margin="0,0,6,0">
+                                            <TextBlock Text="{DynamicResource wf.set.restDay}" Style="{StaticResource Text.Label}"/>
+                                            <TextBox Text="{Binding RestDayMultiplier}" FlowDirection="LeftToRight"/>
+                                        </StackPanel>
+                                        <StackPanel>
+                                            <TextBlock Text="{DynamicResource wf.set.holiday}" Style="{StaticResource Text.Label}"/>
+                                            <TextBox Text="{Binding HolidayMultiplier}" FlowDirection="LeftToRight"/>
+                                        </StackPanel>
+                                    </UniformGrid>
+                                    <TextBlock Text="{DynamicResource wf.set.nightPremium}" Style="{StaticResource Text.Label}"/>
+                                    <TextBox Text="{Binding NightPremium}" FlowDirection="LeftToRight"/>
+                                    <TextBlock Text="{DynamicResource wf.set.absenceMethod}" Style="{StaticResource Text.Label}"/>
+                                    <ComboBox ItemsSource="{x:Static vm:WfSettingsViewModel.AbsenceMethods}" SelectedItem="{Binding AbsenceMethod}"/>
+                                    <TextBlock Text="{DynamicResource wf.set.lateMethod}" Style="{StaticResource Text.Label}"/>
+                                    <ComboBox ItemsSource="{x:Static vm:WfSettingsViewModel.LateMethods}" SelectedItem="{Binding LateMethod}"/>
+                                    <TextBlock Text="{DynamicResource wf.set.lateTolerance}" Style="{StaticResource Text.Label}"/>
+                                    <TextBox Text="{Binding LateTolerance}" FlowDirection="LeftToRight"/>
+                                    <Button Content="{DynamicResource action.save}" Command="{Binding SavePolicyCommand}" Style="{StaticResource Button.Primary}" Margin="0,12,0,0"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </ScrollViewer>
+                </TabItem>
+                <!-- Anti-passback per zone -->
+                <TabItem Header="{DynamicResource wf.access.antiPassback}" Visibility="{Binding CanZones, Converter={StaticResource BoolToVis}}">
+                    <StackPanel Margin="0,8,0,0" MaxWidth="520" HorizontalAlignment="Left">
+                        <TextBlock Text="{DynamicResource wf.set.antiPassbackHint}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap"/>
+                        <TextBlock Text="{DynamicResource wf.access.zone}" Style="{StaticResource Text.Label}"/>
+                        <ComboBox ItemsSource="{Binding Zones}" SelectedItem="{Binding SelectedZone}" DisplayMemberPath="Name"/>
+                        <TextBlock Text="{DynamicResource wf.access.antiPassback}" Style="{StaticResource Text.Label}"/>
+                        <ComboBox ItemsSource="{x:Static vm:WfSettingsViewModel.AntiPassbackModesList}" SelectedItem="{Binding ZoneMode}"/>
+                        <Button Content="{DynamicResource action.save}" Command="{Binding SaveZoneModeCommand}" Style="{StaticResource Button.Primary}" Margin="0,12,0,0" HorizontalAlignment="Left"/>
+                    </StackPanel>
+                </TabItem>
+                <!-- Leave types -->
+                <TabItem Header="{DynamicResource wf.set.leaveTypes}" Visibility="{Binding CanLeave, Converter={StaticResource BoolToVis}}">
+                    <Grid Margin="0,8,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="16"/>
+                            <ColumnDefinition Width="360"/>
+                        </Grid.ColumnDefinitions>
+                        <DataGrid ItemsSource="{Binding LeaveTypes}" SelectedItem="{Binding SelectedLeaveType}" IsReadOnly="True" AutoGenerateColumns="False">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="{DynamicResource wf.shift.code}" Binding="{Binding Code}" Width="80"/>
+                                <DataGridTextColumn Header="{DynamicResource wf.emp.name}" Binding="{Binding Name}" Width="*"/>
+                                <DataGridCheckBoxColumn Header="{DynamicResource wf.set.paid}" Binding="{Binding IsPaid, Mode=OneWay}" Width="60"/>
+                                <DataGridTextColumn Header="{DynamicResource wf.set.accrual}" Binding="{Binding AccrualDaysPerMonth, StringFormat=0.##}" Width="90" ElementStyle="{StaticResource Cell.Number}"/>
+                                <DataGridCheckBoxColumn Header="{DynamicResource wf.set.tracks}" Binding="{Binding TracksBalance, Mode=OneWay}" Width="70"/>
+                                <DataGridCheckBoxColumn Header="{DynamicResource wf.dev.enabled}" Binding="{Binding IsActive, Mode=OneWay}" Width="60"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                        <Border Grid.Column="2" Style="{StaticResource Card}" VerticalAlignment="Top">
+                            <StackPanel>
+                                <Button Content="{DynamicResource action.new}" Command="{Binding NewLeaveTypeCommand}" HorizontalAlignment="Left"/>
+                                <TextBlock Text="{DynamicResource wf.shift.code}" Style="{StaticResource Text.Label}"/>
+                                <TextBox Text="{Binding LtCode}" FlowDirection="LeftToRight"/>
+                                <TextBlock Text="{DynamicResource wf.emp.name}" Style="{StaticResource Text.Label}"/>
+                                <TextBox Text="{Binding LtName}"/>
+                                <TextBlock Text="{DynamicResource wf.set.accrual}" Style="{StaticResource Text.Label}"/>
+                                <TextBox Text="{Binding LtAccrual}" FlowDirection="LeftToRight"/>
+                                <CheckBox Content="{DynamicResource wf.set.paid}" IsChecked="{Binding LtPaid}" Margin="0,8,0,0"/>
+                                <CheckBox Content="{DynamicResource wf.set.tracks}" IsChecked="{Binding LtTracks}" Margin="0,6,0,0"/>
+                                <CheckBox Content="{DynamicResource wf.set.allowNegative}" IsChecked="{Binding LtNegative}" Margin="0,6,0,0"/>
+                                <CheckBox Content="{DynamicResource wf.dev.enabled}" IsChecked="{Binding LtActive}" Margin="0,6,0,0"/>
+                                <Button Content="{DynamicResource action.save}" Command="{Binding SaveLeaveTypeCommand}" Style="{StaticResource Button.Primary}" Margin="0,12,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </TabItem>
+                <!-- Holidays -->
+                <TabItem Header="{DynamicResource wf.set.holidays}">
+                    <Grid Margin="0,8,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="16"/>
+                            <ColumnDefinition Width="360"/>
+                        </Grid.ColumnDefinitions>
+                        <DockPanel>
+                            <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
+                                <TextBox Text="{Binding HolidayYear}" Width="80" FlowDirection="LeftToRight" AutomationProperties.Name="{DynamicResource wf.year}"/>
+                                <Button Content="{DynamicResource action.search}" Command="{Binding LoadHolidayYearCommand}" Margin="8,0,0,0"/>
+                            </StackPanel>
+                            <DataGrid ItemsSource="{Binding Holidays}" IsReadOnly="True" AutoGenerateColumns="False">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="{DynamicResource wf.col.Date}" Binding="{Binding Date}" Width="110" ElementStyle="{StaticResource Cell.Number}"/>
+                                    <DataGridTextColumn Header="{DynamicResource wf.emp.name}" Binding="{Binding Name}" Width="*"/>
+                                    <DataGridCheckBoxColumn Header="{DynamicResource wf.set.paid}" Binding="{Binding IsPaid, Mode=OneWay}" Width="60"/>
+                                    <DataGridTemplateColumn Width="Auto">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Button Content="{DynamicResource action.delete}" Style="{StaticResource Button.Ghost}" Padding="8,2"
+                                                        Command="{Binding DataContext.RemoveHolidayCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" CommandParameter="{Binding}"
+                                                        Visibility="{Binding DataContext.CanHolidays, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BoolToVis}}"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
+                        <Border Grid.Column="2" Style="{StaticResource Card}" VerticalAlignment="Top" Visibility="{Binding CanHolidays, Converter={StaticResource BoolToVis}}">
+                            <StackPanel>
+                                <TextBlock Text="{DynamicResource wf.set.addHoliday}" Style="{StaticResource Text.Section}"/>
+                                <TextBlock Text="{DynamicResource wf.col.Date}" Style="{StaticResource Text.Label}"/>
+                                <DatePicker SelectedDate="{Binding HolidayDate}"/>
+                                <TextBlock Text="{DynamicResource wf.emp.name}" Style="{StaticResource Text.Label}"/>
+                                <TextBox Text="{Binding HolidayName}"/>
+                                <CheckBox Content="{DynamicResource wf.set.paid}" IsChecked="{Binding HolidayPaid}" Margin="0,8,0,0"/>
+                                <Button Content="{DynamicResource action.add}" Command="{Binding AddHolidayCommand}" Style="{StaticResource Button.Primary}" Margin="0,12,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </TabItem>
+            </TabControl>
+            <c:PageState/>
+        </Grid>
+    </DockPanel>
+</UserControl>

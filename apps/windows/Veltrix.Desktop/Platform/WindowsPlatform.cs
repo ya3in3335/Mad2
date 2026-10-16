@@ -79,7 +79,9 @@ public sealed class WpfPlatformUi(WpfLocalizer localizer) : IPlatformUi
         foreach (var d in dicts.Where(d => d.Source?.OriginalString.Contains(StringsMarker, StringComparison.Ordinal) == true).ToList())
         {
             var src = d.Source!.OriginalString;
-            var tag = src.Contains("Strings.Desktop.", StringComparison.Ordinal) ? "Desktop." : src.Contains("Strings.Erp.", StringComparison.Ordinal) ? "Erp." : "";
+            var tag = src.Contains("Strings.Desktop.", StringComparison.Ordinal) ? "Desktop."
+                : src.Contains("Strings.Erp.", StringComparison.Ordinal) ? "Erp."
+                : src.Contains("Strings.Workforce.", StringComparison.Ordinal) ? "Workforce." : "";
             var index = dicts.IndexOf(d);
             dicts[index] = new ResourceDictionary { Source = new Uri($"pack://application:,,,/Localization/Strings.{tag}{code}.xaml") };
         }

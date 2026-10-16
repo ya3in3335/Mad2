@@ -68,7 +68,7 @@
                             <DataGridTextColumn Header="{DynamicResource wf.col.Source}" Binding="{Binding Source}" Width="100"/>
                             <DataGridTextColumn Header="{DynamicResource wf.col.Reason}" Binding="{Binding Reason}" Width="*"/>
                             <DataGridTextColumn Header="{DynamicResource wf.col.AuthorizedBy}" Binding="{Binding AuthorizedBy}" Width="100"/>
-                            <DataGridCheckBoxColumn Header="{DynamicResource wf.col.Voided}" Binding="{Binding IsVoid}" Width="60"/>
+                            <DataGridCheckBoxColumn Header="{DynamicResource wf.col.Voided}" Binding="{Binding IsVoid, Mode=OneWay}" Width="60"/>
                             <DataGridTemplateColumn Width="Auto">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>

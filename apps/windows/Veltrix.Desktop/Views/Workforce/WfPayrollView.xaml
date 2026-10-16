@@ -1,0 +1,115 @@
+<UserControl x:Class="Veltrix.Desktop.Views.Workforce.WfPayrollView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:Veltrix.Desktop.Controls"
+             xmlns:vm="clr-namespace:Veltrix.Desktop.Presentation.ViewModels;assembly=Veltrix.Desktop.Presentation">
+    <DockPanel>
+        <HeaderedContentControl DockPanel.Dock="Top" Header="{DynamicResource wf.nav.payroll}" Style="{StaticResource PageHeader}">
+            <StackPanel Orientation="Horizontal">
+                <ComboBox ItemsSource="{x:Static vm:WfPayrollViewModel.Months}" SelectedItem="{Binding Month}" Width="70" AutomationProperties.Name="{DynamicResource wf.month}"/>
+                <TextBox Text="{Binding Year}" Width="80" Margin="8,0,0,0" FlowDirection="LeftToRight" AutomationProperties.Name="{DynamicResource wf.year}"/>
+                <Button Content="{DynamicResource wf.pay.load}" Command="{Binding LoadPeriodCommand}" Margin="8,0,0,0"/>
+                <Button Content="{DynamicResource wf.pay.compute}" Command="{Binding ComputeCommand}" Style="{StaticResource Button.Primary}" Margin="8,0,0,0"
+                        Visibility="{Binding CanPrepare, Converter={StaticResource BoolToVis}}"/>
+                <Button Content="{DynamicResource wf.pay.post}" Command="{Binding PostCommand}" Margin="8,0,0,0"
+                        Visibility="{Binding CanPost, Converter={StaticResource BoolToVis}}"/>
+                <Button Content="{DynamicResource action.export}" Command="{Binding ExportCsvCommand}" Margin="8,0,0,0"/>
+            </StackPanel>
+        </HeaderedContentControl>
+        <Border DockPanel.Dock="Top" Style="{StaticResource Banner}" Margin="0,0,0,12">
+            <StackPanel>
+                <TextBlock Text="{DynamicResource wf.pay.notice}" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                <TextBlock Text="{x:Static vm:WfPayrollViewModel.NoticeText}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" FlowDirection="LeftToRight" Margin="0,4,0,0"/>
+            </StackPanel>
+        </Border>
+        <TextBlock DockPanel.Dock="Bottom" Text="{Binding StatusMessage}" Style="{StaticResource Text.Status}" Margin="0,8,0,0"/>
+        <TextBlock DockPanel.Dock="Bottom" Text="{Binding FormError}" Style="{StaticResource Text.Error}" TextWrapping="Wrap"
+                   Visibility="{Binding FormError, Converter={StaticResource NotNullToVis}}"/>
+        <Grid>
+            <TabControl SelectedIndex="{Binding TabIndex}" Visibility="{Binding IsLoading, Converter={StaticResource InvBoolToVis}}">
+                <TabItem Header="{DynamicResource wf.pay.preparation}">
+                    <DockPanel Margin="0,8,0,0">
+                        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
+                            <Border Style="{StaticResource Chip}" Margin="0,0,8,0">
+                                <TextBlock><Run Text="{DynamicResource wf.pay.status}"/>: <Run Text="{Binding Prep.Status, Mode=OneWay}" FontWeight="SemiBold"/></TextBlock>
+                            </Border>
+                            <Border Style="{StaticResource Chip}" Margin="0,0,8,0">
+                                <TextBlock><Run Text="{DynamicResource wf.col.Gross}"/>: <Run Text="{Binding TotalGross, Mode=OneWay, StringFormat=N2}" FontWeight="SemiBold"/></TextBlock>
+                            </Border>
+                            <Border Style="{StaticResource Chip}" Margin="0,0,8,0">
+                                <TextBlock><Run Text="{DynamicResource wf.col.Net}"/>: <Run Text="{Binding TotalNet, Mode=OneWay, StringFormat=N2}" FontWeight="SemiBold"/></TextBlock>
+                            </Border>
+                            <Border Style="{StaticResource Chip}">
+                                <TextBlock><Run Text="{DynamicResource wf.col.StatutoryEmployer}"/>: <Run Text="{Binding TotalEmployer, Mode=OneWay, StringFormat=N2}" FontWeight="SemiBold"/></TextBlock>
+                            </Border>
+                        </StackPanel>
+                        <TextBlock DockPanel.Dock="Top" Text="{DynamicResource wf.pay.none}" Style="{StaticResource Text.Caption}"
+                                   Visibility="{Binding HasPrep, Converter={StaticResource InvBoolToVis}}"/>
+                        <DataGrid ItemsSource="{Binding Lines}" IsReadOnly="True" AutoGenerateColumns="False">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="{DynamicResource wf.col.Employee}" Binding="{Binding EmployeeName}" Width="*"/>
+                                <DataGridTextColumn Header="{DynamicResource wf.col.BaseSalary}" Binding="{Binding BaseSalary, StringFormat=N2}" Width="95" ElementStyle="{StaticResource Cell.Number}"/>
+                                <DataGridTextColumn Header="{DynamicResource wf.col.OvertimeAmount}" Binding="{Binding OvertimeAmount, StringFormat=N2}" Width="90" ElementStyle="{StaticResource Cell.Number}"/>
+                                <DataGridTextColumn Header="{DynamicResource wf.col.NightPremium}" Binding="{Binding NightPremium, StringFormat=N2}" Width="85" ElementStyle="{StaticResource Cell.Number}"/>
+                                <DataGridTextColumn Header="{DynamicResource wf.col.AbsenceDays}" Binding="{Binding AbsenceDays, StringFormat=0.##}" Width="70" ElementStyle="{StaticResource Cell.Number}"/>
+                                <DataGridTextColumn Header="{DynamicResource wf.col.AbsenceDeduction}" Binding="{Binding AbsenceDeduction, StringFormat=N2}" Width="90" ElementStyle="{StaticResource Cell.Number}"/>
+                                <DataGridTextColumn Header="{DynamicResource wf.col.LateDeduction}" Binding="{Binding LateDeduction, StringFormat=N2}" Width="85" ElementStyle="{StaticResource Cell.Number}"/>
+                                <DataGridTextColumn Header="{DynamicResource wf.col.Allowances}" Binding="{Binding Allowances, StringFormat=N2}" Width="85" ElementStyle="{StaticResource Cell.Number}"/>
+                                <DataGridTextColumn Header="{DynamicResource wf.col.Bonuses}" Binding="{Binding Bonuses, StringFormat=N2}" Width="80" ElementStyle="{StaticResource Cell.Number}"/>
+                                <DataGridTextColumn Header="{DynamicResource wf.col.Gross}" Binding="{Binding Gross, StringFormat=N2}" Width="95" ElementStyle="{StaticResource Cell.Number}"/>
+                                <DataGridTextColumn Header="{DynamicResource wf.col.StatutoryEmployee}" Binding="{Binding StatutoryEmployee, StringFormat=N2}" Width="90" ElementStyle="{StaticResource Cell.Number}"/>
+                                <DataGridTextColumn Header="{DynamicResource wf.col.Net}" Binding="{Binding Net, StringFormat=N2}" Width="95" ElementStyle="{StaticResource Cell.Number}"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </DockPanel>
+                </TabItem>
+                <TabItem Header="{DynamicResource wf.pay.rules}" Visibility="{Binding CanConfigure, Converter={StaticResource BoolToVis}}">
+                    <Grid Margin="0,8,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="16"/>
+                            <ColumnDefinition Width="380"/>
+                        </Grid.ColumnDefinitions>
+                        <DataGrid ItemsSource="{Binding Rules}" SelectedItem="{Binding SelectedRule}" IsReadOnly="True" AutoGenerateColumns="False">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="{DynamicResource wf.col.Order}" Binding="{Binding Order}" Width="50" ElementStyle="{StaticResource Cell.Number}"/>
+                                <DataGridTextColumn Header="{DynamicResource wf.shift.code}" Binding="{Binding Code}" Width="80"/>
+                                <DataGridTextColumn Header="{DynamicResource wf.emp.name}" Binding="{Binding Name}" Width="*"/>
+                                <DataGridTextColumn Header="{DynamicResource wf.pay.employeeRate}" Binding="{Binding EmployeeRatePercent, StringFormat=0.###}" Width="80" ElementStyle="{StaticResource Cell.Number}"/>
+                                <DataGridTextColumn Header="{DynamicResource wf.pay.employerRate}" Binding="{Binding EmployerRatePercent, StringFormat=0.###}" Width="80" ElementStyle="{StaticResource Cell.Number}"/>
+                                <DataGridCheckBoxColumn Header="{DynamicResource wf.dev.enabled}" Binding="{Binding IsEnabled, Mode=OneWay}" Width="70"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                        <Border Grid.Column="2" Style="{StaticResource Card}">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <StackPanel>
+                                    <Button Content="{DynamicResource action.new}" Command="{Binding NewRuleCommand}" HorizontalAlignment="Left"/>
+                                    <TextBlock Text="{DynamicResource wf.shift.code}" Style="{StaticResource Text.Label}"/>
+                                    <TextBox Text="{Binding RuleCode}" FlowDirection="LeftToRight"/>
+                                    <TextBlock Text="{DynamicResource wf.emp.name}" Style="{StaticResource Text.Label}"/>
+                                    <TextBox Text="{Binding RuleName}"/>
+                                    <TextBlock Text="{DynamicResource wf.col.Order}" Style="{StaticResource Text.Label}"/>
+                                    <TextBox Text="{Binding RuleOrder}" FlowDirection="LeftToRight"/>
+                                    <TextBlock Text="{DynamicResource wf.pay.employeeRate}" Style="{StaticResource Text.Label}"/>
+                                    <TextBox Text="{Binding RuleEmployeeRate}" FlowDirection="LeftToRight"/>
+                                    <TextBlock Text="{DynamicResource wf.pay.employerRate}" Style="{StaticResource Text.Label}"/>
+                                    <TextBox Text="{Binding RuleEmployerRate}" FlowDirection="LeftToRight"/>
+                                    <TextBlock Text="{DynamicResource wf.pay.brackets}" Style="{StaticResource Text.Label}"/>
+                                    <TextBox Text="{Binding RuleBrackets}" AcceptsReturn="True" MinHeight="70" FlowDirection="LeftToRight" FontFamily="{StaticResource Font.Mono}"/>
+                                    <TextBlock Text="{DynamicResource wf.pay.bracketsHint}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap"/>
+                                    <CheckBox Content="{DynamicResource wf.pay.afterPrevious}" IsChecked="{Binding RuleAfterPrevious}" Margin="0,8,0,0"/>
+                                    <CheckBox Content="{DynamicResource wf.pay.enabled}" IsChecked="{Binding RuleEnabled}" Margin="0,8,0,0"/>
+                                    <TextBlock Text="{DynamicResource wf.pay.verifyNote}" Style="{StaticResource Text.Caption}" Foreground="{DynamicResource Brush.warning}" TextWrapping="Wrap"/>
+                                    <TextBlock Text="{DynamicResource wf.emp.notes}" Style="{StaticResource Text.Label}"/>
+                                    <TextBox Text="{Binding RuleNotes}" AcceptsReturn="True" MinHeight="44" TextWrapping="Wrap"/>
+                                    <Button Content="{DynamicResource action.save}" Command="{Binding SaveRuleCommand}" Style="{StaticResource Button.Primary}" Margin="0,10,0,0"/>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Border>
+                    </Grid>
+                </TabItem>
+            </TabControl>
+            <c:PageState/>
+        </Grid>
+    </DockPanel>
+</UserControl>

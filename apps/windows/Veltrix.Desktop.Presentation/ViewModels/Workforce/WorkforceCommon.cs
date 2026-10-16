@@ -152,6 +152,8 @@ public static class WfText
     public static string Label(ILocalizer loc, string prefix, string? value)
     {
         if (string.IsNullOrEmpty(value)) return "";
+        // Values that already are localization keys (service reasons such as "wf.dup.window").
+        if (value.StartsWith("wf.", StringComparison.Ordinal) || value.StartsWith("erp.", StringComparison.Ordinal)) return loc.Get(value);
         var key = $"wf.{prefix}.{value}";
         var text = loc.Get(key);
         return text == key ? value : text;

@@ -86,6 +86,19 @@
     <sys:String x:Key="Glyph.erp.expenses">&#xE8EF;</sys:String>
     <sys:String x:Key="Glyph.erp.accounting">&#xE8F1;</sys:String>
     <sys:String x:Key="Glyph.erp.hr">&#xE716;</sys:String>
+    <sys:String x:Key="Glyph.wf.dashboard">&#xE9D9;</sys:String>
+    <sys:String x:Key="Glyph.wf.employees">&#xE716;</sys:String>
+    <sys:String x:Key="Glyph.wf.kiosk">&#xE8D7;</sys:String>
+    <sys:String x:Key="Glyph.wf.history">&#xE81C;</sys:String>
+    <sys:String x:Key="Glyph.wf.live">&#xE7F4;</sys:String>
+    <sys:String x:Key="Glyph.wf.shifts">&#xE787;</sys:String>
+    <sys:String x:Key="Glyph.wf.leave">&#xE706;</sys:String>
+    <sys:String x:Key="Glyph.wf.overtime">&#xE916;</sys:String>
+    <sys:String x:Key="Glyph.wf.access">&#xE72E;</sys:String>
+    <sys:String x:Key="Glyph.wf.devices">&#xE772;</sys:String>
+    <sys:String x:Key="Glyph.wf.payroll">&#xE8C7;</sys:String>
+    <sys:String x:Key="Glyph.wf.reports">&#xE9F9;</sys:String>
+    <sys:String x:Key="Glyph.wf.settings">&#xE713;</sys:String>
     <!-- Dashboard KPI glyphs, keyed by Kpi.TitleKey ("KpiGlyph." + key). -->
     <sys:String x:Key="KpiGlyph.rep.salesToday">&#xE7BF;</sys:String>
     <sys:String x:Key="KpiGlyph.rep.transactions">&#xE8A5;</sys:String>

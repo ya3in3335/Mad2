@@ -1,0 +1,52 @@
+<UserControl x:Class="Veltrix.Desktop.Views.Workforce.WfReportsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:Veltrix.Desktop.Controls"
+             xmlns:vm="clr-namespace:Veltrix.Desktop.Presentation.ViewModels;assembly=Veltrix.Desktop.Presentation">
+    <DockPanel>
+        <HeaderedContentControl DockPanel.Dock="Top" Header="{DynamicResource wf.nav.reports}" Style="{StaticResource PageHeader}">
+            <StackPanel Orientation="Horizontal">
+                <Button Content="{DynamicResource wf.rep.run}" Command="{Binding RunReportCommand}" Style="{StaticResource Button.Primary}"/>
+                <Button Content="{DynamicResource action.export}" Command="{Binding ExportCsvCommand}" Margin="8,0,0,0"/>
+                <Button Content="{DynamicResource action.print}" Command="{Binding PrintCommand}" Margin="8,0,0,0" ToolTip="{DynamicResource wf.rep.printHint}"/>
+            </StackPanel>
+        </HeaderedContentControl>
+        <TextBlock DockPanel.Dock="Bottom" Text="{Binding StatusMessage}" Style="{StaticResource Text.Status}" Margin="0,8,0,0"/>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="260"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Border Style="{StaticResource Card}">
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Bottom" Margin="0,12,0,0">
+                        <StackPanel Visibility="{Binding IsByMonth, Converter={StaticResource InvBoolToVis}}">
+                            <TextBlock Text="{DynamicResource wf.from}" Style="{StaticResource Text.Label}"/>
+                            <DatePicker SelectedDate="{Binding From}"/>
+                            <TextBlock Text="{DynamicResource wf.to}" Style="{StaticResource Text.Label}"/>
+                            <DatePicker SelectedDate="{Binding To}"/>
+                        </StackPanel>
+                        <StackPanel Visibility="{Binding IsByMonth, Converter={StaticResource BoolToVis}}">
+                            <TextBlock Text="{DynamicResource wf.month}" Style="{StaticResource Text.Label}"/>
+                            <StackPanel Orientation="Horizontal">
+                                <ComboBox ItemsSource="{x:Static vm:WfReportsViewModel.Months}" SelectedItem="{Binding Month}" Width="70"/>
+                                <TextBox Text="{Binding Year}" Width="80" Margin="8,0,0,0" FlowDirection="LeftToRight" AutomationProperties.Name="{DynamicResource wf.year}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+                    <ListBox ItemsSource="{Binding ReportList}" SelectedItem="{Binding SelectedReport}" DisplayMemberPath="Title" ItemContainerStyle="{StaticResource Item.Selectable}"/>
+                </DockPanel>
+            </Border>
+            <Grid Grid.Column="2">
+                <DockPanel Visibility="{Binding IsReady, Converter={StaticResource BoolToVis}}">
+                    <TextBlock DockPanel.Dock="Top" Style="{StaticResource Text.Caption}" Margin="0,0,0,6">
+                        <Run Text="{Binding SelectedReport.Title, Mode=OneWay}" FontWeight="SemiBold"/> · <Run Text="{Binding RowCount, Mode=OneWay}"/>
+                    </TextBlock>
+                    <DataGrid ItemsSource="{Binding Table}" IsReadOnly="True" AutoGenerateColumns="True"/>
+                </DockPanel>
+                <c:PageState/>
+            </Grid>
+        </Grid>
+    </DockPanel>
+</UserControl>
