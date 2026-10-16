@@ -15,6 +15,8 @@ public sealed class StandaloneService(SecureStore store, Func<LocalDb> db, TimeP
     public Erp.ErpService Erp { get; } = new(db, time);
     /// <summary>Workforce &amp; attendance (employees, credentials, punches, shifts, leave, payroll preparation, devices, access control).</summary>
     public Workforce.WorkforceService Workforce { get; } = new(db, time, iterations);
+    /// <summary>Separate password of the HR / workforce / cameras section (set by an owner at its first opening).</summary>
+    public SectionLockService SectionLock { get; } = new(store, time, iterations);
 
     /// <summary>Exports an encrypted backup. Only an owner may export, and must re-enter their password (it becomes the backup key).</summary>
     public async Task<byte[]> ExportBackupAsync(LocalUser user, string password, string? tenantId, string? tenantName, CancellationToken ct = default)

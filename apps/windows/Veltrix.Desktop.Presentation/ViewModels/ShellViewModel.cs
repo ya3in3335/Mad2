@@ -111,6 +111,12 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
     public async Task NavigateAsync(NavItem item)
     {
         if (!ReferenceEquals(Selected, item)) Selected = item;
+        // HR / workforce / cameras: separate section password (set by an owner at the first opening).
+        if (_s.IsStandalone && Core.Standalone.SectionLockService.IsProtected(item.Key) && !_s.Standalone.SectionLock.IsUnlocked)
+        {
+            CurrentPage = new SectionLockViewModel(_s, () => { if (ReferenceEquals(Selected, item)) _ = NavigateAsync(item); });
+            return;
+        }
         CurrentPage = item.Page;
         await item.Page.OnNavigatedToAsync();
     }
@@ -133,6 +139,15 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
 
     [RelayCommand]
     public void CloseShortcuts() => IsShortcutsOpen = false;
+
+    /// <summary>Locks the HR / workforce / cameras section now (Ctrl+Shift+L) and leaves it if it is open.</summary>
+    [RelayCommand]
+    public void LockSection()
+    {
+        if (!_s.IsStandalone) return;
+        _s.Standalone.SectionLock.Lock();
+        if (Selected is { } item && Core.Standalone.SectionLockService.IsProtected(item.Key)) _ = NavigateAsync(item);
+    }
 
     /// <summary>Ctrl+1..9: sidebar page by position.</summary>
     [RelayCommand]
@@ -161,6 +176,7 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
     [RelayCommand]
     public async Task SignOutAsync()
     {
+        if (_s.IsStandalone) _s.Standalone.SectionLock.Lock();
         Dispose();
         try { await _s.Session.SignOutAsync(); }
         catch (Exception e) { _s.Log.Warn("Sign-out failed", e); }

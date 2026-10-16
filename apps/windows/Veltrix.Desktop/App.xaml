@@ -46,6 +46,7 @@
             <DataTemplate DataType="{x:Type vm:ReportsViewModel}"><views:ReportsView/></DataTemplate>
             <DataTemplate DataType="{x:Type vm:SettingsViewModel}"><views:SettingsView/></DataTemplate>
             <DataTemplate DataType="{x:Type vm:CamerasViewModel}"><views:CamerasView/></DataTemplate>
+            <DataTemplate DataType="{x:Type vm:SectionLockViewModel}"><views:SectionLockView/></DataTemplate>
             <!-- Workforce & attendance -->
             <DataTemplate DataType="{x:Type vm:WfDashboardViewModel}"><wf:WfDashboardView/></DataTemplate>
             <DataTemplate DataType="{x:Type vm:WfEmployeesViewModel}"><wf:WfEmployeesView/></DataTemplate>

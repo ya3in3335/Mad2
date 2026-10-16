@@ -22,3 +22,4 @@ Open:
    Not yet run on Windows: service install, DPAPI, named mutex, new screens (only compiled + resource keys checked).
    Next: E) Android admin-only (strip NFC/QR/PIN/kiosk from WIP 2048fdd); F) PDF/Excel/CSV reports; door-log dedupe; employer contributions posting.
    Resume: export DOTNET_ROOT=/opt/dotnet PATH=/opt/dotnet:$PATH; dotnet test tests/unit/Veltrix.Desktop.Tests
+14. ✅ HR section password (SectionLock.cs, SectionLockViewModel/View, ShellViewModel gate): separate PBKDF2 password in SecureStore, set by owner at first opening of wf.*, erp.hr, cameras; 15-min idle relock, Ctrl+Shift+L lock, lockout backoff, owner change/reset. 238 tests. Not yet run on Windows.

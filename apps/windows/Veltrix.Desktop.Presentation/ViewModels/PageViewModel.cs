@@ -114,7 +114,8 @@ public static class ErrorText
         Core.Workforce.WorkforceAccessDeniedException => loc.Get("err.permission"),
         // Local ERP rules report a localization key (erp.err.*).
         InvalidOperationException io when io.Message.StartsWith("erp.", StringComparison.Ordinal) || io.Message.StartsWith("cam.", StringComparison.Ordinal)
-                                           || io.Message.StartsWith("wf.", StringComparison.Ordinal) => loc.Get(io.Message),
+                                           || io.Message.StartsWith("wf.", StringComparison.Ordinal) || io.Message.StartsWith("sec.", StringComparison.Ordinal)
+                                           || io.Message == "auth.invalid" => loc.Get(io.Message),
         InvalidOperationException io => io.Message,
         _ => loc.Get("err.generic"),
     };

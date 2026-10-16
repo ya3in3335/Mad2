@@ -84,6 +84,7 @@ public static class ShortcutMap
         Add(Global, "Ctrl+Tab", "sc.next", "NextPageCommand");
         Add(Global, "Ctrl+Shift+Tab", "sc.prev", "PreviousPageCommand");
         Add(Global, "Ctrl+L", "sc.signOut", "SignOutCommand");
+        Add(Global, "Ctrl+Shift+L", "sc.lockSection", "LockSectionCommand");
         Add(Global, "Ctrl+Shift+T", "sc.theme", ToggleTheme);
         Add(Global, "F1", "sc.help", "ShowShortcutsCommand");
         Add(Global, "Ctrl+/", "sc.help", "ShowShortcutsCommand");

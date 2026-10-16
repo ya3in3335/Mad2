@@ -1,0 +1,61 @@
+<UserControl x:Class="Veltrix.Desktop.Views.SectionLockView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+        <Border Style="{StaticResource Card}" Width="420" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="28">
+            <StackPanel>
+                <TextBlock Text="🔒" FontSize="36" HorizontalAlignment="Center"/>
+                <TextBlock Text="{Binding Headline}" Style="{StaticResource Text.Title}" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Margin="0,8,0,4"/>
+                <TextBlock Text="{DynamicResource sec.scope}" Style="{StaticResource Text.Caption}" TextAlignment="Center" TextWrapping="Wrap"/>
+
+                <TextBlock Text="{DynamicResource sec.setupHint}" TextWrapping="Wrap" Margin="0,12,0,0" Visibility="{Binding IsSetupMode, Converter={StaticResource BoolToVis}}"/>
+                <TextBlock Text="{DynamicResource sec.waitHint}" TextWrapping="Wrap" Margin="0,12,0,0" Visibility="{Binding IsWaitMode, Converter={StaticResource BoolToVis}}"/>
+                <TextBlock Text="{DynamicResource sec.resetHint}" TextWrapping="Wrap" Margin="0,12,0,0" Visibility="{Binding IsResetMode, Converter={StaticResource BoolToVis}}"/>
+
+                <StackPanel Visibility="{Binding NeedsOwnerPassword, Converter={StaticResource BoolToVis}}">
+                    <TextBlock Text="{DynamicResource sec.ownerPassword}" Style="{StaticResource Text.Label}"/>
+                    <PasswordBox x:Name="OwnerBox" PasswordChanged="OnOwnerChanged" FlowDirection="LeftToRight"/>
+                </StackPanel>
+                <StackPanel Visibility="{Binding NeedsCurrent, Converter={StaticResource BoolToVis}}">
+                    <TextBlock Text="{DynamicResource sec.current}" Style="{StaticResource Text.Label}"/>
+                    <PasswordBox x:Name="CurrentBox" PasswordChanged="OnCurrentChanged" FlowDirection="LeftToRight"/>
+                </StackPanel>
+                <StackPanel>
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsWaitMode}" Value="True"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
+                    <TextBlock Text="{DynamicResource sec.password}" Style="{StaticResource Text.Label}"/>
+                    <PasswordBox x:Name="PasswordBox" PasswordChanged="OnPasswordChanged" FlowDirection="LeftToRight" KeyDown="OnKeyDown"/>
+                    <StackPanel Visibility="{Binding NeedsConfirm, Converter={StaticResource BoolToVis}}">
+                        <TextBlock Text="{DynamicResource sec.confirm}" Style="{StaticResource Text.Label}"/>
+                        <PasswordBox x:Name="ConfirmBox" PasswordChanged="OnConfirmChanged" FlowDirection="LeftToRight" KeyDown="OnKeyDown"/>
+                        <TextBlock Text="{DynamicResource sec.rules}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap"/>
+                    </StackPanel>
+                    <TextBlock Text="{Binding FormError}" Style="{StaticResource Text.Error}" TextWrapping="Wrap" Visibility="{Binding FormError, Converter={StaticResource NotNullToVis}}"/>
+                    <TextBlock Text="{Binding StatusMessage}" Style="{StaticResource Text.Status}" TextWrapping="Wrap"/>
+                    <Button Content="{DynamicResource sec.submit}" Command="{Binding SubmitCommand}" Style="{StaticResource Button.Primary}" Margin="0,14,0,0" HorizontalAlignment="Stretch"/>
+                </StackPanel>
+                <WrapPanel HorizontalAlignment="Center" Margin="0,10,0,0" Visibility="{Binding IsOwner, Converter={StaticResource BoolToVis}}">
+                    <Button Content="{DynamicResource sec.forgot}" Command="{Binding ShowResetCommand}" Style="{StaticResource Button.Ghost}"
+                            Visibility="{Binding IsUnlockMode, Converter={StaticResource BoolToVis}}"/>
+                    <Button Content="{DynamicResource sec.change}" Command="{Binding ShowChangeCommand}" Style="{StaticResource Button.Ghost}"
+                            Visibility="{Binding IsUnlockMode, Converter={StaticResource BoolToVis}}"/>
+                    <Button Content="{DynamicResource action.cancel}" Command="{Binding BackToUnlockCommand}">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource Button.Ghost}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsUnlockMode}" Value="True"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger>
+                                    <DataTrigger Binding="{Binding IsSetupMode}" Value="True"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </WrapPanel>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>
