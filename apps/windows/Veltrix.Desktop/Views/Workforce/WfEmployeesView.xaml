@@ -1,0 +1,258 @@
+<UserControl x:Class="Veltrix.Desktop.Views.Workforce.WfEmployeesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:Veltrix.Desktop.Controls"
+             xmlns:vm="clr-namespace:Veltrix.Desktop.Presentation.ViewModels;assembly=Veltrix.Desktop.Presentation">
+    <DockPanel>
+        <HeaderedContentControl DockPanel.Dock="Top" Header="{DynamicResource wf.nav.employees}" Style="{StaticResource PageHeader}">
+            <StackPanel Orientation="Horizontal">
+                <ComboBox ItemsSource="{Binding DepartmentFilters}" SelectedValuePath="Value" DisplayMemberPath="Text" SelectedValue="{Binding DepartmentFilter}" Width="160"
+                          AutomationProperties.Name="{DynamicResource wf.emp.department}"/>
+                <ComboBox ItemsSource="{Binding StatusFilters}" SelectedValuePath="Value" DisplayMemberPath="Text" SelectedValue="{Binding StatusFilter}" Width="130" Margin="8,0,0,0"
+                          AutomationProperties.Name="{DynamicResource wf.emp.status}"/>
+                <TextBox Text="{Binding Search, UpdateSourceTrigger=PropertyChanged}" Width="220" Margin="8,0,0,0" AutomationProperties.Name="{DynamicResource action.search}">
+                    <TextBox.InputBindings><KeyBinding Key="Return" Command="{Binding SearchNowCommand}"/></TextBox.InputBindings>
+                </TextBox>
+                <Button Content="{DynamicResource action.search}" Command="{Binding SearchNowCommand}" Margin="8,0,0,0"/>
+                <Button Content="{DynamicResource action.import}" Command="{Binding ImportCsvCommand}" Margin="8,0,0,0"
+                        Visibility="{Binding CanManage, Converter={StaticResource BoolToVis}}"/>
+                <Button Content="{DynamicResource action.export}" Command="{Binding ExportCsvCommand}" Margin="8,0,0,0"/>
+                <Button Content="{DynamicResource action.new}" Command="{Binding NewCommand}" Style="{StaticResource Button.Primary}" Margin="8,0,0,0"
+                        Visibility="{Binding CanManage, Converter={StaticResource BoolToVis}}"/>
+            </StackPanel>
+        </HeaderedContentControl>
+        <TextBlock DockPanel.Dock="Bottom" Text="{Binding StatusMessage}" Style="{StaticResource Text.Status}" Margin="0,8,0,0"/>
+        <Border DockPanel.Dock="Top" Style="{StaticResource Banner}" Margin="0,0,0,12" Visibility="{Binding ImportSummary, Converter={StaticResource NotNullToVis}}">
+            <TextBlock Text="{Binding ImportSummary}" TextWrapping="Wrap"/>
+        </Border>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="460"/>
+            </Grid.ColumnDefinitions>
+            <Grid>
+                <DataGrid ItemsSource="{Binding Items}" SelectedItem="{Binding Selected}" IsReadOnly="True" AutoGenerateColumns="False"
+                          Visibility="{Binding IsReady, Converter={StaticResource BoolToVis}}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="#" Binding="{Binding Code}" Width="90"/>
+                        <DataGridTextColumn Header="{DynamicResource wf.emp.name}" Binding="{Binding Name}" Width="*"/>
+                        <DataGridTextColumn Header="{DynamicResource wf.emp.department}" Binding="{Binding Department}" Width="140"/>
+                        <DataGridTextColumn Header="{DynamicResource wf.emp.position}" Binding="{Binding Position}" Width="130"/>
+                        <DataGridTextColumn Header="{DynamicResource wf.emp.phone}" Binding="{Binding Phone}" Width="120" ElementStyle="{StaticResource Cell.Number}"/>
+                        <DataGridTextColumn Header="{DynamicResource wf.emp.status}" Binding="{Binding StatusLabel}" Width="100"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+                <c:PageState/>
+            </Grid>
+
+            <Border Grid.Column="2" Style="{StaticResource Card}" Visibility="{Binding Details, Converter={StaticResource NotNullToVis}}">
+                <DockPanel DataContext="{Binding Details}">
+                    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                        <Button DockPanel.Dock="Right" Content="{DynamicResource action.close}" Style="{StaticResource Button.Ghost}"
+                                Command="{Binding DataContext.CloseDetailsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                        <TextBlock Style="{StaticResource Text.Section}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis">
+                            <Run Text="{Binding Code, Mode=OneWay}"/> <Run Text="{Binding Name, Mode=OneWay}"/>
+                        </TextBlock>
+                    </DockPanel>
+                    <StackPanel DockPanel.Dock="Bottom">
+                        <TextBlock Text="{Binding FormError}" Style="{StaticResource Text.Error}" TextWrapping="Wrap" Visibility="{Binding FormError, Converter={StaticResource NotNullToVis}}"/>
+                        <TextBlock Text="{Binding Message}" Style="{StaticResource Text.Status}" Visibility="{Binding Message, Converter={StaticResource NotNullToVis}}"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,10,0,0" Visibility="{Binding CanManage, Converter={StaticResource BoolToVis}}">
+                            <Button Content="{DynamicResource action.save}" Style="{StaticResource Button.Primary}" Command="{Binding SaveCommand}"/>
+                            <Button Content="{DynamicResource action.delete}" Style="{StaticResource Button.Danger}" Command="{Binding DeleteCommand}" Margin="8,0,0,0"
+                                    Visibility="{Binding IsNew, Converter={StaticResource InvBoolToVis}}"/>
+                        </StackPanel>
+                    </StackPanel>
+                    <TabControl SelectedIndex="{Binding TabIndex}">
+                        <!-- Profile -->
+                        <TabItem Header="{DynamicResource wf.emp.tabProfile}">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <StackPanel Margin="0,8,0,0">
+                                    <DockPanel>
+                                        <Border DockPanel.Dock="Left" Width="96" Height="96" CornerRadius="{StaticResource Radius.Card}" Background="{DynamicResource Brush.surfaceSunken}"
+                                                BorderBrush="{DynamicResource Brush.border}" BorderThickness="1" Margin="0,0,12,0">
+                                            <Grid>
+                                                <TextBlock Text="{DynamicResource wf.emp.noPhoto}" Style="{StaticResource Text.Caption}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                           Visibility="{Binding HasPhoto, Converter={StaticResource InvBoolToVis}}"/>
+                                                <Image Source="{Binding PhotoPath, TargetNullValue={x:Null}}" Stretch="UniformToFill" Visibility="{Binding HasPhoto, Converter={StaticResource BoolToVis}}"/>
+                                            </Grid>
+                                        </Border>
+                                        <StackPanel VerticalAlignment="Center">
+                                            <Button Content="{DynamicResource wf.emp.choosePhoto}" Command="{Binding PickPhotoCommand}" HorizontalAlignment="Left"/>
+                                            <Button Content="{DynamicResource wf.emp.removePhoto}" Command="{Binding ClearPhotoCommand}" Style="{StaticResource Button.Ghost}" HorizontalAlignment="Left" Margin="0,6,0,0"/>
+                                        </StackPanel>
+                                    </DockPanel>
+                                    <TextBlock Text="{DynamicResource wf.emp.code}" Style="{StaticResource Text.Label}"/>
+                                    <TextBox Text="{Binding Code}" FlowDirection="LeftToRight"/>
+                                    <TextBlock Text="{DynamicResource wf.emp.name}" Style="{StaticResource Text.Label}"/>
+                                    <TextBox Text="{Binding Name}"/>
+                                    <TextBlock Text="{DynamicResource wf.emp.role}" Style="{StaticResource Text.Label}"/>
+                                    <TextBox Text="{Binding Role}"/>
+                                    <TextBlock Text="{DynamicResource wf.emp.phone}" Style="{StaticResource Text.Label}"/>
+                                    <TextBox Text="{Binding Phone}" FlowDirection="LeftToRight"/>
+                                    <TextBlock Text="{DynamicResource wf.emp.email}" Style="{StaticResource Text.Label}"/>
+                                    <TextBox Text="{Binding Email}" FlowDirection="LeftToRight"/>
+                                    <TextBlock Text="{DynamicResource wf.emp.department}" Style="{StaticResource Text.Label}"/>
+                                    <ComboBox ItemsSource="{Binding DepartmentChoices}" SelectedValuePath="Value" DisplayMemberPath="Text" SelectedValue="{Binding DepartmentId}"/>
+                                    <TextBlock Text="{DynamicResource wf.emp.position}" Style="{StaticResource Text.Label}"/>
+                                    <ComboBox ItemsSource="{Binding PositionChoices}" SelectedValuePath="Value" DisplayMemberPath="Text" SelectedValue="{Binding PositionId}"/>
+                                    <TextBlock Text="{DynamicResource wf.emp.manager}" Style="{StaticResource Text.Label}"/>
+                                    <ComboBox ItemsSource="{Binding ManagerChoices}" SelectedValuePath="Value" DisplayMemberPath="Text" SelectedValue="{Binding ManagerId}"/>
+                                    <TextBlock Text="{DynamicResource wf.emp.workplace}" Style="{StaticResource Text.Label}"/>
+                                    <TextBox Text="{Binding Workplace}"/>
+                                    <TextBlock Text="{DynamicResource wf.emp.status}" Style="{StaticResource Text.Label}"/>
+                                    <ComboBox ItemsSource="{Binding StatusChoices}" SelectedValuePath="Value" DisplayMemberPath="Text" SelectedValue="{Binding Status}"/>
+                                    <TextBlock Text="{DynamicResource wf.emp.emergencyName}" Style="{StaticResource Text.Label}"/>
+                                    <TextBox Text="{Binding EmergencyName}"/>
+                                    <TextBlock Text="{DynamicResource wf.emp.emergencyPhone}" Style="{StaticResource Text.Label}"/>
+                                    <TextBox Text="{Binding EmergencyPhone}" FlowDirection="LeftToRight"/>
+                                    <TextBlock Text="{DynamicResource wf.emp.notes}" Style="{StaticResource Text.Label}"/>
+                                    <TextBox Text="{Binding Notes}" AcceptsReturn="True" MinHeight="50" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
+                        <!-- Contract & pay -->
+                        <TabItem Header="{DynamicResource wf.emp.tabContract}">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <StackPanel Margin="0,8,0,0">
+                                    <TextBlock Text="{DynamicResource wf.emp.contractType}" Style="{StaticResource Text.Label}"/>
+                                    <ComboBox ItemsSource="{x:Static vm:WfEmployeeDetailsViewModel.ContractTypes}" Text="{Binding ContractType}" IsEditable="True"/>
+                                    <TextBlock Text="{DynamicResource wf.emp.hireDate}" Style="{StaticResource Text.Label}"/>
+                                    <DatePicker SelectedDate="{Binding HireDate}"/>
+                                    <TextBlock Text="{DynamicResource wf.emp.contractStart}" Style="{StaticResource Text.Label}"/>
+                                    <DatePicker SelectedDate="{Binding ContractStart}"/>
+                                    <TextBlock Text="{DynamicResource wf.emp.contractEnd}" Style="{StaticResource Text.Label}"/>
+                                    <DatePicker SelectedDate="{Binding ContractEnd}"/>
+                                    <TextBlock Text="{DynamicResource wf.emp.terminationDate}" Style="{StaticResource Text.Label}"/>
+                                    <DatePicker SelectedDate="{Binding TerminationDate}"/>
+                                    <TextBlock Text="{DynamicResource wf.emp.payBasis}" Style="{StaticResource Text.Label}"/>
+                                    <ComboBox ItemsSource="{x:Static vm:WfEmployeeDetailsViewModel.PayBases}" SelectedItem="{Binding PayBasis}"/>
+                                    <TextBlock Text="{DynamicResource wf.emp.salary}" Style="{StaticResource Text.Label}"/>
+                                    <TextBox Text="{Binding Salary}" FlowDirection="LeftToRight"/>
+                                    <TextBlock Text="{DynamicResource wf.emp.hourlyRate}" Style="{StaticResource Text.Label}"/>
+                                    <TextBox Text="{Binding HourlyRate}" FlowDirection="LeftToRight"/>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
+                        <!-- Credentials -->
+                        <TabItem Header="{DynamicResource wf.emp.tabCredentials}" IsEnabled="{Binding IsNew, Converter={StaticResource Not}}">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <StackPanel Margin="0,8,0,0">
+                                    <ItemsControl ItemsSource="{Binding Credentials}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <DockPanel Margin="0,3">
+                                                    <Button DockPanel.Dock="Right" Content="{DynamicResource wf.cred.revoke}" Style="{StaticResource Button.Ghost}" Padding="8,2"
+                                                            Command="{Binding DataContext.RevokeCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}"
+                                                            Visibility="{Binding IsActive, Converter={StaticResource BoolToVis}}"/>
+                                                    <TextBlock DockPanel.Dock="Right" Text="{Binding Created}" Style="{StaticResource Text.Caption}" Margin="8,0" VerticalAlignment="Center"/>
+                                                    <TextBlock VerticalAlignment="Center">
+                                                        <Run Text="{Binding KindLabel, Mode=OneWay}" FontWeight="SemiBold"/>
+                                                        <Run Text="{Binding Value, Mode=OneWay}" FlowDirection="LeftToRight"/>
+                                                        <Run Text="{Binding Label, Mode=OneWay}"/>
+                                                    </TextBlock>
+                                                    <DockPanel.Style>
+                                                        <Style TargetType="DockPanel">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsActive}" Value="False"><Setter Property="Opacity" Value="0.45"/></DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </DockPanel.Style>
+                                                </DockPanel>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <StackPanel Visibility="{Binding CanCredentials, Converter={StaticResource BoolToVis}}">
+                                        <TextBlock Text="{DynamicResource wf.cred.card}" Style="{StaticResource Text.Section}" Margin="0,16,0,4"/>
+                                        <TextBlock Text="{DynamicResource wf.cred.cardHint}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap"/>
+                                        <Button Content="{DynamicResource wf.cred.tapCard}" Command="{Binding StartCardCaptureCommand}" HorizontalAlignment="Left" Margin="0,6,0,0"
+                                                Click="OnTapCard"/>
+                                        <TextBlock Text="{DynamicResource wf.cred.cardUid}" Style="{StaticResource Text.Label}"/>
+                                        <TextBox x:Name="CardBox" Text="{Binding CardUid, UpdateSourceTrigger=PropertyChanged}" FlowDirection="LeftToRight">
+                                            <TextBox.InputBindings><KeyBinding Key="Return" Command="{Binding AssignCardCommand}"/></TextBox.InputBindings>
+                                        </TextBox>
+                                        <TextBlock Text="{DynamicResource wf.cred.waiting}" Style="{StaticResource Text.Caption}" Foreground="{DynamicResource Brush.primary}"
+                                                   Visibility="{Binding IsCapturingCard, Converter={StaticResource BoolToVis}}"/>
+                                        <TextBlock Text="{DynamicResource wf.cred.label}" Style="{StaticResource Text.Label}"/>
+                                        <TextBox Text="{Binding CardLabel}"/>
+                                        <Button Content="{DynamicResource wf.cred.assign}" Command="{Binding AssignCardCommand}" HorizontalAlignment="Left" Margin="0,8,0,0"/>
+
+                                        <TextBlock Text="{DynamicResource wf.cred.qr}" Style="{StaticResource Text.Section}" Margin="0,16,0,4"/>
+                                        <Button Content="{DynamicResource wf.cred.generateQr}" Command="{Binding GenerateQrCommand}" HorizontalAlignment="Left"/>
+                                        <Border Style="{StaticResource Banner}" Margin="0,8,0,0" Visibility="{Binding HasQrToken, Converter={StaticResource BoolToVis}}">
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding QrPayload}" FontFamily="{StaticResource Font.Mono}" FlowDirection="LeftToRight" TextWrapping="Wrap"/>
+                                                <TextBlock Text="{DynamicResource wf.cred.qrNote}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,6,0,0"/>
+                                                <Button Content="{DynamicResource wf.cred.copy}" Command="{Binding CopyQrCommand}" HorizontalAlignment="Left" Margin="0,6,0,0"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <TextBlock Text="{DynamicResource wf.cred.pin}" Style="{StaticResource Text.Section}" Margin="0,16,0,4"/>
+                                        <TextBlock Text="{DynamicResource wf.cred.pinHint}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap"/>
+                                        <DockPanel Margin="0,6,0,0">
+                                            <Button DockPanel.Dock="Right" Content="{DynamicResource wf.cred.setPin}" Command="{Binding SetPinCommand}" Margin="8,0,0,0"/>
+                                            <TextBox Text="{Binding NewPin, UpdateSourceTrigger=PropertyChanged}" FlowDirection="LeftToRight" MaxLength="8"/>
+                                        </DockPanel>
+                                    </StackPanel>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
+                        <!-- Documents -->
+                        <TabItem Header="{DynamicResource wf.emp.tabDocuments}" IsEnabled="{Binding IsNew, Converter={StaticResource Not}}">
+                            <DockPanel Margin="0,8,0,0">
+                                <StackPanel DockPanel.Dock="Bottom" Visibility="{Binding CanManage, Converter={StaticResource BoolToVis}}">
+                                    <TextBlock Text="{DynamicResource wf.doc.type}" Style="{StaticResource Text.Label}"/>
+                                    <TextBox Text="{Binding DocType}"/>
+                                    <TextBlock Text="{DynamicResource wf.doc.expiry}" Style="{StaticResource Text.Label}"/>
+                                    <DatePicker SelectedDate="{Binding DocExpiry}"/>
+                                    <TextBlock Text="{DynamicResource wf.emp.notes}" Style="{StaticResource Text.Label}"/>
+                                    <TextBox Text="{Binding DocNotes}"/>
+                                    <Button Content="{DynamicResource wf.doc.add}" Command="{Binding AddDocumentCommand}" HorizontalAlignment="Left" Margin="0,8,0,0"/>
+                                </StackPanel>
+                                <ItemsControl ItemsSource="{Binding Documents}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <DockPanel Margin="0,4">
+                                                <Button DockPanel.Dock="Right" Content="{DynamicResource action.delete}" Style="{StaticResource Button.Ghost}" Padding="8,2"
+                                                        Command="{Binding DataContext.RemoveDocumentCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}"/>
+                                                <StackPanel>
+                                                    <TextBlock>
+                                                        <Run Text="{Binding DocType, Mode=OneWay}" FontWeight="SemiBold"/>
+                                                        <Run Text="{Binding Expiry, Mode=OneWay}">
+                                                            <Run.Style>
+                                                                <Style TargetType="Run">
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding IsExpired}" Value="True"><Setter Property="Foreground" Value="{DynamicResource Brush.danger}"/></DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Run.Style>
+                                                        </Run>
+                                                    </TextBlock>
+                                                    <TextBlock Text="{Binding Path}" Style="{StaticResource Text.Caption}" TextTrimming="CharacterEllipsis" FlowDirection="LeftToRight"/>
+                                                </StackPanel>
+                                            </DockPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </DockPanel>
+                        </TabItem>
+                        <!-- Audit history -->
+                        <TabItem Header="{DynamicResource wf.emp.tabHistory}" IsEnabled="{Binding IsNew, Converter={StaticResource Not}}"
+                                 Visibility="{Binding CanAudit, Converter={StaticResource BoolToVis}}">
+                            <DataGrid ItemsSource="{Binding History}" IsReadOnly="True" AutoGenerateColumns="False" Margin="0,8,0,0">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="{DynamicResource wf.col.At}" Binding="{Binding At}" Width="120" ElementStyle="{StaticResource Cell.Number}"/>
+                                    <DataGridTextColumn Header="{DynamicResource wf.col.Actor}" Binding="{Binding Actor}" Width="80"/>
+                                    <DataGridTextColumn Header="{DynamicResource wf.col.Action}" Binding="{Binding Action}" Width="110"/>
+                                    <DataGridTextColumn Header="{DynamicResource wf.col.Changes}" Binding="{Binding Changes}" Width="*"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </TabItem>
+                    </TabControl>
+                </DockPanel>
+            </Border>
+        </Grid>
+    </DockPanel>
+</UserControl>

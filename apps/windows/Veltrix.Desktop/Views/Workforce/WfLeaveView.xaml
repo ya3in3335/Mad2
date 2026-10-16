@@ -1,0 +1,118 @@
+<UserControl x:Class="Veltrix.Desktop.Views.Workforce.WfLeaveView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:Veltrix.Desktop.Controls"
+             xmlns:vm="clr-namespace:Veltrix.Desktop.Presentation.ViewModels;assembly=Veltrix.Desktop.Presentation">
+    <DockPanel>
+        <HeaderedContentControl DockPanel.Dock="Top" Header="{DynamicResource wf.nav.leave}" Style="{StaticResource PageHeader}">
+            <StackPanel Orientation="Horizontal">
+                <ComboBox ItemsSource="{Binding StatusFilters}" SelectedValuePath="Value" DisplayMemberPath="Text" SelectedValue="{Binding StatusFilter}" Width="140"
+                          AutomationProperties.Name="{DynamicResource wf.col.Status}"/>
+                <Button Content="{DynamicResource action.refresh}" Command="{Binding RefreshCommand}" Margin="8,0,0,0"/>
+                <Button Content="{DynamicResource action.export}" Command="{Binding ExportCsvCommand}" Margin="8,0,0,0"/>
+            </StackPanel>
+        </HeaderedContentControl>
+        <TextBlock DockPanel.Dock="Bottom" Text="{Binding StatusMessage}" Style="{StaticResource Text.Status}" Margin="0,8,0,0"/>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="360"/>
+            </Grid.ColumnDefinitions>
+            <Grid>
+                <TabControl SelectedIndex="{Binding TabIndex}" Visibility="{Binding IsLoading, Converter={StaticResource InvBoolToVis}}">
+                    <TabItem Header="{DynamicResource wf.leave.requests}">
+                        <DataGrid ItemsSource="{Binding Requests}" IsReadOnly="True" AutoGenerateColumns="False" Margin="0,8,0,0">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="#" Binding="{Binding EmployeeNo}" Width="70"/>
+                                <DataGridTextColumn Header="{DynamicResource wf.col.Employee}" Binding="{Binding Employee}" Width="*"/>
+                                <DataGridTextColumn Header="{DynamicResource wf.col.LeaveType}" Binding="{Binding LeaveType}" Width="130"/>
+                                <DataGridTextColumn Header="{DynamicResource wf.from}" Binding="{Binding From}" Width="95" ElementStyle="{StaticResource Cell.Number}"/>
+                                <DataGridTextColumn Header="{DynamicResource wf.to}" Binding="{Binding To}" Width="95" ElementStyle="{StaticResource Cell.Number}"/>
+                                <DataGridTextColumn Header="{DynamicResource wf.col.Days}" Binding="{Binding Days, StringFormat=0.##}" Width="60" ElementStyle="{StaticResource Cell.Number}"/>
+                                <DataGridTextColumn Header="{DynamicResource wf.col.Status}" Binding="{Binding StatusLabel}" Width="95"/>
+                                <DataGridTextColumn Header="{DynamicResource wf.col.Reason}" Binding="{Binding Reason}" Width="150"/>
+                                <DataGridTemplateColumn Width="Auto">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal">
+                                                <StackPanel Orientation="Horizontal" Visibility="{Binding IsPending, Converter={StaticResource BoolToVis}}">
+                                                    <Button Content="{DynamicResource action.approve}" Style="{StaticResource Button.Primary}" Padding="8,2"
+                                                            Command="{Binding DataContext.ApproveCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" CommandParameter="{Binding}"
+                                                            Visibility="{Binding DataContext.CanApprove, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BoolToVis}}"/>
+                                                    <Button Content="{DynamicResource action.reject}" Style="{StaticResource Button.Danger}" Padding="8,2" Margin="4,0,0,0"
+                                                            Command="{Binding DataContext.RejectCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" CommandParameter="{Binding}"
+                                                            Visibility="{Binding DataContext.CanApprove, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BoolToVis}}"/>
+                                                </StackPanel>
+                                                <Button Content="{DynamicResource action.cancel}" Style="{StaticResource Button.Ghost}" Padding="8,2" Margin="4,0,0,0"
+                                                        Command="{Binding DataContext.CancelRequestCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" CommandParameter="{Binding}"
+                                                        Visibility="{Binding IsCancellable, Converter={StaticResource BoolToVis}}"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </TabItem>
+                    <TabItem Header="{DynamicResource wf.leave.balances}">
+                        <DataGrid ItemsSource="{Binding Balances}" IsReadOnly="True" AutoGenerateColumns="False" Margin="0,8,0,0">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="{DynamicResource wf.col.Employee}" Binding="{Binding EmployeeName}" Width="*"/>
+                                <DataGridTextColumn Header="{DynamicResource wf.col.LeaveType}" Binding="{Binding LeaveType}" Width="150"/>
+                                <DataGridTextColumn Header="{DynamicResource wf.col.Accrued}" Binding="{Binding Accrued, StringFormat=0.##}" Width="80" ElementStyle="{StaticResource Cell.Number}"/>
+                                <DataGridTextColumn Header="{DynamicResource wf.col.Taken}" Binding="{Binding Taken, StringFormat=0.##}" Width="80" ElementStyle="{StaticResource Cell.Number}"/>
+                                <DataGridTextColumn Header="{DynamicResource wf.col.Adjusted}" Binding="{Binding Adjusted, StringFormat=0.##}" Width="80" ElementStyle="{StaticResource Cell.Number}"/>
+                                <DataGridTextColumn Header="{DynamicResource wf.col.Balance}" Binding="{Binding Balance, StringFormat=0.##}" Width="80" ElementStyle="{StaticResource Cell.Number}"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </TabItem>
+                </TabControl>
+                <c:PageState/>
+            </Grid>
+
+            <Border Grid.Column="2" Style="{StaticResource Card}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <StackPanel Visibility="{Binding CanRequest, Converter={StaticResource BoolToVis}}">
+                            <TextBlock Text="{DynamicResource wf.leave.new}" Style="{StaticResource Text.Section}"/>
+                            <TextBlock Text="{DynamicResource wf.col.Employee}" Style="{StaticResource Text.Label}"/>
+                            <ComboBox ItemsSource="{Binding Employees}" SelectedItem="{Binding Employee}" DisplayMemberPath="Text"/>
+                            <TextBlock Text="{DynamicResource wf.col.LeaveType}" Style="{StaticResource Text.Label}"/>
+                            <ComboBox ItemsSource="{Binding LeaveTypes}" SelectedItem="{Binding LeaveType}" DisplayMemberPath="Name"/>
+                            <TextBlock Text="{DynamicResource wf.from}" Style="{StaticResource Text.Label}"/>
+                            <DatePicker SelectedDate="{Binding From}"/>
+                            <TextBlock Text="{DynamicResource wf.to}" Style="{StaticResource Text.Label}"/>
+                            <DatePicker SelectedDate="{Binding To}"/>
+                            <TextBlock Text="{DynamicResource wf.col.Reason}" Style="{StaticResource Text.Label}"/>
+                            <TextBox Text="{Binding Reason}" AcceptsReturn="True" MinHeight="44" TextWrapping="Wrap"/>
+                            <DockPanel Margin="0,8,0,0">
+                                <Button DockPanel.Dock="Right" Content="{DynamicResource wf.leave.attach}" Command="{Binding PickAttachmentCommand}"/>
+                                <TextBlock Text="{Binding Attachment}" Style="{StaticResource Text.Caption}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" FlowDirection="LeftToRight"/>
+                            </DockPanel>
+                            <TextBlock Text="{Binding FormError}" Style="{StaticResource Text.Error}" TextWrapping="Wrap" Visibility="{Binding FormError, Converter={StaticResource NotNullToVis}}"/>
+                            <Button Content="{DynamicResource wf.leave.submit}" Command="{Binding RequestCommand}" Style="{StaticResource Button.Primary}" Margin="0,10,0,0"/>
+                        </StackPanel>
+                        <StackPanel Visibility="{Binding CanManage, Converter={StaticResource BoolToVis}}">
+                            <TextBlock Text="{DynamicResource wf.leave.adjust}" Style="{StaticResource Text.Section}" Margin="0,20,0,4"/>
+                            <ComboBox ItemsSource="{Binding Employees}" SelectedItem="{Binding AdjustEmployee}" DisplayMemberPath="Text" AutomationProperties.Name="{DynamicResource wf.col.Employee}"/>
+                            <ComboBox ItemsSource="{Binding LeaveTypes}" SelectedItem="{Binding AdjustType}" DisplayMemberPath="Name" Margin="0,6,0,0"
+                                      AutomationProperties.Name="{DynamicResource wf.col.LeaveType}"/>
+                            <TextBlock Text="{DynamicResource wf.leave.adjustDays}" Style="{StaticResource Text.Label}"/>
+                            <TextBox Text="{Binding AdjustDays}" FlowDirection="LeftToRight"/>
+                            <TextBlock Text="{DynamicResource wf.emp.notes}" Style="{StaticResource Text.Label}"/>
+                            <TextBox Text="{Binding AdjustNote}"/>
+                            <Button Content="{DynamicResource wf.leave.applyAdjust}" Command="{Binding AdjustCommand}" HorizontalAlignment="Left" Margin="0,8,0,0"/>
+
+                            <TextBlock Text="{DynamicResource wf.leave.accrual}" Style="{StaticResource Text.Section}" Margin="0,20,0,4"/>
+                            <StackPanel Orientation="Horizontal">
+                                <ComboBox ItemsSource="{x:Static vm:WfLeaveViewModel.Months}" SelectedItem="{Binding AccrualMonth}" Width="70"/>
+                                <TextBox Text="{Binding AccrualYear}" Width="80" Margin="8,0,0,0" FlowDirection="LeftToRight"/>
+                                <Button Content="{DynamicResource wf.leave.accrue}" Command="{Binding AccrueCommand}" Margin="8,0,0,0"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </DockPanel>
+</UserControl>

@@ -35,6 +35,8 @@ public interface IPlatformUi
     bool PrintReceipt(string title, ReceiptDocument receipt);
     /// <summary>Asks for a destination file. Returns null when cancelled.</summary>
     string? PickSaveFile(string suggestedName, string filter);
+    /// <summary>Prints a report table (title + grid) on a chosen printer — "Microsoft Print to PDF" gives a PDF. Returns false when cancelled.</summary>
+    bool PrintTable(string title, System.Data.DataTable table);
     /// <summary>Asks for a file to open. Returns null when cancelled.</summary>
     string? PickOpenFile(string filter);
     void CopyToClipboard(string text);

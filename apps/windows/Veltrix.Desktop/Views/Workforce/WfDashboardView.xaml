@@ -1,0 +1,95 @@
+<UserControl x:Class="Veltrix.Desktop.Views.Workforce.WfDashboardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:Veltrix.Desktop.Controls">
+    <DockPanel>
+        <HeaderedContentControl DockPanel.Dock="Top" Header="{DynamicResource wf.nav.dashboard}" Style="{StaticResource PageHeader}">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="{Binding TodayText}" Style="{StaticResource Text.Caption}" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                <Border Style="{StaticResource Chip}">
+                    <TextBlock Style="{StaticResource Text.Caption}">
+                        <Run Text="{DynamicResource wf.live.updated}"/> <Run Text="{Binding UpdatedAt, Mode=OneWay}"/>
+                    </TextBlock>
+                </Border>
+                <Button Content="{DynamicResource action.refresh}" Command="{Binding RefreshCommand}" Margin="12,0,0,0"/>
+            </StackPanel>
+        </HeaderedContentControl>
+        <Grid>
+            <Grid Visibility="{Binding IsReady, Converter={StaticResource BoolToVis}}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <UniformGrid Columns="5">
+                    <Border Style="{StaticResource Card}" Margin="0,0,12,12">
+                        <StackPanel>
+                            <TextBlock Text="{DynamicResource wf.dash.scheduled}" Style="{StaticResource Text.Caption}" FontWeight="SemiBold"/>
+                            <TextBlock Text="{Binding Scheduled}" Style="{StaticResource Text.Kpi}" FlowDirection="LeftToRight" HorizontalAlignment="Left" Margin="0,8,0,0"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource Card}" Margin="0,0,12,12">
+                        <StackPanel>
+                            <TextBlock Text="{DynamicResource wf.dash.present}" Style="{StaticResource Text.Caption}" FontWeight="SemiBold"/>
+                            <TextBlock Text="{Binding Present}" Style="{StaticResource Text.Kpi}" Foreground="{DynamicResource Brush.success}" FlowDirection="LeftToRight" HorizontalAlignment="Left" Margin="0,8,0,0"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource Card}" Margin="0,0,12,12">
+                        <StackPanel>
+                            <TextBlock Text="{DynamicResource wf.dash.late}" Style="{StaticResource Text.Caption}" FontWeight="SemiBold"/>
+                            <TextBlock Text="{Binding Late}" Style="{StaticResource Text.Kpi}" Foreground="{DynamicResource Brush.warning}" FlowDirection="LeftToRight" HorizontalAlignment="Left" Margin="0,8,0,0"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource Card}" Margin="0,0,12,12">
+                        <StackPanel>
+                            <TextBlock Text="{DynamicResource wf.dash.absent}" Style="{StaticResource Text.Caption}" FontWeight="SemiBold"/>
+                            <TextBlock Text="{Binding Absent}" Style="{StaticResource Text.Kpi}" Foreground="{DynamicResource Brush.danger}" FlowDirection="LeftToRight" HorizontalAlignment="Left" Margin="0,8,0,0"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+                        <StackPanel>
+                            <TextBlock Text="{DynamicResource wf.dash.onLeave}" Style="{StaticResource Text.Caption}" FontWeight="SemiBold"/>
+                            <TextBlock Text="{Binding OnLeave}" Style="{StaticResource Text.Kpi}" Foreground="{DynamicResource Brush.accent}" FlowDirection="LeftToRight" HorizontalAlignment="Left" Margin="0,8,0,0"/>
+                        </StackPanel>
+                    </Border>
+                </UniformGrid>
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="16"/>
+                        <ColumnDefinition Width="300"/>
+                    </Grid.ColumnDefinitions>
+                    <Border Style="{StaticResource Card}">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Top" Text="{DynamicResource wf.dash.feed}" Style="{StaticResource Text.Section}"/>
+                            <TextBlock DockPanel.Dock="Top" Text="{DynamicResource wf.dash.noPunches}" Style="{StaticResource Text.Caption}"
+                                       Visibility="{Binding Feed.Count, Converter={StaticResource EqualsZeroToVis}}"/>
+                            <DataGrid ItemsSource="{Binding Feed}" IsReadOnly="True" AutoGenerateColumns="False">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="{DynamicResource wf.col.Time}" Binding="{Binding Time}" Width="90" ElementStyle="{StaticResource Cell.Number}"/>
+                                    <DataGridTextColumn Header="#" Binding="{Binding EmployeeNo}" Width="80"/>
+                                    <DataGridTextColumn Header="{DynamicResource wf.col.Employee}" Binding="{Binding Employee}" Width="*"/>
+                                    <DataGridTextColumn Header="{DynamicResource wf.col.Type}" Binding="{Binding TypeLabel}" Width="120"/>
+                                    <DataGridTextColumn Header="{DynamicResource wf.col.Source}" Binding="{Binding Source}" Width="110"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
+                    </Border>
+                    <Border Grid.Column="2" Style="{StaticResource Card}" VerticalAlignment="Top">
+                        <StackPanel>
+                            <TextBlock Text="{DynamicResource wf.dash.pending}" Style="{StaticResource Text.Section}"/>
+                            <DockPanel Margin="0,6">
+                                <TextBlock DockPanel.Dock="Right" Text="{Binding PendingCorrections}" FontWeight="SemiBold" FlowDirection="LeftToRight"/>
+                                <TextBlock Text="{DynamicResource wf.dash.pendingCorrections}"/>
+                            </DockPanel>
+                            <DockPanel Margin="0,6">
+                                <TextBlock DockPanel.Dock="Right" Text="{Binding PendingLeave}" FontWeight="SemiBold" FlowDirection="LeftToRight"/>
+                                <TextBlock Text="{DynamicResource wf.dash.pendingLeave}"/>
+                            </DockPanel>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Grid>
+            <c:PageState/>
+        </Grid>
+    </DockPanel>
+</UserControl>

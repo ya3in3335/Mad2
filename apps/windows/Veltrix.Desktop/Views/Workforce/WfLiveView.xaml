@@ -1,0 +1,54 @@
+<UserControl x:Class="Veltrix.Desktop.Views.Workforce.WfLiveView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:Veltrix.Desktop.Controls">
+    <DockPanel>
+        <HeaderedContentControl DockPanel.Dock="Top" Header="{DynamicResource wf.nav.live}" Style="{StaticResource PageHeader}">
+            <StackPanel Orientation="Horizontal">
+                <ComboBox ItemsSource="{Binding StateFilters}" SelectedValuePath="Value" DisplayMemberPath="Text" SelectedValue="{Binding StateFilter}" Width="150"
+                          AutomationProperties.Name="{DynamicResource action.filter}"/>
+                <TextBox Text="{Binding Search, UpdateSourceTrigger=PropertyChanged}" Width="220" Margin="8,0,0,0" AutomationProperties.Name="{DynamicResource action.search}"/>
+                <Button Content="{DynamicResource action.refresh}" Command="{Binding RefreshCommand}" Margin="8,0,0,0"/>
+            </StackPanel>
+        </HeaderedContentControl>
+        <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,12">
+            <Border Style="{StaticResource Chip}" Background="{DynamicResource Brush.successSoft}" Margin="0,0,8,0">
+                <TextBlock><Run Text="{DynamicResource wf.live.in}"/>: <Run Text="{Binding InCount, Mode=OneWay}" FontWeight="SemiBold"/></TextBlock>
+            </Border>
+            <Border Style="{StaticResource Chip}" Background="{DynamicResource Brush.warningSoft}" Margin="0,0,8,0">
+                <TextBlock><Run Text="{DynamicResource wf.live.break}"/>: <Run Text="{Binding BreakCount, Mode=OneWay}" FontWeight="SemiBold"/></TextBlock>
+            </Border>
+            <Border Style="{StaticResource Chip}" Margin="0,0,8,0">
+                <TextBlock><Run Text="{DynamicResource wf.live.out}"/>: <Run Text="{Binding OutCount, Mode=OneWay}" FontWeight="SemiBold"/></TextBlock>
+            </Border>
+            <Border Style="{StaticResource Chip}" Background="{DynamicResource Brush.dangerSoft}" Margin="0,0,8,0">
+                <TextBlock><Run Text="{DynamicResource wf.live.away}"/>: <Run Text="{Binding AwayCount, Mode=OneWay}" FontWeight="SemiBold"/></TextBlock>
+            </Border>
+            <TextBlock Style="{StaticResource Text.Caption}" VerticalAlignment="Center" Margin="8,0,0,0">
+                <Run Text="{DynamicResource wf.live.updated}"/> <Run Text="{Binding UpdatedAt, Mode=OneWay}"/>
+            </TextBlock>
+        </WrapPanel>
+        <Grid>
+            <DataGrid ItemsSource="{Binding Rows}" IsReadOnly="True" AutoGenerateColumns="False" Visibility="{Binding IsReady, Converter={StaticResource BoolToVis}}">
+                <DataGrid.RowStyle>
+                    <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding State}" Value="in"><Setter Property="Background" Value="{DynamicResource Brush.successSoft}"/></DataTrigger>
+                            <DataTrigger Binding="{Binding State}" Value="break"><Setter Property="Background" Value="{DynamicResource Brush.warningSoft}"/></DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataGrid.RowStyle>
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="#" Binding="{Binding EmployeeNo}" Width="90"/>
+                    <DataGridTextColumn Header="{DynamicResource wf.col.Employee}" Binding="{Binding Employee}" Width="*"/>
+                    <DataGridTextColumn Header="{DynamicResource wf.col.State}" Binding="{Binding StateLabel}" Width="130"/>
+                    <DataGridTextColumn Header="{DynamicResource wf.col.LastPunch}" Binding="{Binding LastPunch}" Width="110" ElementStyle="{StaticResource Cell.Number}"/>
+                    <DataGridTextColumn Header="{DynamicResource wf.col.Shift}" Binding="{Binding Shift}" Width="90"/>
+                    <DataGridTextColumn Header="{DynamicResource wf.col.Worked}" Binding="{Binding Worked}" Width="90" ElementStyle="{StaticResource Cell.Number}"/>
+                    <DataGridTextColumn Header="{DynamicResource wf.col.LateMinutes}" Binding="{Binding Late}" Width="90" ElementStyle="{StaticResource Cell.Number}"/>
+                </DataGrid.Columns>
+            </DataGrid>
+            <c:PageState/>
+        </Grid>
+    </DockPanel>
+</UserControl>

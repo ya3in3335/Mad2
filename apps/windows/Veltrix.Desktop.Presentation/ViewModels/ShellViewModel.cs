@@ -16,6 +16,10 @@ public sealed partial class NavItem(string key, string titleKey, string icon, Fu
     /// <summary>Resource key of the icon geometry (Icon.* in Styles.xaml).</summary>
     public string Icon { get; } = icon;
     [ObservableProperty] private string _title = "";
+    /// <summary>Title key of the sidebar group this item opens (shown above it), e.g. "wf.nav.group".</summary>
+    public string? GroupTitleKey { get; init; }
+    [ObservableProperty] private string? _groupTitle;
+    public bool IsGroupStart => GroupTitleKey is not null;
     public PageViewModel Page => _page ??= factory();
 }
 
@@ -59,11 +63,19 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
                 ("erp.hr", "erp.nav.hr", "Icon.Customers", "hr.manage", () => new EmployeesViewModel(s)),
             ]);
         }
+        // Workforce & attendance (standalone): one sidebar group, each page filtered by the workforce permissions (RBAC) of the local role.
+        if (s.IsStandalone)
+        {
+            var scoped = s.Session.LocalUser is { } lu && Core.Workforce.WorkforcePermissions.IsScoped(lu.Role);
+            all.InsertRange(all.FindIndex(a => a.Key == "reports"), WorkforceNav.Entries.Where(e => WorkforceNav.IsVisible(e, s.Session.HasPermission, scoped))
+                .Select(e => (e.Key, e.TitleKey, "Icon.Customers", (string?)null, (Func<PageViewModel>)(() => WorkforceNav.Create(e.Key, s)))));
+        }
         // CCTV (owner only): live view of the shop cameras over the LAN.
         if (s.Cameras is not null && s.IsOwner)
             all.Insert(all.FindIndex(a => a.Key == "settings"), ("cameras", "cam.nav", "Icon.Settings", null, () => new CamerasViewModel(s)));
+        var firstWf = all.FirstOrDefault(a => a.Key.StartsWith(WorkforceNav.KeyPrefix, StringComparison.Ordinal)).Key;
         NavItems = new ObservableCollection<NavItem>(all.Where(a => a.Permission is null || s.Session.HasPermission(a.Permission))
-            .Select(a => new NavItem(a.Key, a.Title, a.Icon, a.Make)));
+            .Select(a => new NavItem(a.Key, a.Title, a.Icon, a.Make) { GroupTitleKey = a.Key == firstWf ? WorkforceNav.GroupTitleKey : null }));
         UpdateTexts();
         _isOnline = !s.Session.IsOfflineSession && s.Api.IsOnline;
         s.Api.ConnectivityChanged += OnConnectivityChanged;
@@ -223,7 +235,11 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
 
     private void UpdateTexts()
     {
-        foreach (var n in NavItems) n.Title = _s.Loc.Get(n.TitleKey);
+        foreach (var n in NavItems)
+        {
+            n.Title = _s.Loc.Get(n.TitleKey);
+            if (n.GroupTitleKey is { } g) n.GroupTitle = _s.Loc.Get(g);
+        }
     }
 
     private void OnConnectivityChanged(object? sender, bool online) => IsOnline = online;

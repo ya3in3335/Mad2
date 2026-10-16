@@ -1,0 +1,161 @@
+<UserControl x:Class="Veltrix.Desktop.Views.Workforce.WfAccessView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:Veltrix.Desktop.Controls"
+             xmlns:vm="clr-namespace:Veltrix.Desktop.Presentation.ViewModels;assembly=Veltrix.Desktop.Presentation">
+    <DockPanel>
+        <HeaderedContentControl DockPanel.Dock="Top" Header="{DynamicResource wf.nav.access}" Style="{StaticResource PageHeader}">
+            <Button Content="{DynamicResource action.refresh}" Command="{Binding RefreshCommand}"/>
+        </HeaderedContentControl>
+
+        <!-- EMERGENCY UNLOCK ALL (confirmation required) -->
+        <Border DockPanel.Dock="Top" Margin="0,0,0,14" Padding="16,12" CornerRadius="{StaticResource Radius.Card}" BorderThickness="1"
+                Background="{DynamicResource Brush.dangerSoft}" BorderBrush="{DynamicResource Brush.dangerBorder}"
+                Visibility="{Binding CanEmergency, Converter={StaticResource BoolToVis}}">
+            <DockPanel>
+                <Button DockPanel.Dock="Right" Content="{DynamicResource wf.access.emergency}" Command="{Binding EmergencyUnlockAllCommand}" Style="{StaticResource Button.Danger}"
+                        FontSize="16" FontWeight="Bold" Padding="22,10" VerticalAlignment="Center"/>
+                <StackPanel Margin="0,0,16,0">
+                    <TextBlock Text="{DynamicResource wf.access.emergencyTitle}" FontWeight="SemiBold" Foreground="{DynamicResource Brush.danger}"/>
+                    <TextBlock Text="{DynamicResource wf.access.emergencyHint}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding EmergencyResult}" FontWeight="SemiBold" Visibility="{Binding EmergencyResult, Converter={StaticResource NotNullToVis}}"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+        <TextBlock DockPanel.Dock="Bottom" Text="{Binding StatusMessage}" Style="{StaticResource Text.Status}" Margin="0,8,0,0"/>
+        <TextBlock DockPanel.Dock="Bottom" Text="{Binding FormError}" Style="{StaticResource Text.Error}" TextWrapping="Wrap"
+                   Visibility="{Binding FormError, Converter={StaticResource NotNullToVis}}"/>
+        <Grid>
+            <TabControl SelectedIndex="{Binding TabIndex}" Visibility="{Binding CanView, Converter={StaticResource BoolToVis}}">
+                <!-- Zones & doors -->
+                <TabItem Header="{DynamicResource wf.access.zonesDoors}">
+                    <Grid Margin="0,8,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="16"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Border Style="{StaticResource Card}">
+                            <DockPanel>
+                                <TextBlock DockPanel.Dock="Top" Text="{DynamicResource wf.access.zones}" Style="{StaticResource Text.Section}"/>
+                                <StackPanel DockPanel.Dock="Bottom" Visibility="{Binding CanManage, Converter={StaticResource BoolToVis}}">
+                                    <Button Content="{DynamicResource action.new}" Command="{Binding NewZoneCommand}" HorizontalAlignment="Left" Margin="0,8,0,0"/>
+                                    <TextBlock Text="{DynamicResource wf.emp.name}" Style="{StaticResource Text.Label}"/>
+                                    <TextBox Text="{Binding ZoneName}"/>
+                                    <TextBlock Text="{DynamicResource wf.access.antiPassback}" Style="{StaticResource Text.Label}"/>
+                                    <ComboBox ItemsSource="{x:Static vm:WfAccessViewModel.AntiPassbackModesList}" SelectedItem="{Binding ZoneAntiPassback}"/>
+                                    <Button Content="{DynamicResource action.save}" Command="{Binding SaveZoneCommand}" Style="{StaticResource Button.Primary}" Margin="0,8,0,0" HorizontalAlignment="Left"/>
+                                </StackPanel>
+                                <ListBox ItemsSource="{Binding Zones}" SelectedItem="{Binding SelectedZone}" ItemContainerStyle="{StaticResource Item.Selectable}">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate><TextBlock><Run Text="{Binding Name, Mode=OneWay}" FontWeight="SemiBold"/> · <Run Text="{Binding AntiPassback, Mode=OneWay}"/></TextBlock></DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </DockPanel>
+                        </Border>
+                        <Border Grid.Column="2" Style="{StaticResource Card}">
+                            <DockPanel>
+                                <TextBlock DockPanel.Dock="Top" Text="{DynamicResource wf.access.doors}" Style="{StaticResource Text.Section}"/>
+                                <StackPanel DockPanel.Dock="Bottom" Visibility="{Binding CanManage, Converter={StaticResource BoolToVis}}">
+                                    <Button Content="{DynamicResource action.new}" Command="{Binding NewDoorCommand}" HorizontalAlignment="Left" Margin="0,8,0,0"/>
+                                    <TextBlock Text="{DynamicResource wf.emp.name}" Style="{StaticResource Text.Label}"/>
+                                    <TextBox Text="{Binding DoorName}"/>
+                                    <TextBlock Text="{DynamicResource wf.access.zone}" Style="{StaticResource Text.Label}"/>
+                                    <ComboBox ItemsSource="{Binding Zones}" SelectedItem="{Binding DoorZone}" DisplayMemberPath="Name"/>
+                                    <TextBlock Text="{DynamicResource wf.access.direction}" Style="{StaticResource Text.Label}"/>
+                                    <ComboBox ItemsSource="{x:Static vm:WfAccessViewModel.Directions}" SelectedItem="{Binding DoorDirection}"/>
+                                    <TextBlock Text="{DynamicResource wf.access.controller}" Style="{StaticResource Text.Label}"/>
+                                    <ComboBox ItemsSource="{Binding Controllers}" SelectedValuePath="Value" DisplayMemberPath="Text" SelectedValue="{Binding DoorController}"/>
+                                    <TextBlock Text="{DynamicResource wf.access.unlockSeconds}" Style="{StaticResource Text.Label}"/>
+                                    <TextBox Text="{Binding DoorUnlockSeconds}" FlowDirection="LeftToRight"/>
+                                    <Button Content="{DynamicResource action.save}" Command="{Binding SaveDoorCommand}" Style="{StaticResource Button.Primary}" Margin="0,8,0,0" HorizontalAlignment="Left"/>
+                                </StackPanel>
+                                <ListBox ItemsSource="{Binding Doors}" SelectedItem="{Binding SelectedDoor}" ItemContainerStyle="{StaticResource Item.Selectable}">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate><TextBlock><Run Text="{Binding Name, Mode=OneWay}" FontWeight="SemiBold"/> · <Run Text="{Binding Direction, Mode=OneWay}"/></TextBlock></DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </DockPanel>
+                        </Border>
+                    </Grid>
+                </TabItem>
+                <!-- Access groups -->
+                <TabItem Header="{DynamicResource wf.access.groups}">
+                    <Grid Margin="0,8,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="260"/>
+                            <ColumnDefinition Width="16"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Border Style="{StaticResource Card}">
+                            <DockPanel>
+                                <Button DockPanel.Dock="Bottom" Content="{DynamicResource action.new}" Command="{Binding NewGroupCommand}" HorizontalAlignment="Left" Margin="0,8,0,0"
+                                        Visibility="{Binding CanManage, Converter={StaticResource BoolToVis}}"/>
+                                <ListBox ItemsSource="{Binding Groups}" SelectedItem="{Binding SelectedGroup}" DisplayMemberPath="Name" ItemContainerStyle="{StaticResource Item.Selectable}"/>
+                            </DockPanel>
+                        </Border>
+                        <Border Grid.Column="2" Style="{StaticResource Card}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="16"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel>
+                                    <TextBlock Text="{DynamicResource wf.emp.name}" Style="{StaticResource Text.Label}"/>
+                                    <TextBox Text="{Binding GroupName}"/>
+                                    <TextBlock Text="{DynamicResource wf.access.schedule}" Style="{StaticResource Text.Label}"/>
+                                    <TextBox Text="{Binding GroupSchedule}" AcceptsReturn="True" MinHeight="90" FlowDirection="LeftToRight" FontFamily="{StaticResource Font.Mono}"/>
+                                    <TextBlock Text="{DynamicResource wf.access.scheduleHint}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap"/>
+                                    <CheckBox Content="{DynamicResource wf.access.allowHolidays}" IsChecked="{Binding GroupAllowHolidays}" Margin="0,10,0,0"/>
+                                    <TextBlock Text="{DynamicResource wf.access.doors}" Style="{StaticResource Text.Label}"/>
+                                    <ItemsControl ItemsSource="{Binding GroupDoors}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate><CheckBox Content="{Binding Text}" IsChecked="{Binding IsChecked}" Margin="0,2"/></DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <Button Content="{DynamicResource action.save}" Command="{Binding SaveGroupCommand}" Style="{StaticResource Button.Primary}" Margin="0,12,0,0"
+                                            HorizontalAlignment="Left" Visibility="{Binding CanManage, Converter={StaticResource BoolToVis}}"/>
+                                </StackPanel>
+                                <DockPanel Grid.Column="2">
+                                    <TextBlock DockPanel.Dock="Top" Text="{DynamicResource wf.access.members}" Style="{StaticResource Text.Label}"/>
+                                    <ListBox ItemsSource="{Binding GroupMembers}">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate><CheckBox Content="{Binding Text}" IsChecked="{Binding IsChecked}"/></DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </DockPanel>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </TabItem>
+                <!-- Logs -->
+                <TabItem Header="{DynamicResource wf.access.logs}">
+                    <DockPanel Margin="0,8,0,0">
+                        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
+                            <DatePicker SelectedDate="{Binding LogFrom}" AutomationProperties.Name="{DynamicResource wf.from}"/>
+                            <DatePicker SelectedDate="{Binding LogTo}" Margin="8,0,0,0" AutomationProperties.Name="{DynamicResource wf.to}"/>
+                            <CheckBox Content="{DynamicResource wf.access.deniedOnly}" IsChecked="{Binding DeniedOnly}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                            <Button Content="{DynamicResource action.search}" Command="{Binding SearchLogsCommand}" Margin="8,0,0,0"/>
+                            <Button Content="{DynamicResource action.export}" Command="{Binding ExportLogsCommand}" Margin="8,0,0,0"/>
+                        </StackPanel>
+                        <DataGrid ItemsSource="{Binding Logs}" IsReadOnly="True" AutoGenerateColumns="False">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="{DynamicResource wf.col.At}" Binding="{Binding At}" Width="140" ElementStyle="{StaticResource Cell.Number}"/>
+                                <DataGridTextColumn Header="{DynamicResource wf.col.Door}" Binding="{Binding Door}" Width="130"/>
+                                <DataGridTextColumn Header="{DynamicResource wf.col.Employee}" Binding="{Binding Employee}" Width="*"/>
+                                <DataGridTextColumn Header="{DynamicResource wf.col.Credential}" Binding="{Binding Credential}" Width="150"/>
+                                <DataGridTextColumn Header="{DynamicResource wf.col.Result}" Binding="{Binding Result}" Width="90"/>
+                                <DataGridTextColumn Header="{DynamicResource wf.col.Reason}" Binding="{Binding Reason}" Width="170"/>
+                                <DataGridTextColumn Header="{DynamicResource wf.col.Actor}" Binding="{Binding Actor}" Width="90"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </DockPanel>
+                </TabItem>
+            </TabControl>
+            <TextBlock Text="{DynamicResource wf.access.scopedHint}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap"
+                       Visibility="{Binding CanView, Converter={StaticResource InvBoolToVis}}"/>
+            <c:PageState/>
+        </Grid>
+    </DockPanel>
+</UserControl>

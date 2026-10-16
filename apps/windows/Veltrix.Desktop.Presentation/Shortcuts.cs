@@ -51,6 +51,16 @@ public static class ShortcutMap
         ["erp.purchases"] = typeof(PurchasesViewModel),
         ["erp.accounting"] = typeof(AccountingViewModel),
         ["erp.hr"] = typeof(EmployeesViewModel),
+        ["wf.employees"] = typeof(WfEmployeesViewModel),
+        ["wf.kiosk"] = typeof(WfKioskViewModel),
+        ["wf.history"] = typeof(WfAttendanceViewModel),
+        ["wf.shifts"] = typeof(WfShiftPlannerViewModel),
+        ["wf.leave"] = typeof(WfLeaveViewModel),
+        ["wf.overtime"] = typeof(WfOvertimeViewModel),
+        ["wf.access"] = typeof(WfAccessViewModel),
+        ["wf.devices"] = typeof(WfDevicesViewModel),
+        ["wf.payroll"] = typeof(WfPayrollViewModel),
+        ["wf.reports"] = typeof(WfReportsViewModel),
     };
 
     /// <summary>Group title keys of the non-page scopes in the help overlay.</summary>
@@ -117,6 +127,27 @@ public static class ShortcutMap
         Add("erp.accounting", "Ctrl+N", "sc.new", "NewEntryCommand");
         Add("erp.accounting", "Ctrl+S", "sc.save", "SaveEntryCommand", when: "Editor");
         Add("erp.accounting", "Esc", "sc.cancel", "CancelEntryCommand", when: "Editor");
+
+        // Workforce & attendance.
+        Add("wf.employees", "Ctrl+N", "sc.new", "NewCommand");
+        Add("wf.employees", "Ctrl+S", "sc.save", "SaveDetailsCommand", when: "Details");
+        Add("wf.employees", "Esc", "sc.cancel", "CloseDetailsCommand", when: "Details");
+        Add("wf.employees", "Ctrl+I", "sc.wf.import", "ImportCsvCommand");
+        Add("wf.kiosk", "F7", "sc.wf.scan", FocusScan);
+        Add("wf.kiosk", "F11", "sc.wf.fullScreen", "EnterFullScreenCommand");
+        Add("wf.kiosk", "Esc", "sc.wf.exitKiosk", "ExitFullScreenCommand", when: "IsFullScreen");
+        Add("wf.shifts", "Ctrl+Shift+P", "sc.wf.prevPeriod", "PreviousCommand");
+        Add("wf.shifts", "Ctrl+Shift+N", "sc.wf.nextPeriod", "NextCommand");
+        Add("wf.shifts", "Ctrl+D", "sc.wf.today", "GoTodayCommand");
+        Add("wf.devices", "Ctrl+N", "sc.new", "NewCommand");
+        Add("wf.devices", "Ctrl+S", "sc.save", "SaveCommand", when: "IsEditing");
+        Add("wf.devices", "Ctrl+T", "sc.wf.test", "TestCommand", when: "Selected");
+        Add("wf.payroll", "F9", "sc.wf.compute", "ComputeCommand");
+        Add("wf.reports", "Ctrl+Enter", "sc.wf.run", "RunReportCommand");
+        Add("wf.reports", "Ctrl+P", "sc.print", "PrintCommand");
+        foreach (var scope in new[] { "wf.employees", "wf.history", "wf.leave", "wf.overtime", "wf.payroll", "wf.reports" })
+            Add(scope, "Ctrl+E", "sc.wf.export", "ExportCsvCommand");
+        Add("wf.access", "Ctrl+E", "sc.wf.export", "ExportLogsCommand");
 
         // Outside the app: Start Menu shortcut hotkey (launches, or brings the running window to front).
         Add(System, LaunchHotkey, "sc.launch", Launch);

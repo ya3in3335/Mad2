@@ -141,6 +141,18 @@ public sealed class WpfPlatformUi(WpfLocalizer localizer) : IPlatformUi
         return true;
     }
 
+    public bool PrintTable(string title, System.Data.DataTable table)
+    {
+        var dialog = new PrintDialog();
+        if (dialog.ShowDialog() != true) return false;
+        var doc = Printing.TableRenderer.Render(title, table, Application.Current.MainWindow?.FlowDirection ?? FlowDirection.LeftToRight);
+        doc.PageWidth = dialog.PrintableAreaWidth;
+        doc.PageHeight = dialog.PrintableAreaHeight;
+        doc.ColumnWidth = dialog.PrintableAreaWidth;
+        dialog.PrintDocument(((IDocumentPaginatorSource)doc).DocumentPaginator, "VELTRIX OS - " + title);
+        return true;
+    }
+
     public string? PickSaveFile(string suggestedName, string filter)
     {
         var dlg = new SaveFileDialog { FileName = suggestedName, Filter = filter, AddExtension = true, OverwritePrompt = true };
