@@ -103,7 +103,7 @@ public static class LocalBackup
                 await db.CashMovements.AsNoTracking().ToListAsync(ct)),
             await CaptureWorkforceAsync(db, ct));
 
-    /// <summary>Workforce tables (format version 3), keyed by table name. Every v5 table must be listed here.</summary>
+    /// <summary>Workforce tables (format version 3), keyed by table name. Every v5 and v6 table must be listed here.</summary>
     private static readonly IReadOnlyList<WorkforceTable> WorkforceTables =
     [
         T(d => d.WfDepartments, "WfDepartments"), T(d => d.WfPositions, "WfPositions"), T(d => d.WfEmployeeDocuments, "WfEmployeeDocuments"),
@@ -115,6 +115,7 @@ public static class LocalBackup
         T(d => d.WfPayrollPreps, "WfPayrollPreps"), T(d => d.WfPayrollPrepLines, "WfPayrollPrepLines"), T(d => d.WfDevices, "WfDevices"),
         T(d => d.WfDeviceInbox, "WfDeviceInbox"), T(d => d.WfZones, "WfZones"), T(d => d.WfDoors, "WfDoors"), T(d => d.WfAccessGroups, "WfAccessGroups"),
         T(d => d.WfAccessGroupMembers, "WfAccessGroupMembers"), T(d => d.WfZonePresence, "WfZonePresence"), T(d => d.WfAccessLogs, "WfAccessLogs"),
+        T(d => d.WfImportBatches, "WfImportBatches"), T(d => d.WfDeviceLogs, "WfDeviceLogs"),
     ];
 
     /// <summary>Names of the workforce tables carried by a backup (tests assert this covers every schema v5 table).</summary>

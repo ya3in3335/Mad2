@@ -189,7 +189,7 @@ public sealed class KeyValue
 
 public sealed class LocalDb(DbContextOptions<LocalDb> options) : DbContext(options)
 {
-    public const int SchemaVersion = 5;
+    public const int SchemaVersion = 6;
 
     public DbSet<LocalProduct> Products => Set<LocalProduct>();
     public DbSet<LocalCustomer> Customers => Set<LocalCustomer>();
@@ -251,6 +251,9 @@ public sealed class LocalDb(DbContextOptions<LocalDb> options) : DbContext(optio
     public DbSet<WfAccessGroupMember> WfAccessGroupMembers => Set<WfAccessGroupMember>();
     public DbSet<WfZonePresence> WfZonePresence => Set<WfZonePresence>();
     public DbSet<WfAccessLog> WfAccessLogs => Set<WfAccessLog>();
+    // schema v6: physical terminals
+    public DbSet<WfImportBatch> WfImportBatches => Set<WfImportBatch>();
+    public DbSet<WfDeviceLog> WfDeviceLogs => Set<WfDeviceLog>();
 
     /// <summary>Tables added by schema v3 (created in place when upgrading a v2 database).</summary>
     public static readonly IReadOnlyList<string> V3Tables =
@@ -281,6 +284,29 @@ public sealed class LocalDb(DbContextOptions<LocalDb> options) : DbContext(optio
         ("Employees", "EmergencyContactName", "TEXT NULL"), ("Employees", "EmergencyContactPhone", "TEXT NULL"), ("Employees", "Notes", "TEXT NULL"),
         ("Employees", "PayBasis", "TEXT NOT NULL DEFAULT 'Monthly'"), ("Employees", "HourlyRate", "TEXT NOT NULL DEFAULT '0.0'"),
         ("Payslips", "Deductions", "TEXT NOT NULL DEFAULT '0.0'"), ("PayrollRuns", "TotalDeductions", "TEXT NOT NULL DEFAULT '0.0'"),
+    ];
+
+    /// <summary>Tables added by schema v6 (terminal import batches and device logs).</summary>
+    public static readonly IReadOnlyList<string> V6Tables = ["WfImportBatches", "WfDeviceLogs"];
+
+    /// <summary>Columns added by schema v6 to the device registry and the persisted device queue.</summary>
+    public static readonly IReadOnlyList<(string Table, string Column, string Ddl)> V6Columns =
+    [
+        ("WfDevices", "Manufacturer", "TEXT NULL"), ("WfDevices", "Model", "TEXT NULL"), ("WfDevices", "SerialNumber", "TEXT NULL"), ("WfDevices", "Firmware", "TEXT NULL"),
+        ("WfDevices", "Host", "TEXT NULL"), ("WfDevices", "Port", "INTEGER NULL"), ("WfDevices", "Protocol", "TEXT NULL"), ("WfDevices", "Branch", "TEXT NULL"),
+        ("WfDevices", "Location", "TEXT NULL"), ("WfDevices", "UserName", "TEXT NULL"), ("WfDevices", "SecretProtected", "TEXT NULL"),
+        ("WfDevices", "TimeZoneOffsetMinutes", "INTEGER NULL"), ("WfDevices", "ApplyDriftCorrection", "INTEGER NOT NULL DEFAULT 1"),
+        ("WfDevices", "DriftToleranceSeconds", "INTEGER NOT NULL DEFAULT 300"), ("WfDevices", "ClockDriftSeconds", "INTEGER NULL"),
+        ("WfDevices", "ClockDriftMeasuredAt", "INTEGER NULL"), ("WfDevices", "PollIntervalSeconds", "INTEGER NOT NULL DEFAULT 60"),
+        ("WfDevices", "SyncCursor", "TEXT NULL"), ("WfDevices", "LastSyncAt", "INTEGER NULL"), ("WfDevices", "LastSyncStatus", "TEXT NULL"),
+        ("WfDevices", "LastConnectionAt", "INTEGER NULL"), ("WfDevices", "Capabilities", "TEXT NULL"), ("WfDevices", "IsRemoved", "INTEGER NOT NULL DEFAULT 0"),
+        ("WfDevices", "RemovedAt", "INTEGER NULL"),
+        ("WfDeviceInbox", "BatchId", "TEXT NULL"), ("WfDeviceInbox", "VendorEventId", "TEXT NULL"), ("WfDeviceInbox", "DeviceUserId", "TEXT NULL"),
+        ("WfDeviceInbox", "CardNo", "TEXT NULL"), ("WfDeviceInbox", "DeviceLocalTime", "TEXT NULL"), ("WfDeviceInbox", "DeviceOffsetMinutes", "INTEGER NULL"),
+        ("WfDeviceInbox", "Method", "TEXT NULL"), ("WfDeviceInbox", "VerifyResult", "TEXT NULL"), ("WfDeviceInbox", "RawJson", "TEXT NULL"),
+        ("WfDeviceInbox", "ContentHash", "TEXT NULL"), ("WfDeviceInbox", "DriftAppliedSeconds", "INTEGER NULL"), ("WfDeviceInbox", "EmployeeId", "TEXT NULL"),
+        ("WfDeviceInbox", "AttendanceEventId", "TEXT NULL"), ("WfDeviceInbox", "ReviewReason", "TEXT NULL"), ("WfDeviceInbox", "SuggestedUtc", "INTEGER NULL"),
+        ("WfDeviceInbox", "ResolvedBy", "TEXT NULL"), ("WfDeviceInbox", "ResolvedAt", "INTEGER NULL"), ("WfDeviceInbox", "ResolutionNote", "TEXT NULL"),
     ];
 
     public static DbContextOptions<LocalDb> OptionsFor(string connectionString) =>
@@ -358,6 +384,8 @@ public sealed class LocalDb(DbContextOptions<LocalDb> options) : DbContext(optio
             e.HasIndex(x => new { x.DeviceId, x.DeviceEventId }).IsUnique();
             e.HasIndex(x => x.Status);
         });
+        b.Entity<WfImportBatch>(e => { e.HasKey(x => x.Id); e.HasIndex(x => x.DeviceId); });
+        b.Entity<WfDeviceLog>(e => { e.HasKey(x => x.Seq); e.Property(x => x.Seq).ValueGeneratedOnAdd(); e.HasIndex(x => x.DeviceId); });
         b.Entity<WfZone>().HasKey(x => x.Id);
         b.Entity<WfDoor>().HasKey(x => x.Id);
         b.Entity<WfAccessGroup>().HasKey(x => x.Id);
@@ -384,6 +412,7 @@ public sealed class LocalDb(DbContextOptions<LocalDb> options) : DbContext(optio
         if (version < 3) await MigrateToV3Async(ct);
         if (version < 4) await CreateModelTablesAsync(V4Tables, ct);
         if (version < 5) await MigrateToV5Async(ct);
+        if (version < 6) await MigrateColumnsAndTablesAsync(V6Columns, V6Tables, ct);
         await Erp.DefaultChart.EnsureSeededAsync(this, ct);
         if (stored is null) Values.Add(new KeyValue { Key = Keys.SchemaVersion, Value = SchemaVersion.ToString(System.Globalization.CultureInfo.InvariantCulture) });
         else stored.Value = SchemaVersion.ToString(System.Globalization.CultureInfo.InvariantCulture);
@@ -437,10 +466,28 @@ public sealed class LocalDb(DbContextOptions<LocalDb> options) : DbContext(optio
     /// <summary>v4 → v5: workforce profile columns on Employees, statutory deduction columns on payroll, and the workforce tables (additive only).</summary>
     private async Task MigrateToV5Async(CancellationToken ct)
     {
+        await using var tx = await Database.BeginTransactionAsync(ct);
+        await AddMissingColumnsAsync(V5Columns, tx, ct);
+        // Existing employees keep their active flag as status.
+        await Database.ExecuteSqlRawAsync("UPDATE \"Employees\" SET \"Status\" = 'Terminated' WHERE \"IsActive\" = 0 AND \"Status\" = 'Active';", ct);
+        await CreateModelTablesAsync(V5Tables, ct);
+        await tx.CommitAsync(ct);
+    }
+
+    /// <summary>Additive migration: missing columns, then missing tables (with their indexes), in one transaction.</summary>
+    private async Task MigrateColumnsAndTablesAsync(IReadOnlyList<(string Table, string Column, string Ddl)> columns, IReadOnlyList<string> tables, CancellationToken ct)
+    {
+        await using var tx = await Database.BeginTransactionAsync(ct);
+        await AddMissingColumnsAsync(columns, tx, ct);
+        await CreateModelTablesAsync(tables, ct);
+        await tx.CommitAsync(ct);
+    }
+
+    private async Task AddMissingColumnsAsync(IReadOnlyList<(string Table, string Column, string Ddl)> columns, IDbContextTransaction tx, CancellationToken ct)
+    {
         var conn = Database.GetDbConnection();
         if (conn.State != System.Data.ConnectionState.Open) await conn.OpenAsync(ct);
-        await using var tx = await Database.BeginTransactionAsync(ct);
-        foreach (var (table, column, ddl) in V5Columns)
+        foreach (var (table, column, ddl) in columns)
         {
             long count;
             await using (var cmd = conn.CreateCommand())
@@ -453,10 +500,6 @@ public sealed class LocalDb(DbContextOptions<LocalDb> options) : DbContext(optio
             if (count == 0) await Database.ExecuteSqlRawAsync($"ALTER TABLE \"{table}\" ADD COLUMN \"{column}\" {ddl};", ct);
 #pragma warning restore EF1002
         }
-        // Existing employees keep their active flag as status.
-        await Database.ExecuteSqlRawAsync("UPDATE \"Employees\" SET \"Status\" = 'Terminated' WHERE \"IsActive\" = 0 AND \"Status\" = 'Active';", ct);
-        await CreateModelTablesAsync(V5Tables, ct);
-        await tx.CommitAsync(ct);
     }
 
     /// <summary>Creates the given tables (and their indexes) from the model's own DDL, so column types always match the mapping; idempotent.</summary>

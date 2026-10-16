@@ -615,7 +615,7 @@ public sealed class WorkforceTests : IAsyncLifetime
             Assert.Equal(EmployeeStatuses.Terminated, emps.Single(e => e.Id == gone.Id).Status);
             Assert.Equal(25000m, (await db.Payslips.SingleAsync()).Gross);
             Assert.Equal(0m, (await db.PayrollRuns.SingleAsync()).TotalDeductions);
-            Assert.Equal("5", await db.GetValueAsync(LocalDb.Keys.SchemaVersion));
+            Assert.Equal(LocalDb.SchemaVersion.ToString(System.Globalization.CultureInfo.InvariantCulture), await db.GetValueAsync(LocalDb.Keys.SchemaVersion));
         }
         var wf = Wf();
         await wf.UpsertEmployeeAsync(Owner, active.Id, new EmployeeProfileInput("Old active", 25000, new DateOnly(2025, 1, 1)) { ContractType = "CDI" });
@@ -625,7 +625,7 @@ public sealed class WorkforceTests : IAsyncLifetime
     [Fact]
     public async Task Encrypted_backup_includes_every_workforce_table()
     {
-        Assert.Equal(LocalDb.V5Tables.Order(), LocalBackup.WorkforceTableNames.Order());
+        Assert.Equal(LocalDb.V5Tables.Concat(LocalDb.V6Tables).Order(), LocalBackup.WorkforceTableNames.Order());
         var wf = Wf();
         var e = await EmployeeAsync("Backed");
         await wf.AssignCardAsync(Owner, e.Id, "11223344");
