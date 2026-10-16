@@ -16,6 +16,7 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.Serializable
+import com.veltrix.os.data.workforce.*
 
 @Serializable
 @Entity(tableName = "products")
@@ -124,13 +125,16 @@ interface SalesDao {
 }
 
 @Database(entities = [ProductEntity::class, CustomerEntity::class, StockEntity::class, RegisterEntity::class, OutboxEntity::class, LocalSaleEntity::class,
-    LocalSaleLineEntity::class], version = 2, exportSchema = true)
+    LocalSaleLineEntity::class, WfDepartmentEntity::class, WfEmployeeEntity::class, WfCredentialEntity::class, WfShiftEntity::class, WfAssignmentEntity::class,
+    WfAttendanceEventEntity::class, WfLeaveTypeEntity::class, WfLeaveRequestEntity::class, WfLeaveBalanceEntity::class, WfCorrectionEntity::class,
+    WfSettingEntity::class], version = 3, exportSchema = true)
 abstract class VeltrixDatabase : RoomDatabase() {
     abstract fun standalone(): StandaloneDao
     abstract fun catalog(): CatalogDao
     abstract fun outbox(): OutboxDao
     abstract fun sales(): SalesDao
     abstract fun posLocal(): PosLocalDao
+    abstract fun workforce(): WorkforceDao
 }
 
 /** Atomic local sale: stock decrement + receipt + outbox entry commit together. */
@@ -207,4 +211,34 @@ abstract class StandaloneDao {
         clearLines(); clearSales(); clearStock(); clearRegisters(); clearCustomers(); clearProducts(); clearOutbox()
         insertProducts(products); insertCustomers(customers); insertStock(stock); insertRegisters(registers); insertSales(sales); insertLines(lines)
     }
+}
+
+/** Additive v2 → v3 migration: Workforce & Attendance tables. Statements are identical to Room's exported schema 3 (checked by a unit test). */
+val MIGRATION_2_3_SQL: List<String> = listOf(
+    "CREATE TABLE IF NOT EXISTS `wf_departments` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+    "CREATE TABLE IF NOT EXISTS `wf_employees` (`id` TEXT NOT NULL, `number` TEXT NOT NULL, `name` TEXT NOT NULL, `departmentId` TEXT, `position` TEXT, `status` TEXT NOT NULL, `photoUri` TEXT, `hireDate` TEXT, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+    "CREATE UNIQUE INDEX IF NOT EXISTS `index_wf_employees_number` ON `wf_employees` (`number`)",
+    "CREATE INDEX IF NOT EXISTS `index_wf_employees_departmentId` ON `wf_employees` (`departmentId`)",
+    "CREATE TABLE IF NOT EXISTS `wf_credentials` (`id` TEXT NOT NULL, `employeeId` TEXT NOT NULL, `kind` TEXT NOT NULL, `value` TEXT NOT NULL, `active` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL, `revokedAt` INTEGER, PRIMARY KEY(`id`))",
+    "CREATE INDEX IF NOT EXISTS `index_wf_credentials_kind_value` ON `wf_credentials` (`kind`, `value`)",
+    "CREATE INDEX IF NOT EXISTS `index_wf_credentials_employeeId` ON `wf_credentials` (`employeeId`)",
+    "CREATE TABLE IF NOT EXISTS `wf_shifts` (`id` TEXT NOT NULL, `code` TEXT NOT NULL, `name` TEXT NOT NULL, `segments` TEXT NOT NULL, `breakMinutes` INTEGER NOT NULL, `graceInMinutes` INTEGER NOT NULL, `graceOutMinutes` INTEGER NOT NULL, `isFlexible` INTEGER NOT NULL, `coreStart` TEXT, `coreEnd` TEXT, `requiredMinutes` INTEGER NOT NULL, `active` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+    "CREATE UNIQUE INDEX IF NOT EXISTS `index_wf_shifts_code` ON `wf_shifts` (`code`)",
+    "CREATE TABLE IF NOT EXISTS `wf_assignments` (`id` TEXT NOT NULL, `employeeId` TEXT NOT NULL, `shiftId` TEXT NOT NULL, `fromDate` TEXT NOT NULL, `toDate` TEXT, `daysMask` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+    "CREATE INDEX IF NOT EXISTS `index_wf_assignments_employeeId` ON `wf_assignments` (`employeeId`)",
+    "CREATE TABLE IF NOT EXISTS `wf_attendance_events` (`seq` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `id` TEXT NOT NULL, `employeeId` TEXT NOT NULL, `type` TEXT NOT NULL, `source` TEXT NOT NULL, `occurredAt` INTEGER NOT NULL, `localOffsetMinutes` INTEGER NOT NULL, `recordedAt` INTEGER NOT NULL, `createdBy` TEXT, `reason` TEXT, `authorizedBy` TEXT, `correctionId` TEXT, `compensatesEventId` TEXT, `prevHash` TEXT NOT NULL, `hash` TEXT NOT NULL)",
+    "CREATE UNIQUE INDEX IF NOT EXISTS `index_wf_attendance_events_id` ON `wf_attendance_events` (`id`)",
+    "CREATE INDEX IF NOT EXISTS `index_wf_attendance_events_employeeId_occurredAt` ON `wf_attendance_events` (`employeeId`, `occurredAt`)",
+    "CREATE TABLE IF NOT EXISTS `wf_leave_types` (`id` TEXT NOT NULL, `code` TEXT NOT NULL, `name` TEXT NOT NULL, `isPaid` INTEGER NOT NULL, `annualDays` REAL NOT NULL, PRIMARY KEY(`id`))",
+    "CREATE UNIQUE INDEX IF NOT EXISTS `index_wf_leave_types_code` ON `wf_leave_types` (`code`)",
+    "CREATE TABLE IF NOT EXISTS `wf_leave_requests` (`id` TEXT NOT NULL, `employeeId` TEXT NOT NULL, `leaveTypeId` TEXT NOT NULL, `fromDate` TEXT NOT NULL, `toDate` TEXT NOT NULL, `days` REAL NOT NULL, `reason` TEXT, `status` TEXT NOT NULL, `requestedBy` TEXT NOT NULL, `decidedBy` TEXT, `decidedAt` INTEGER, `createdAt` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+    "CREATE INDEX IF NOT EXISTS `index_wf_leave_requests_employeeId` ON `wf_leave_requests` (`employeeId`)",
+    "CREATE TABLE IF NOT EXISTS `wf_leave_balances` (`employeeId` TEXT NOT NULL, `leaveTypeId` TEXT NOT NULL, `year` INTEGER NOT NULL, `entitledDays` REAL NOT NULL, PRIMARY KEY(`employeeId`, `leaveTypeId`, `year`))",
+    "CREATE TABLE IF NOT EXISTS `wf_corrections` (`id` TEXT NOT NULL, `employeeId` TEXT NOT NULL, `kind` TEXT NOT NULL, `eventId` TEXT, `punchType` TEXT, `occurredAt` INTEGER, `reason` TEXT NOT NULL, `status` TEXT NOT NULL, `requestedBy` TEXT NOT NULL, `decidedBy` TEXT, `decidedAt` INTEGER, `createdAt` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+    "CREATE INDEX IF NOT EXISTS `index_wf_corrections_employeeId` ON `wf_corrections` (`employeeId`)",
+    "CREATE TABLE IF NOT EXISTS `wf_settings` (`key` TEXT NOT NULL, `value` TEXT NOT NULL, PRIMARY KEY(`key`))",
+)
+
+val MIGRATION_2_3 = object : Migration(2, 3) {
+    override fun migrate(db: SupportSQLiteDatabase) = MIGRATION_2_3_SQL.forEach(db::execSQL)
 }

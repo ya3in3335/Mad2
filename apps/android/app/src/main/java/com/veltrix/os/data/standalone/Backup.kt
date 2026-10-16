@@ -25,6 +25,8 @@ data class BackupPayload(
     val version: Int, val createdAt: Long, val tenantId: String?, val tenantName: String?, val usersJson: String,
     val products: List<ProductEntity>, val customers: List<CustomerEntity>, val stock: List<StockEntity>, val registers: List<RegisterEntity>,
     val sales: List<LocalSaleEntity>, val lines: List<LocalSaleLineEntity>, val receiptCounter: Long = 0,
+    /** Workforce & Attendance tables (null in backups made before schema v3; restoring such a file keeps the current workforce data). */
+    val workforce: com.veltrix.os.data.workforce.WorkforceSnapshot? = null,
 )
 
 class BackupException(val key: String) : Exception(key)

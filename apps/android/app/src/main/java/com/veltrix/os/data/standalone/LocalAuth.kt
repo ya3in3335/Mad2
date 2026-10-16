@@ -22,14 +22,41 @@ interface SecretStore {
 object LocalRoles {
     const val OWNER = "owner"
     const val CASHIER = "cashier"
-    val CASHIER_PERMISSIONS = listOf("pos.sell", "catalog.view", "customers.view", "customers.manage", "sales.view", "inventory.view")
+    /** Supervisor: cashier rights + workforce management (employees, shifts, attendance, leave, reports). */
+    const val SUPERVISOR = "supervisor"
+    val ALL = listOf(OWNER, SUPERVISOR, CASHIER)
+    val CASHIER_PERMISSIONS = listOf("pos.sell", "catalog.view", "customers.view", "customers.manage", "sales.view", "inventory.view", WorkforcePermissions.KIOSK)
+    val SUPERVISOR_PERMISSIONS = CASHIER_PERMISSIONS + WorkforcePermissions.SUPERVISOR
+
+    fun permissionsFor(role: String): List<String> = when (role) {
+        OWNER -> listOf("*")
+        SUPERVISOR -> SUPERVISOR_PERMISSIONS
+        else -> CASHIER_PERMISSIONS
+    }
+}
+
+/** Workforce permissions for local roles: owner + supervisor manage, cashier can only use the attendance kiosk. */
+object WorkforcePermissions {
+    const val KIOSK = "workforce.kiosk"
+    const val VIEW = "workforce.view"
+    const val MANAGE = "workforce.manage"
+    const val MANUAL_PUNCH = "workforce.punch.manual"
+    const val CORRECTIONS_REQUEST = "workforce.corrections.request"
+    /** Owner only (as on Windows, supervisors cannot approve attendance corrections). */
+    const val CORRECTIONS_APPROVE = "workforce.corrections.approve"
+    const val LEAVE_APPROVE = "workforce.leave.approve"
+    const val REPORTS = "workforce.reports"
+    val SUPERVISOR = listOf(VIEW, MANAGE, MANUAL_PUNCH, CORRECTIONS_REQUEST, LEAVE_APPROVE, REPORTS)
+
+    fun has(user: LocalUser?, permission: String): Boolean = user != null && user.active &&
+        LocalRoles.permissionsFor(user.role).let { "*" in it || permission in it }
 }
 
 /** A user of a standalone (offline-licensed) installation. Only a salted PBKDF2 hash of the secret is kept. */
 @Serializable
 data class LocalUser(val id: String, val name: String, val role: String, val secretHash: String, val createdAt: Long, val active: Boolean = true) {
     val isOwner: Boolean get() = role == LocalRoles.OWNER
-    fun toProfile() = UserProfile(id, name, name, null, false, listOf(role), if (isOwner) listOf("*") else LocalRoles.CASHIER_PERMISSIONS)
+    fun toProfile() = UserProfile(id, name, name, null, false, listOf(role), LocalRoles.permissionsFor(role))
 }
 
 /** Salted PBKDF2-HMAC-SHA256: `pbkdf2-sha256$iterations$salt(b64)$hash(b64)`. */
@@ -88,7 +115,7 @@ class LocalAuth(private val store: SecretStore, private val clock: () -> Long = 
     }
 
     @Synchronized fun addUser(name: String, secret: String, role: String): LocalUser {
-        require(role == LocalRoles.OWNER || role == LocalRoles.CASHIER) { "Unknown role" }
+        require(role in LocalRoles.ALL) { "Unknown role" }
         if (!hasOwner) throw LocalAuthException("owner_missing")
         return add(name, secret, role)
     }
@@ -113,6 +140,10 @@ class LocalAuth(private val store: SecretStore, private val clock: () -> Long = 
     }
 
     /** Checks a secret without touching the lockout counters (owner confirmation before a backup). */
+    /** Owner/supervisor authorization for a manual punch: the named account must hold [permission] and the secret must match. */
+    fun authorize(name: String, secret: String, permission: String): LocalUser? =
+        load().firstOrNull { it.active && same(it.name, name) }?.takeIf { WorkforcePermissions.has(it, permission) && PasswordHasher.verify(secret, it.secretHash) }
+
     fun verify(id: String, secret: String): Boolean = load().firstOrNull { it.id == id }?.let { PasswordHasher.verify(secret, it.secretHash) } == true
 
     @Synchronized fun signIn(name: String, secret: String): LocalSignInResult {

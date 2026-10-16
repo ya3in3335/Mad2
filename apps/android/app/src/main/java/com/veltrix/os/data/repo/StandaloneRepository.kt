@@ -108,7 +108,8 @@ class StandaloneRepository @Inject constructor(private val db: VeltrixDatabase, 
         if (!user.isOwner) throw LocalAuthException("owner_only")
         if (!auth.verify(user.id, password)) throw LocalAuthException("invalid")
         val payload = BackupPayload(BackupCodec.VERSION, System.currentTimeMillis(), settings.tenantId, settings.tenantName, auth.exportUsers(),
-            dao.allProducts(), dao.allCustomers(), dao.allStock(), dao.allRegisters(), dao.allSales(), dao.allLines(), settings.receiptCounter)
+            dao.allProducts(), dao.allCustomers(), dao.allStock(), dao.allRegisters(), dao.allSales(), dao.allLines(), settings.receiptCounter,
+            db.workforce().snapshot())
         BackupCodec.encrypt(payload, password)
     }
 
@@ -117,6 +118,7 @@ class StandaloneRepository @Inject constructor(private val db: VeltrixDatabase, 
         if (!licenseValid) throw BackupException("license_required")
         val p = BackupCodec.decrypt(file, password)
         dao.replaceAll(p.products, p.customers, p.stock, p.registers, p.sales, p.lines)
+        p.workforce?.let { db.workforce().replaceAll(it) }
         auth.importUsers(p.usersJson)
         settings.receiptCounter = maxOf(settings.receiptCounter, p.receiptCounter)
         settings.shiftId = null

@@ -31,7 +31,7 @@ object ModePolicy {
     /** Screens that inherently need the server (multi-device sync, accounting, HR, notifications/Telegram, branches). */
     val SERVER_ONLY_ROUTES = setOf("expenses", "employees", "notifications", "branch", "sync")
     /** Screens that only make sense standalone (local users, encrypted backup). */
-    val STANDALONE_ONLY_ROUTES = setOf("users", "backup")
+    val STANDALONE_ONLY_ROUTES = setOf("users", "backup", "workforce", "kiosk")
 
     fun isVisible(route: String, standalone: Boolean): Boolean =
         if (standalone) route !in SERVER_ONLY_ROUTES else route !in STANDALONE_ONLY_ROUTES

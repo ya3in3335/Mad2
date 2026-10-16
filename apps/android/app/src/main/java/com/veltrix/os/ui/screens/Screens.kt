@@ -588,7 +588,7 @@ fun UsersScreen(vm: ScreensViewModel = hiltViewModel()) {
                     visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation())
                 Text(stringResource(R.string.sa_secretRule), style = MaterialTheme.typography.bodySmall)
                 Row {
-                    listOf(com.veltrix.os.data.standalone.LocalRoles.CASHIER, com.veltrix.os.data.standalone.LocalRoles.OWNER).forEach { r ->
+                    com.veltrix.os.data.standalone.LocalRoles.ALL.forEach { r ->
                         FilterChip(role == r, { role = r }, { Text(r) }, Modifier.padding(end = 6.dp))
                     }
                 }
