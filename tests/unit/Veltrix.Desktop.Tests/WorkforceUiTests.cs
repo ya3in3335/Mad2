@@ -169,6 +169,91 @@ public sealed class WorkforceUiTests : IAsyncLifetime
         Assert.Equal([(PunchTypes.In, PunchSources.Card), (PunchTypes.Out, PunchSources.Pin)], types);
     }
 
+    [Fact]
+    public async Task Kiosk_starts_enabled_registry_devices_when_opened_and_disposes_them_on_close()
+    {
+        var lina = await EmployeeAsync("Lina");
+        await Wf.AssignCardAsync(Owner, lina.Id, "CAFE0001");
+        var virt = await Wf.UpsertDeviceAsync(Owner, null, new DeviceInput("Entrance terminal", DeviceKinds.Virtual));
+        await Wf.UpsertDeviceAsync(Owner, null, new DeviceInput("Spare (disabled)", DeviceKinds.Virtual, IsEnabled: false));
+        await Wf.UpsertDeviceAsync(Owner, null, new DeviceInput("USB reader", DeviceKinds.KeyboardWedge)); // read through the scan box
+        await Wf.UpsertDeviceAsync(Owner, null, new DeviceInput("ZK", DeviceKinds.Vendor));
+        var vm = new WfKioskViewModel(Services(LocalRoles.Owner));
+
+        await vm.OpenDevicesAsync();
+        await vm.OpenDevicesAsync(); // full-screen window opened too: same devices
+        var terminal = Assert.IsType<VirtualTerminal>(Assert.Single(vm.RegistryDevices));
+        Assert.Equal(virt.Id, terminal.DeviceId);
+        Assert.Equal(DeviceConnectionState.Connected, terminal.State);
+        Assert.NotNull((await Wf.DevicesAsync(Owner)).Single(d => d.Id == virt.Id).LastSeenAt);
+
+        terminal.SimulateCard("CAFE0001");
+        var fb = await vm.LastScan!;
+        Assert.True(fb.Success);
+        Assert.Equal("Lina", fb.EmployeeName);
+        Assert.Equal(virt.Id, Assert.Single(await Wf.EventsAsync(Owner, lina.Id, _time.GetUtcNow().AddHours(-1), _time.GetUtcNow())).DeviceId);
+
+        await vm.CloseDevicesAsync();
+        Assert.Single(vm.RegistryDevices); // still open in the other view
+        await vm.CloseDevicesAsync();
+        Assert.Empty(vm.RegistryDevices);
+        Assert.Equal(DeviceConnectionState.Disconnected, terminal.State);
+        var last = vm.LastScan;
+        terminal.SimulateCard("CAFE0001");
+        Assert.Same(last, vm.LastScan);
+    }
+
+    // ------------------------------------------------------------------ overtime pay
+
+    [Fact]
+    public async Task Payroll_pays_approved_overtime_only_unless_pending_overtime_is_enabled()
+    {
+        var tpl = await Wf.UpsertShiftTemplateAsync(Owner, null, new ShiftTemplateInput("D", "Day", [new ShiftSegment(new TimeOnly(8, 0), new TimeOnly(16, 0))]));
+        var e = await EmployeeAsync("Rania");
+        await Wf.AssignShiftAsync(Owner, new AssignmentInput(e.Id, new DateOnly(2026, 10, 1), TemplateId: tpl.Id));
+        var mon = new DateOnly(2026, 10, 12);
+        foreach (var (type, h) in new[] { (PunchTypes.In, 8), (PunchTypes.Out, 18) })
+            await Wf.RecordPunchAsync(Owner, new PunchInput(e.Id, type, PunchSources.Manual, new DateTimeOffset(mon.ToDateTime(new TimeOnly(h, 0)), TimeSpan.Zero),
+                Reason: "test", AuthorizedBy: "boss"));
+        var ot = (await Wf.ComputeAttendanceAsync(Owner, mon, mon, e.Id)).Single().OvertimeMinutes;
+        Assert.True(ot > 0);
+
+        async Task<WfPayrollPrepLine> PrepAsync() => (await Wf.PreparePayrollAsync(Owner, 2026, 10)).Lines.Single(l => l.EmployeeId == e.Id);
+
+        var pending = await PrepAsync(); // no decision: not paid by default
+        Assert.Equal((0, 0m), (pending.OvertimeMinutes, pending.OvertimeAmount));
+
+        await Wf.DecideOvertimeAsync(Owner, e.Id, mon, ot, approve: true);
+        var approved = await PrepAsync();
+        Assert.Equal(ot, approved.OvertimeMinutes);
+        Assert.True(approved.OvertimeAmount > 0);
+
+        await Wf.DecideOvertimeAsync(Owner, e.Id, mon, ot, approve: false);
+        Assert.Equal(0m, (await PrepAsync()).OvertimeAmount);
+
+        // "Pay pending overtime" on: unreviewed overtime is paid, rejected overtime still is not.
+        var policy = await Wf.PolicyAsync();
+        await Wf.SavePolicyAsync(Owner, policy with { Payroll = policy.Payroll with { PayPendingOvertime = true } });
+        Assert.Equal(0m, (await PrepAsync()).OvertimeAmount);
+        await Wf.DecideOvertimeAsync(Owner, e.Id, mon, ot + 15, approve: false); // decision on other minutes = stale → pending again
+        Assert.Equal(approved.OvertimeAmount, (await PrepAsync()).OvertimeAmount);
+
+        // Pure rule.
+        var day = (await Wf.ComputeAttendanceAsync(Owner, mon, mon, e.Id)).Single();
+        OvertimeDecision Dec(string status, int minutes) => new(e.Id, mon, minutes, status, "x", _time.GetUtcNow());
+        Assert.Equal(ot, WorkforceService.PayableOvertime(day, Dec(RequestStatuses.Approved, ot), false));
+        Assert.Equal(0, WorkforceService.PayableOvertime(day, Dec(RequestStatuses.Rejected, ot), true));
+        Assert.Equal(0, WorkforceService.PayableOvertime(day, null, false));
+        Assert.Equal(ot, WorkforceService.PayableOvertime(day, null, true));
+
+        // Settings screen round-trips the switch.
+        var settings = new WfSettingsViewModel(Services(LocalRoles.Owner));
+        await settings.RefreshAsync();
+        Assert.True(settings.PayPendingOvertime);
+        settings.PayPendingOvertime = false;
+        Assert.False(settings.BuildPolicy().Payroll.PayPendingOvertime);
+    }
+
     // ------------------------------------------------------------------ navigation (RBAC)
 
     [Fact]

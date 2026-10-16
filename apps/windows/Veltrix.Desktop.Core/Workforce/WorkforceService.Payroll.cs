@@ -76,18 +76,31 @@ public sealed partial class WorkforceService
         var days = (await ComputeCoreAsync(db, employees, from, to, ct)).ToLookup(d => d.EmployeeId);
         var items = await db.WfPayItems.AsNoTracking().ToListAsync(ct);
         var rules = await db.WfStatutoryRules.AsNoTracking().ToListAsync(ct);
+        var decisions = (await LoadOvertimeDecisionsAsync(db, ct)).ToDictionary(d => (d.EmployeeId, d.Date));
+        var payPending = policy.Payroll.PayPendingOvertime;
         var prep = new WfPayrollPrep { Id = Guid.NewGuid(), Year = year, Month = month, CreatedAt = now, CreatedBy = actor.UserName };
         db.WfPayrollPreps.Add(prep);
         var lines = new List<WfPayrollPrepLine>();
         foreach (var e in employees)
         {
-            var line = PayrollCalculator.Compute(e, days[e.Id].ToList(), policy.Payroll, items, rules, from, to);
+            var line = PayrollCalculator.Compute(e, days[e.Id].ToList(), policy.Payroll, items, rules, from, to,
+                d => PayableOvertime(d, decisions.GetValueOrDefault((d.EmployeeId, d.Date)), payPending));
             line.PrepId = prep.Id;
             lines.Add(line);
         }
         db.WfPayrollPrepLines.AddRange(lines);
         return new PayrollPrepView(prep, lines, StatutoryNotice.Text);
     }, ct);
+
+    /// <summary>
+    /// Overtime minutes paid for a day: approved → paid, rejected → not paid, no decision (or a decision taken on different minutes,
+    /// i.e. overtime recomputed since) → pending, paid only when <see cref="PayrollPolicy.PayPendingOvertime"/> is on.
+    /// </summary>
+    public static int PayableOvertime(DayResult day, OvertimeDecision? decision, bool payPending) =>
+        day.OvertimeMinutes <= 0 ? 0
+        : decision is not null && decision.Minutes == day.OvertimeMinutes
+            ? decision.Status == RequestStatuses.Approved ? day.OvertimeMinutes : 0
+            : payPending ? day.OvertimeMinutes : 0;
 
     public async Task<PayrollPrepView?> PayrollPrepAsync(WorkforceActor actor, int year, int month, CancellationToken ct = default)
     {

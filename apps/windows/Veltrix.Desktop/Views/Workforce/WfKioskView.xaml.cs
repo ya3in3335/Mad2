@@ -20,6 +20,7 @@ public partial class WfKioskView : UserControl
     private readonly DispatcherTimer _clock = new() { Interval = TimeSpan.FromSeconds(1) };
     private readonly DispatcherTimer _hide = new() { Interval = TimeSpan.FromSeconds(5) };
     private WfKioskViewModel? _vm;
+    private WfKioskViewModel? _devicesFor;
     private static KioskWindow? _window;
 
     public WfKioskView()
@@ -35,12 +36,15 @@ public partial class WfKioskView : UserControl
         Loaded += (_, _) =>
         {
             Bind(DataContext as WfKioskViewModel);
+            // Registered serial / TCP / virtual readers run while the kiosk is shown (reference-counted with the full-screen window).
+            if (_vm is { } vm && _devicesFor is null) { _devicesFor = vm; _ = vm.OpenDevicesAsync(); }
             _clock.Start();
             FocusScan();
         };
         Unloaded += (_, _) =>
         {
             _clock.Stop();
+            if (_devicesFor is { } vm) { _devicesFor = null; _ = vm.CloseDevicesAsync(); }
             Bind(null);
         };
         // Clicking anywhere (but the keypad) returns the focus to the capture box so the next card is not lost.

@@ -367,7 +367,7 @@
     <sys:String x:Key="wf.ot.approveAll">Tout approuver</sys:String>
     <sys:String x:Key="wf.ot.approveAllConfirm">Approuver les {0} ligne(s) d'heures sup en attente ?</sys:String>
     <sys:String x:Key="wf.ot.approved">Heures sup approuvées.</sys:String>
-    <sys:String x:Key="wf.ot.note">Les heures sup sont calculées à partir des pointages et de la politique (seuil, minimum, arrondi). Une décision porte sur les minutes validées ; si elles changent, le jour revient en validation.</sys:String>
+    <sys:String x:Key="wf.ot.note">Les heures sup sont calculées à partir des pointages et de la politique (seuil, minimum, arrondi). La paie ne paie que les heures sup approuvées ; les minutes refusées ne sont jamais payées et celles non validées seulement si « Payer les heures sup en attente » est activé (Paramètres RH). Une décision porte sur les minutes validées ; si elles changent, le jour revient en validation.</sys:String>
     <sys:String x:Key="wf.ot.rejected">Heures sup refusées.</sys:String>
     <sys:String x:Key="wf.ot.totalApproved">Approuvées</sys:String>
     <sys:String x:Key="wf.ot.totalPending">À valider</sys:String>
@@ -448,6 +448,8 @@
     <sys:String x:Key="wf.set.otThreshold">Seuil journalier (min)</sys:String>
     <sys:String x:Key="wf.set.overtime">Heures supplémentaires</sys:String>
     <sys:String x:Key="wf.set.paid">Payé</sys:String>
+    <sys:String x:Key="wf.set.payPending">Payer les heures sup en attente de validation</sys:String>
+    <sys:String x:Key="wf.set.payPendingHint">Désactivé : la paie ne paie que les heures sup approuvées (les refusées ne sont jamais payées).</sys:String>
     <sys:String x:Key="wf.set.payroll">Paie</sys:String>
     <sys:String x:Key="wf.set.policy">Politique de présence et de paie</sys:String>
     <sys:String x:Key="wf.set.removeHolidayConfirm">Supprimer ce jour férié ?</sys:String>

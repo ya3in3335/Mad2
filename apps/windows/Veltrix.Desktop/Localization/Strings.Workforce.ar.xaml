@@ -367,7 +367,7 @@
     <sys:String x:Key="wf.ot.approveAll">الموافقة على الكل</sys:String>
     <sys:String x:Key="wf.ot.approveAllConfirm">الموافقة على {0} سطر ساعات إضافية معلّق؟</sys:String>
     <sys:String x:Key="wf.ot.approved">تمت الموافقة على الساعات الإضافية.</sys:String>
-    <sys:String x:Key="wf.ot.note">تُحسب الساعات الإضافية من التسجيلات وسياسة الساعات الإضافية (العتبة، الحد الأدنى، التقريب). يشمل القرار الدقائق التي اتُّخذ عليها؛ وإن تغيّرت يعود اليوم للمراجعة.</sys:String>
+    <sys:String x:Key="wf.ot.note">تُحسب الساعات الإضافية من التسجيلات وسياسة الساعات الإضافية (العتبة، الحد الأدنى، التقريب). لا تُدفع في الأجور إلا الساعات الإضافية الموافق عليها؛ الدقائق المرفوضة لا تُدفع أبداً وغير المراجَعة تُدفع فقط عند تفعيل «دفع الساعات الإضافية قيد المراجعة» (إعدادات الموارد البشرية). يشمل القرار الدقائق التي اتُّخذ عليها؛ وإن تغيّرت يعود اليوم للمراجعة.</sys:String>
     <sys:String x:Key="wf.ot.rejected">تم رفض الساعات الإضافية.</sys:String>
     <sys:String x:Key="wf.ot.totalApproved">الموافق عليها</sys:String>
     <sys:String x:Key="wf.ot.totalPending">للمراجعة</sys:String>
@@ -448,6 +448,8 @@
     <sys:String x:Key="wf.set.otThreshold">العتبة اليومية (دقيقة)</sys:String>
     <sys:String x:Key="wf.set.overtime">الساعات الإضافية</sys:String>
     <sys:String x:Key="wf.set.paid">مدفوع</sys:String>
+    <sys:String x:Key="wf.set.payPending">دفع الساعات الإضافية قيد المراجعة</sys:String>
+    <sys:String x:Key="wf.set.payPendingHint">معطّل: لا تُدفع إلا الساعات الإضافية الموافق عليها (المرفوضة لا تُدفع أبداً).</sys:String>
     <sys:String x:Key="wf.set.payroll">الأجور</sys:String>
     <sys:String x:Key="wf.set.policy">سياسة الحضور والأجور</sys:String>
     <sys:String x:Key="wf.set.removeHolidayConfirm">حذف هذه العطلة؟</sys:String>

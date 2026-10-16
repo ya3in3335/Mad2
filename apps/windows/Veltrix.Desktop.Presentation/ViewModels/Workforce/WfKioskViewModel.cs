@@ -18,6 +18,10 @@ public sealed partial class WfKioskViewModel : WorkforcePageViewModel, IDisposab
     /// <summary>Default prefix of QR tokens typed by 2D scanners in keyboard mode (see <see cref="KeyboardWedgeConfig.QrPrefix"/>).</summary>
     public const string QrPrefix = "VQR:";
     private readonly List<IAttendanceDevice> _devices = [];
+    /// <summary>Readers started from the device registry while the kiosk is open (owned: disposed on close).</summary>
+    private readonly List<IAttendanceDevice> _owned = [];
+    private readonly SemaphoreSlim _deviceGate = new(1, 1);
+    private int _openCount;
 
     public WfKioskViewModel(DesktopServices s) : base(s) => Tick();
 
@@ -166,6 +170,77 @@ public sealed partial class WfKioskViewModel : WorkforcePageViewModel, IDisposab
         if (_devices.Remove(device)) device.Scanned -= OnDeviceScanned;
     }
 
+    /// <summary>Devices of the registry currently running for this kiosk.</summary>
+    public IReadOnlyList<IAttendanceDevice> RegistryDevices => _owned.ToList();
+
+    /// <summary>Kinds the kiosk starts itself (keyboard-wedge readers type into the scan box; vendor terminals need an SDK).</summary>
+    public static bool AutoStarts(WfDevice d) => d.IsEnabled && d.Kind is DeviceKinds.Virtual or DeviceKinds.Serial or DeviceKinds.TcpLine;
+
+    /// <summary>
+    /// Kiosk opened (view shown): starts and attaches every enabled virtual / serial / TCP device of the registry. Reference-counted, so the
+    /// page and the full-screen window can both open it; the devices stop when the last one closes.
+    /// </summary>
+    public async Task OpenDevicesAsync()
+    {
+        await _deviceGate.WaitAsync();
+        try
+        {
+            if (_openCount++ > 0) return;
+            List<WfDevice> registry;
+            await using (var db = S.Db()) registry = db.WfDevices.AsEnumerable().Where(AutoStarts).OrderBy(d => d.Name).ToList();
+            await Task.WhenAll(registry.Select(StartAsync));
+        }
+        catch (Exception e) when (e is not OperationCanceledException) { S.Log.Warn("Kiosk devices failed to start", e); }
+        finally { _deviceGate.Release(); }
+    }
+
+    private async Task StartAsync(WfDevice config)
+    {
+        IAttendanceDevice device;
+        try { device = DeviceFactory.Create(config, S.Time); }
+        catch (Exception e) when (e is NotSupportedException or System.Text.Json.JsonException)
+        {
+            await Health(config.Id, false, e.Message);
+            return;
+        }
+        lock (_owned) _owned.Add(device);
+        device.StateChanged += (_, st) => { if (st == DeviceConnectionState.Connected) _ = Health(device.DeviceId, true, null); };
+        device.Faulted += (_, ex) => _ = Health(device.DeviceId, false, ex.Message);
+        AttachDevice(device);
+        try { await device.ConnectAsync(); }
+        catch (Exception e) when (e is not OperationCanceledException) { await Health(config.Id, false, e.Message); }
+    }
+
+    private async Task Health(Guid deviceId, bool ok, string? error)
+    {
+        try { await Wf.RecordDeviceHealthAsync(deviceId, ok, error); }
+        catch (Exception e) { S.Log.Warn("Device health update failed", e); }
+    }
+
+    /// <summary>Kiosk closed: detaches and disposes the registry devices once nobody has the kiosk open.</summary>
+    public async Task CloseDevicesAsync()
+    {
+        await _deviceGate.WaitAsync();
+        try
+        {
+            if (_openCount == 0 || --_openCount > 0) return;
+            await StopOwnedAsync();
+        }
+        finally { _deviceGate.Release(); }
+    }
+
+    private async Task StopOwnedAsync()
+    {
+        List<IAttendanceDevice> owned;
+        lock (_owned) { owned = _owned.ToList(); _owned.Clear(); }
+        foreach (var d in owned)
+        {
+            DetachDevice(d);
+            try { await d.DisposeAsync(); }
+            catch (Exception e) { S.Log.Warn("Device stop failed", e); }
+        }
+    }
+
     private void OnDeviceScanned(object? sender, DeviceScan scan) =>
         LastScan = ProcessAsync(scan.CredentialKind, scan.CredentialValue, scan.PunchType, scan.DeviceId, scan.DeviceEventId, scan.OccurredAtUtc);
 
@@ -218,6 +293,8 @@ public sealed partial class WfKioskViewModel : WorkforcePageViewModel, IDisposab
 
     public void Dispose()
     {
+        _openCount = 0;
+        StopOwnedAsync().GetAwaiter().GetResult();
         foreach (var d in _devices.ToList()) DetachDevice(d);
     }
 }

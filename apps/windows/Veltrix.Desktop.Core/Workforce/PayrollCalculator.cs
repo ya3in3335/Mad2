@@ -18,7 +18,7 @@ public static class PayrollCalculator
         e.PayBasis == "Hourly" ? e.HourlyRate : p.StandardMonthlyHours > 0 ? e.Salary / p.StandardMonthlyHours : 0;
 
     public static WfPayrollPrepLine Compute(LocalEmployee e, IReadOnlyList<DayResult> days, PayrollPolicy p, IEnumerable<WfPayItem> items,
-        IEnumerable<WfStatutoryRule> rules, DateOnly periodStart, DateOnly periodEnd)
+        IEnumerable<WfStatutoryRule> rules, DateOnly periodStart, DateOnly periodEnd, Func<DayResult, int>? payableOvertime = null)
     {
         var hourly = e.PayBasis == "Hourly";
         var rate = HourlyRate(e, p);
@@ -31,13 +31,15 @@ public static class PayrollCalculator
         {
             worked += d.WorkedMinutes;
             late += d.LateMinutes;
-            otMinutes += d.OvertimeMinutes;
-            if (d.IsHoliday) ot += d.OvertimeMinutes * perMinute * p.HolidayMultiplier;
-            else if (d.IsRestDay) ot += d.OvertimeMinutes * perMinute * p.RestDayMultiplier;
+            // Overtime actually paid (review decisions): rejected / unreviewed minutes are neither overtime nor regular pay.
+            var paid = Math.Clamp(payableOvertime?.Invoke(d) ?? d.OvertimeMinutes, 0, d.OvertimeMinutes);
+            otMinutes += paid;
+            if (d.IsHoliday) ot += paid * perMinute * p.HolidayMultiplier;
+            else if (d.IsRestDay) ot += paid * perMinute * p.RestDayMultiplier;
             else
             {
-                var t1 = Math.Min(d.OvertimeMinutes, p.Tier1MinutesPerDay);
-                ot += t1 * perMinute * p.Tier1Multiplier + (d.OvertimeMinutes - t1) * perMinute * p.Tier2Multiplier;
+                var t1 = Math.Min(paid, p.Tier1MinutesPerDay);
+                ot += t1 * perMinute * p.Tier1Multiplier + (paid - t1) * perMinute * p.Tier2Multiplier;
                 regular += Math.Max(0, d.WorkedMinutes - d.OvertimeMinutes);
             }
             if (d.Leave is { IsPaid: true } && d.WorkedMinutes == 0 && d.IsScheduledWorkday) regular += d.ScheduledMinutes;

@@ -88,6 +88,8 @@
                                     <ComboBox ItemsSource="{x:Static vm:WfSettingsViewModel.LateMethods}" SelectedItem="{Binding LateMethod}"/>
                                     <TextBlock Text="{DynamicResource wf.set.lateTolerance}" Style="{StaticResource Text.Label}"/>
                                     <TextBox Text="{Binding LateTolerance}" FlowDirection="LeftToRight"/>
+                                    <CheckBox Content="{DynamicResource wf.set.payPending}" IsChecked="{Binding PayPendingOvertime}" Margin="0,10,0,0"/>
+                                    <TextBlock Text="{DynamicResource wf.set.payPendingHint}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap"/>
                                     <Button Content="{DynamicResource action.save}" Command="{Binding SavePolicyCommand}" Style="{StaticResource Button.Primary}" Margin="0,12,0,0"/>
                                 </StackPanel>
                             </Border>

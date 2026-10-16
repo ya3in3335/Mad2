@@ -55,6 +55,7 @@ public sealed partial class WfSettingsViewModel : WorkforcePageViewModel
     [ObservableProperty] private AbsenceDeductionMethod _absenceMethod;
     [ObservableProperty] private LateAdjustmentMethod _lateMethod;
     [ObservableProperty] private string _lateTolerance = "0";
+    [ObservableProperty] private bool _payPendingOvertime;
     [ObservableProperty] private string _minRestHours = "11";
 
     // Leave types
@@ -94,6 +95,7 @@ public sealed partial class WfSettingsViewModel : WorkforcePageViewModel
         (MonthlyHours, Tier1Minutes, Tier1Multiplier, Tier2Multiplier, RestDayMultiplier, HolidayMultiplier, NightPremium, AbsenceMethod, LateMethod, LateTolerance) =
             (Text(p.StandardMonthlyHours), Text(p.Tier1MinutesPerDay), Text(p.Tier1Multiplier), Text(p.Tier2Multiplier), Text(p.RestDayMultiplier), Text(p.HolidayMultiplier),
              Text(p.NightPremiumPercent), p.AbsenceMethod, p.LateMethod, Text(p.LateToleranceMinutesPerMonth));
+        PayPendingOvertime = p.PayPendingOvertime;
         MinRestHours = Text(_policy.Rest.MinRestHours);
         await Wf.EnsureDefaultLeaveTypesAsync(ct);
         Fill(LeaveTypes, await Wf.LeaveTypesAsync(ct));
@@ -127,7 +129,7 @@ public sealed partial class WfSettingsViewModel : WorkforcePageViewModel
             Tier1Multiplier = ParseDecimal(Tier1Multiplier, "wf.err.rate"), Tier2Multiplier = ParseDecimal(Tier2Multiplier, "wf.err.rate"),
             RestDayMultiplier = ParseDecimal(RestDayMultiplier, "wf.err.rate"), HolidayMultiplier = ParseDecimal(HolidayMultiplier, "wf.err.rate"),
             NightPremiumPercent = ParseDecimal(NightPremium, "wf.err.rate"), AbsenceMethod = AbsenceMethod, LateMethod = LateMethod,
-            LateToleranceMinutesPerMonth = ParseInt(LateTolerance, "wf.err.minutes", 0, 100000),
+            LateToleranceMinutesPerMonth = ParseInt(LateTolerance, "wf.err.minutes", 0, 100000), PayPendingOvertime = PayPendingOvertime,
         },
         Rest = _policy.Rest with { MinRestHours = ParseDecimal(MinRestHours, "wf.err.rate") },
     };

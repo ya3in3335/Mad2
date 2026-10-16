@@ -367,7 +367,7 @@
     <sys:String x:Key="wf.ot.approveAll">Approve all listed</sys:String>
     <sys:String x:Key="wf.ot.approveAllConfirm">Approve the {0} pending overtime line(s)?</sys:String>
     <sys:String x:Key="wf.ot.approved">Overtime approved.</sys:String>
-    <sys:String x:Key="wf.ot.note">Overtime is computed from punches and the overtime policy (threshold, minimum, rounding). A decision covers the minutes it was taken on; if they change, the day returns to review.</sys:String>
+    <sys:String x:Key="wf.ot.note">Overtime is computed from punches and the overtime policy (threshold, minimum, rounding). Payroll pays approved overtime only; rejected minutes are never paid and unreviewed ones only when “Pay overtime still pending review” is on (Workforce settings). A decision covers the minutes it was taken on; if they change, the day returns to review.</sys:String>
     <sys:String x:Key="wf.ot.rejected">Overtime rejected.</sys:String>
     <sys:String x:Key="wf.ot.totalApproved">Approved</sys:String>
     <sys:String x:Key="wf.ot.totalPending">To review</sys:String>
@@ -448,6 +448,8 @@
     <sys:String x:Key="wf.set.otThreshold">Daily threshold (min)</sys:String>
     <sys:String x:Key="wf.set.overtime">Overtime</sys:String>
     <sys:String x:Key="wf.set.paid">Paid</sys:String>
+    <sys:String x:Key="wf.set.payPending">Pay overtime still pending review</sys:String>
+    <sys:String x:Key="wf.set.payPendingHint">Off: payroll pays approved overtime only (rejected overtime is never paid).</sys:String>
     <sys:String x:Key="wf.set.payroll">Payroll</sys:String>
     <sys:String x:Key="wf.set.policy">Attendance &amp; pay policy</sys:String>
     <sys:String x:Key="wf.set.removeHolidayConfirm">Remove this holiday?</sys:String>

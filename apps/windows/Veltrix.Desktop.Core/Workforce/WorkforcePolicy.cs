@@ -52,6 +52,8 @@ public sealed record PayrollPolicy
     public TimeOnly NightEnd { get; init; } = new(5, 0);
     /// <summary>Extra % of the hourly rate per night hour worked (0 = off).</summary>
     public decimal NightPremiumPercent { get; init; }
+    /// <summary>Pay overtime that has not been reviewed yet (no approve / reject decision). Off by default: only approved overtime is paid.</summary>
+    public bool PayPendingOvertime { get; init; }
     public AbsenceDeductionMethod AbsenceMethod { get; init; } = AbsenceDeductionMethod.PerWorkingDay;
     public LateAdjustmentMethod LateMethod { get; init; } = LateAdjustmentMethod.None;
     /// <summary>Late minutes per month tolerated before the late adjustment applies.</summary>
