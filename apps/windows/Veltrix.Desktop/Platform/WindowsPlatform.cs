@@ -158,13 +158,13 @@ public sealed class WpfPlatformUi(WpfLocalizer localizer) : IPlatformUi
     public string? PickSaveFile(string suggestedName, string filter)
     {
         var dlg = new SaveFileDialog { FileName = suggestedName, Filter = filter, AddExtension = true, OverwritePrompt = true };
-        return dlg.ShowDialog(Application.Current.MainWindow) == true ? dlg.FileName : null;
+        return dlg.ShowDialog(DialogOwner) == true ? dlg.FileName : null;
     }
 
     public string? PickOpenFile(string filter)
     {
         var dlg = new OpenFileDialog { Filter = filter, CheckFileExists = true, Multiselect = false };
-        return dlg.ShowDialog(Application.Current.MainWindow) == true ? dlg.FileName : null;
+        return dlg.ShowDialog(DialogOwner) == true ? dlg.FileName : null;
     }
 
     public void CopyToClipboard(string text)
@@ -182,7 +182,7 @@ public sealed class WpfPlatformUi(WpfLocalizer localizer) : IPlatformUi
         image.EndInit();
         var window = new Window
         {
-            Title = title, Owner = Application.Current.MainWindow, WindowStartupLocation = WindowStartupLocation.CenterOwner, ShowInTaskbar = false,
+            Title = title, Owner = DialogOwner, WindowStartupLocation = WindowStartupLocation.CenterOwner, ShowInTaskbar = false,
             Width = 900, Height = 620, Background = Brushes.Black,
             Content = new Image { Source = image, Stretch = Stretch.Uniform },
         };
@@ -190,9 +190,16 @@ public sealed class WpfPlatformUi(WpfLocalizer localizer) : IPlatformUi
         window.ShowDialog();
     }
 
+    /// <summary>
+    /// Owner of dialogs: the active window (e.g. the full-screen, top-most kiosk window), else the main window. A dialog owned by the main
+    /// window would open BEHIND a top-most window and block the app invisibly.
+    /// </summary>
+    private static Window? DialogOwner =>
+        Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive && w.IsVisible) ?? Application.Current.MainWindow;
+
     public bool Confirm(string message)
     {
-        var owner = Application.Current.MainWindow;
+        var owner = DialogOwner;
         var rtl = owner?.FlowDirection == FlowDirection.RightToLeft;
         var options = rtl ? MessageBoxOptions.RightAlign | MessageBoxOptions.RtlReading : MessageBoxOptions.None;
         return MessageBox.Show(owner!, message, localizer.Get("app.name"), MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No, options)
