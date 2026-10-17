@@ -298,12 +298,12 @@ public sealed class WorkforceTerminalTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task ZKTeco_reports_sdk_missing_instead_of_pretending()
+    public async Task ZKTeco_without_bridge_or_sdk_reports_unsupported_instead_of_pretending()
     {
         var wf = Wf();
         var d = await wf.UpsertTerminalAsync(Owner, null, new TerminalInput("ZK", TerminalManufacturers.ZKTeco) { Host = "192.168.1.201", Port = 4370 });
         var r = await wf.SyncTerminalAsync(d.Id, ConnectorOrigins.Manual);
         Assert.Equal(TerminalErrorKind.Unsupported, r.ErrorKind);
-        Assert.Contains("SDK", r.Error, StringComparison.Ordinal);
+        Assert.Contains("ZKTeco", r.Error, StringComparison.Ordinal);
     }
 }
