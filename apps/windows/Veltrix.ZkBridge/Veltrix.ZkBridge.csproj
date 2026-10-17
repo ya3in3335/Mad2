@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <!-- The ZKTeco Standalone SDK (zkemkeeper.dll) is a 32-bit in-process COM server: this bridge must run as a 32-bit process. -->
+    <PlatformTarget>x86</PlatformTarget>
+    <RuntimeIdentifier>win-x86</RuntimeIdentifier>
+    <AssemblyName>VeltrixZkBridge</AssemblyName>
+    <RootNamespace>Veltrix.ZkBridge</RootNamespace>
+    <Description>32-bit bridge between VELTRIX OS and the official ZKTeco Standalone SDK (one JSON request on stdin, one JSON reply on stdout).</Description>
+    <VeltrixVersion Condition="'$(VeltrixVersion)' == ''">0.1.0</VeltrixVersion>
+    <Version>$(VeltrixVersion)</Version>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+  </PropertyGroup>
+</Project>

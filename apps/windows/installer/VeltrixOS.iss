@@ -13,6 +13,11 @@
   #define ConnectorDir AddBackslash(PublishDir) + "..\publish-connector"
 #endif
 
+; 32-bit ZKTeco SDK bridge (the ZKTeco SDK itself is NOT bundled: see tools\zkteco\Install-ZktecoSdk.ps1)
+#ifndef ZkBridgeDir
+  #define ZkBridgeDir AddBackslash(PublishDir) + "..\publish-zkbridge"
+#endif
+
 [Setup]
 AppId={{6E1B7C2A-9F4D-4D8B-A1C3-5E2F7A9B0C41}
 AppName=VELTRIX OS
@@ -50,6 +55,8 @@ Name: "{commonappdata}\VELTRIX\Connector"; Permissions: users-modify
 [Files]
 Source: "{#PublishDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#ConnectorDir}\*"; DestDir: "{app}\Connector"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#ZkBridgeDir}\*"; DestDir: "{app}\ZkBridge"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\..\..\tools\zkteco\Install-ZktecoSdk.ps1"; DestDir: "{app}\ZkBridge"; Flags: ignoreversion
 
 [Icons]
 ; Ctrl+Alt+V launches VELTRIX OS (or brings the running window to front: the app is single-instance).

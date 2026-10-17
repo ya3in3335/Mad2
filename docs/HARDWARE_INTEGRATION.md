@@ -32,12 +32,26 @@ It never imports fingerprint or face images, or biometric templates. The Android
 | Connector loop: backoff, heartbeat, defer to service, single-writer lock | ✅ | ✅ | — |
 | Hikvision ISAPI adapter (written from the published ISAPI documentation) | ❌ | ❌ | ❌ **not verified** |
 | Suprema BioStar 2 API adapter (written from the published API documentation) | ❌ | ❌ | ❌ **not verified** |
-| ZKTeco | placeholder: reports "SDK not installed" | — | ❌ |
+| ZKTeco: official Standalone SDK 6.2.4.11 through the 32-bit bridge `VeltrixZkBridge.exe` | ✅ adapter + pipeline (fake bridge) | — | ❌ **not verified** |
 | Windows service install (Inno `sc.exe`), DPAPI, named mutex | builds only | — | ❌ not run on Windows yet |
 
 No vendor or model is claimed compatible until it is verified on a real device.
 
+## ZKTeco setup
+1. Get the SDK from ZKTeco at https://github.com/ZKTeco/Standalone-SDK (folder `Communication Protocol SDK(32Bit Ver6.2.4.11)\sdk`). It is not bundled because the repository carries no license.
+2. As administrator, run `"C:\Program Files\VELTRIX OS\ZkBridge\Install-ZktecoSdk.ps1" -SdkDir <sdk folder>`.
+   The script registers the 32-bit DLL in SysWOW64 with the 32-bit regsvr32.
+3. Add the terminal in VELTRIX:
+   - Manufacturer: ZKTeco.
+   - IP address and port (4370 by default).
+   - Password: the terminal's numeric Comm Key.
+   - The machine number is 1.
+4. How the integration behaves:
+   - The bridge calls only the methods listed in the SDK type library: Connect_Net, SetCommPassword, GetSerialNumber, GetFirmwareVersion, GetProductCode, GetDeviceTime, EnableDevice, ReadGeneralLogData, SSR_GetGeneralLogData and Disconnect.
+   - It is read-only: the terminal log is never cleared.
+   - In/out keys are kept only as raw data; the attendance engine derives the direction.
+
 ## Pending work
-- ZKTeco: integrate only once the official SDK is provided.
+- ZKTeco: verify on a real terminal (verify-mode codes other than 0, 1, 2 and 15 are shown as "unknown", with the raw code kept).
 - Validate the Hikvision and Suprema adapters on real devices.
 - Door-log dedupe after a crash.

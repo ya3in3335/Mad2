@@ -548,7 +548,7 @@
     <sys:String x:Key="wf.term.events">Events and logs</sys:String>
     <sys:String x:Key="wf.term.toggle">Enable / disable</sys:String>
     <sys:String x:Key="wf.term.remove">Remove</sys:String>
-    <sys:String x:Key="wf.term.zkNote">ZKTeco: the official ZKTeco SDK is not installed — this terminal cannot be connected yet. No compatibility is claimed.</sys:String>
+    <sys:String x:Key="wf.term.zkNote">ZKTeco: uses the official ZKTeco Standalone SDK (install it once as administrator: tools\zkteco\Install-ZktecoSdk.ps1). Password = the terminal's numeric Comm Key; port 4370 by default. Not yet verified on a real terminal.</sys:String>
     <sys:String x:Key="wf.term.simNote">Simulated terminal for training and tests — not real hardware. Default password: sim.</sys:String>
     <sys:String x:Key="wf.term.vendorNote">Hikvision (ISAPI) and Suprema (BioStar 2 API) adapters follow the vendors' published APIs and have NOT yet been verified on real devices.</sys:String>
     <sys:String x:Key="wf.term.privacyNote">Fingerprints and faces are matched on the terminal. VELTRIX imports only the event (user id, time, method) — never biometric images or templates.</sys:String>

@@ -29,7 +29,7 @@ public sealed class TerminalAdapterFactory(TimeProvider time) : ITerminalAdapter
         TerminalManufacturers.Simulated => new SimulatedTerminalAdapter(SimulatedTerminals.GetOrCreate(device.Id, time), connection),
         TerminalManufacturers.Hikvision => new HikvisionIsapiAdapter(connection, time, device.TimeZoneOffsetMinutes ?? (int)time.LocalTimeZone.GetUtcOffset(time.GetUtcNow()).TotalMinutes),
         TerminalManufacturers.Suprema => new SupremaBioStar2Adapter(connection, time),
-        TerminalManufacturers.ZKTeco => new ZkTecoSdkAdapter(),
+        TerminalManufacturers.ZKTeco => new ZkTecoSdkAdapter(connection) { OffsetMinutes = device.TimeZoneOffsetMinutes ?? (int)time.LocalTimeZone.GetUtcOffset(time.GetUtcNow()).TotalMinutes },
         _ => throw TerminalException.Unsupported("Unknown terminal manufacturer: " + device.Manufacturer),
     };
 

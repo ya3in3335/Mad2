@@ -181,22 +181,3 @@ public sealed class SupremaBioStar2Adapter : ITerminalAdapter
         return (method, result);
     }
 }
-
-/// <summary>
-/// ZKTeco terminals require the official ZKTeco Standalone SDK (zkemkeeper COM component, Windows, obtained from ZKTeco and registered with
-/// regsvr32 — 32-bit by default). It is NOT bundled and no call is faked: every operation reports Unsupported until a real SDK-backed adapter
-/// is added. See docs/HARDWARE_INTEGRATION.md.
-/// </summary>
-public sealed class ZkTecoSdkAdapter : ITerminalAdapter
-{
-    public const string Message = "ZKTeco SDK not installed";
-    public string Manufacturer => TerminalManufacturers.ZKTeco;
-    public TerminalCapabilities Capabilities => TerminalCapabilities.None;
-    public Task ValidateConnectionAsync(CancellationToken ct = default) => throw TerminalException.Unsupported(Message);
-    public Task<TerminalDeviceInfo> GetDeviceInfoAsync(CancellationToken ct = default) => throw TerminalException.Unsupported(Message);
-    public Task<TerminalImportPage> ImportEventsAsync(string? cursor, DateTimeOffset? since, int maxEvents, CancellationToken ct = default) =>
-        throw TerminalException.Unsupported(Message);
-    public IAsyncEnumerable<TerminalEvent> StreamEventsAsync(CancellationToken ct = default) => throw TerminalException.Unsupported(Message);
-    public Task<TerminalHealth> HealthAsync(CancellationToken ct = default) => Task.FromResult(new TerminalHealth(false, null, Message));
-    public ValueTask DisposeAsync() => ValueTask.CompletedTask;
-}

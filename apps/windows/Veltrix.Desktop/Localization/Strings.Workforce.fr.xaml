@@ -548,7 +548,7 @@
     <sys:String x:Key="wf.term.events">Événements et journaux</sys:String>
     <sys:String x:Key="wf.term.toggle">Activer / désactiver</sys:String>
     <sys:String x:Key="wf.term.remove">Retirer</sys:String>
-    <sys:String x:Key="wf.term.zkNote">ZKTeco : le SDK officiel ZKTeco n'est pas installé — connexion impossible pour l'instant. Aucune compatibilité n'est revendiquée.</sys:String>
+    <sys:String x:Key="wf.term.zkNote">ZKTeco : utilise le SDK officiel ZKTeco Standalone (à installer une fois en administrateur : tools\zkteco\Install-ZktecoSdk.ps1). Mot de passe = la clé de communication numérique du terminal ; port 4370 par défaut. Pas encore vérifié sur un terminal réel.</sys:String>
     <sys:String x:Key="wf.term.simNote">Pointeuse simulée pour formation et tests — pas du matériel réel. Mot de passe par défaut : sim.</sys:String>
     <sys:String x:Key="wf.term.vendorNote">Les adaptateurs Hikvision (ISAPI) et Suprema (API BioStar 2) suivent les API publiées et n'ont PAS encore été vérifiés sur du matériel réel.</sys:String>
     <sys:String x:Key="wf.term.privacyNote">Empreintes et visages sont vérifiés sur le terminal. VELTRIX n'importe que l'événement (id, heure, méthode) — jamais d'images ni de gabarits biométriques.</sys:String>

@@ -23,3 +23,4 @@ Open:
    Next: E) Android admin-only (strip NFC/QR/PIN/kiosk from WIP 2048fdd); F) PDF/Excel/CSV reports; door-log dedupe; employer contributions posting.
    Resume: export DOTNET_ROOT=/opt/dotnet PATH=/opt/dotnet:$PATH; dotnet test tests/unit/Veltrix.Desktop.Tests
 14. ✅ HR section password (SectionLock.cs, SectionLockViewModel/View, ShellViewModel gate): separate PBKDF2 password in SecureStore, set by owner at first opening of wf.*, erp.hr, cameras; 15-min idle relock, Ctrl+Shift+L lock, lockout backoff, owner change/reset. 238 tests. Not yet run on Windows.
+15. 🟡 ZKTeco via official SDK 6.2.4.11 (signatures read from its type library): Veltrix.ZkBridge (x86, stdin/stdout JSON) + ZkTecoSdkAdapter + tools/zkteco/Install-ZktecoSdk.ps1; installer bundles bridge (not the SDK). 240 tests with fake bridge. NOT verified on a real terminal. Kiosk exit fix (dialog owner) 49eff2a.

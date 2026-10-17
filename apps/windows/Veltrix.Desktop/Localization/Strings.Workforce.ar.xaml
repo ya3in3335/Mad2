@@ -548,7 +548,7 @@
     <sys:String x:Key="wf.term.events">الأحداث والسجلات</sys:String>
     <sys:String x:Key="wf.term.toggle">تفعيل / تعطيل</sys:String>
     <sys:String x:Key="wf.term.remove">إزالة</sys:String>
-    <sys:String x:Key="wf.term.zkNote">ZKTeco: حزمة SDK الرسمية غير مثبتة — لا يمكن ربط الجهاز بعد. لا ندّعي التوافق.</sys:String>
+    <sys:String x:Key="wf.term.zkNote">ZKTeco: يستخدم حزمة ZKTeco Standalone SDK الرسمية (ثبّتها مرة واحدة كمسؤول: tools\zkteco\Install-ZktecoSdk.ps1). كلمة المرور = مفتاح الاتصال الرقمي (Comm Key) للجهاز؛ المنفذ 4370 افتراضيًا. لم يُتحقق منه بعد على جهاز حقيقي.</sys:String>
     <sys:String x:Key="wf.term.simNote">جهاز محاكاة للتدريب والاختبار — ليس جهازًا حقيقيًا. كلمة المرور الافتراضية: sim.</sys:String>
     <sys:String x:Key="wf.term.vendorNote">محوّلا Hikvision (ISAPI) وSuprema (BioStar 2) مبنيان على الواجهات المنشورة ولم يُتحقق منهما بعد على أجهزة حقيقية.</sys:String>
     <sys:String x:Key="wf.term.privacyNote">تتم مطابقة البصمة والوجه على الجهاز. يستورد VELTRIX الحدث فقط (المعرّف، الوقت، الطريقة) — دون صور أو قوالب بيومترية.</sys:String>

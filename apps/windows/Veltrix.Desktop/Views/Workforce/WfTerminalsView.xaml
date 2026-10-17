@@ -77,7 +77,7 @@
                         <TextBox Text="{Binding Name}"/>
                         <TextBlock Text="{DynamicResource wf.term.manufacturer}" Style="{StaticResource Text.Label}"/>
                         <ComboBox ItemsSource="{x:Static vm:WfTerminalsViewModel.Manufacturers}" SelectedItem="{Binding Manufacturer}"/>
-                        <TextBlock Text="{DynamicResource wf.term.zkNote}" Style="{StaticResource Text.Error}" TextWrapping="Wrap" Margin="0,6,0,0"
+                        <TextBlock Text="{DynamicResource wf.term.zkNote}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,6,0,0"
                                    Visibility="{Binding IsZkTeco, Converter={StaticResource BoolToVis}}"/>
                         <TextBlock Text="{DynamicResource wf.term.simNote}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,6,0,0"
                                    Visibility="{Binding IsSimulated, Converter={StaticResource BoolToVis}}"/>
