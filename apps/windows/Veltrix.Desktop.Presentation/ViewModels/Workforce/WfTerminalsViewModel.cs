@@ -45,7 +45,7 @@ public sealed partial class WfTerminalsViewModel(DesktopServices s) : WorkforceP
     [ObservableProperty] private bool _isEditing;
     [ObservableProperty] private string _name = "";
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsZkTeco), nameof(IsSimulated), nameof(IsSuprema))]
+    [NotifyPropertyChangedFor(nameof(IsZkTeco), nameof(IsSimulated), nameof(IsSuprema), nameof(ShowZkSdkInstall))]
     private string _manufacturer = TerminalManufacturers.Hikvision;
     [ObservableProperty] private string _host = "";
     [ObservableProperty] private string _port = "";
@@ -70,6 +70,8 @@ public sealed partial class WfTerminalsViewModel(DesktopServices s) : WorkforceP
     [ObservableProperty] private bool _showEvents;
 
     public bool IsZkTeco => Manufacturer == TerminalManufacturers.ZKTeco;
+    public bool ZkSdkInstalled => S.ZkTecoSdkDirectory is { } dir && ZkTecoSdkFiles.IsInstalled(dir);
+    public bool ShowZkSdkInstall => IsZkTeco && !ZkSdkInstalled && S.InstallZkTecoSdk is not null;
     public bool IsSimulated => Manufacturer == TerminalManufacturers.Simulated;
     public bool IsSuprema => Manufacturer == TerminalManufacturers.Suprema;
 
@@ -166,6 +168,16 @@ public sealed partial class WfTerminalsViewModel(DesktopServices s) : WorkforceP
               + (r.Ok ? "" : Environment.NewLine + r.ErrorKind + ": " + r.Error);
         await RefreshSelectedAsync(row.Id);
     }, null);
+
+    /// <summary>Downloads the official ZKTeco SDK (SHA-256 verified) into the program folder; Windows asks for administrator approval.</summary>
+    [RelayCommand]
+    public Task InstallZkSdkAsync() => SubmitAsync(async () =>
+    {
+        if (S.InstallZkTecoSdk is not { } install) return;
+        if (!await install()) throw new InvalidOperationException("wf.term.zkSdkFailed");
+        OnPropertyChanged(nameof(ZkSdkInstalled));
+        OnPropertyChanged(nameof(ShowZkSdkInstall));
+    }, "wf.term.zkSdkDone");
 
     [RelayCommand]
     public Task ToggleEnabledAsync() => SubmitAsync(async () =>

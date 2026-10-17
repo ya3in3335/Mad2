@@ -32,6 +32,12 @@ public partial class App : Application
     protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+        if (e.Args.Any(a => string.Equals(a, "--install-zk-sdk", StringComparison.OrdinalIgnoreCase)))
+        {
+            // Elevated helper started from the attendance-terminals screen: downloads the ZKTeco SDK into the admin-only program folder.
+            Shutdown(RunInstallZkSdk());
+            return;
+        }
         if (e.Args.Any(a => string.Equals(a, "--bind", StringComparison.OrdinalIgnoreCase)))
         {
             // Installer-only path (elevated): create/repair the device binding, report through the exit code, no UI.
@@ -150,6 +156,8 @@ public partial class App : Application
             Pos = new PosService(api, db, time, () => binding.IsBound), Loc = localizer, Ui = new WpfPlatformUi(localizer), Time = time, Log = log, Version = version,
             Standalone = standalone,
             IngestionLock = new NamedMutexIngestionLock(),
+            InstallZkTecoSdk = InstallZkSdkElevatedAsync,
+            ZkTecoSdkDirectory = ZkTecoSdkFiles.BridgeDirectory(AppContext.BaseDirectory),
             // CCTV (LAN only): camera credentials encrypted with DPAPI (current user); sale photos via the camera's HTTP snapshot, else a libVLC frame.
             Cameras = new Core.Cameras.CameraService(db, new DpapiProtector(), AppPaths.Root,
                 new Core.Cameras.FallbackSnapshotCapturer(new Core.Cameras.HttpSnapshotCapturer(), new VlcFrameCapturer()), settings, time, log),
@@ -158,6 +166,38 @@ public partial class App : Application
 
     private static DeviceBindingManager CreateBinding(TimeProvider time) => new(new WindowsBindingStore(), new DpapiMachineProtector(),
         DeviceFingerprint.ComputeBinding(WindowsFingerprint.Read()), time, WindowsBindingStore.IsElevated);
+
+    /// <summary>VeltrixOS.exe --install-zk-sdk: 0 = installed, 2 = not elevated, 1 = download / verification failure.</summary>
+    private static int RunInstallZkSdk()
+    {
+        if (!WindowsBindingStore.IsElevated()) return 2;
+        try
+        {
+            using var http = new HttpClient { Timeout = TimeSpan.FromMinutes(2) };
+            ZkTecoSdkFiles.DownloadAsync(http, ZkTecoSdkFiles.BridgeDirectory(AppContext.BaseDirectory)).GetAwaiter().GetResult();
+            return 0;
+        }
+        catch (Exception)
+        {
+            return 1;
+        }
+    }
+
+    /// <summary>Starts the elevated helper (UAC prompt) and waits for it. False when refused or failed.</summary>
+    private static async Task<bool> InstallZkSdkElevatedAsync()
+    {
+        try
+        {
+            using var p = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(Environment.ProcessPath!, "--install-zk-sdk")
+            {
+                UseShellExecute = true, Verb = "runas",
+            });
+            if (p is null) return false;
+            await p.WaitForExitAsync();
+            return p.ExitCode == 0;
+        }
+        catch (System.ComponentModel.Win32Exception) { return false; } // UAC cancelled
+    }
 
     /// <summary>VeltrixOS.exe --bind: 0 = bound, 2 = not elevated, 1 = any other failure.</summary>
     private static int RunBind()

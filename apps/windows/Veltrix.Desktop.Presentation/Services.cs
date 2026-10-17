@@ -72,6 +72,9 @@ public sealed class DesktopServices
     public Core.Cameras.CameraService? Cameras { get; init; }
     /// <summary>Single-writer lock of terminal ingestion shared with the connector service (machine-wide mutex on Windows).</summary>
     public Core.Workforce.Terminals.IIngestionLock IngestionLock { get; init; } = new Core.Workforce.Terminals.InProcessIngestionLock();
+    /// <summary>Downloads the official ZKTeco SDK into the program folder through an elevated helper (UAC). Null where unsupported.</summary>
+    public Func<Task<bool>>? InstallZkTecoSdk { get; init; }
+    public string? ZkTecoSdkDirectory { get; init; }
 
     /// <summary>Owner of the shop: local owner account, or an online profile with full permissions.</summary>
     public bool IsOwner => Session.LocalUser is { } lu ? lu.IsOwner

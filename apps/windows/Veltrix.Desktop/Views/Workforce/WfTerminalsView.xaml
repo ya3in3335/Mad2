@@ -79,6 +79,8 @@
                         <ComboBox ItemsSource="{x:Static vm:WfTerminalsViewModel.Manufacturers}" SelectedItem="{Binding Manufacturer}"/>
                         <TextBlock Text="{DynamicResource wf.term.zkNote}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,6,0,0"
                                    Visibility="{Binding IsZkTeco, Converter={StaticResource BoolToVis}}"/>
+                        <Button Content="{DynamicResource wf.term.zkSdkInstall}" Command="{Binding InstallZkSdkCommand}" Style="{StaticResource Button.Primary}"
+                                HorizontalAlignment="Left" Margin="0,6,0,0" Visibility="{Binding ShowZkSdkInstall, Converter={StaticResource BoolToVis}}"/>
                         <TextBlock Text="{DynamicResource wf.term.simNote}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,6,0,0"
                                    Visibility="{Binding IsSimulated, Converter={StaticResource BoolToVis}}"/>
                         <TextBlock Text="{DynamicResource wf.term.vendorNote}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,6,0,0"/>

@@ -548,7 +548,7 @@
     <sys:String x:Key="wf.term.events">Events and logs</sys:String>
     <sys:String x:Key="wf.term.toggle">Enable / disable</sys:String>
     <sys:String x:Key="wf.term.remove">Remove</sys:String>
-    <sys:String x:Key="wf.term.zkNote">ZKTeco: uses the official ZKTeco Standalone SDK (install it once as administrator: tools\zkteco\Install-ZktecoSdk.ps1). Password = the terminal's numeric Comm Key; port 4370 by default. Not yet verified on a real terminal.</sys:String>
+    <sys:String x:Key="wf.term.zkNote">ZKTeco: uses the official ZKTeco Standalone SDK, downloaded automatically from ZKTeco by setup (or with the button below). Password = the terminal's numeric Comm Key; port 4370 by default. Not yet verified on a real terminal.</sys:String>
     <sys:String x:Key="wf.term.simNote">Simulated terminal for training and tests — not real hardware. Default password: sim.</sys:String>
     <sys:String x:Key="wf.term.vendorNote">Hikvision (ISAPI) and Suprema (BioStar 2 API) adapters follow the vendors' published APIs and have NOT yet been verified on real devices.</sys:String>
     <sys:String x:Key="wf.term.privacyNote">Fingerprints and faces are matched on the terminal. VELTRIX imports only the event (user id, time, method) — never biometric images or templates.</sys:String>
@@ -596,4 +596,7 @@
     <sys:String x:Key="wf.err.noProtector">Credential encryption is unavailable on this PC.</sys:String>
     <sys:String x:Key="wf.err.deviceRemoved">This device was removed.</sys:String>
     <sys:String x:Key="wf.err.notTerminal">Not an attendance terminal.</sys:String>
+    <sys:String x:Key="wf.term.zkSdkInstall">Download ZKTeco SDK</sys:String>
+    <sys:String x:Key="wf.term.zkSdkDone">ZKTeco SDK installed (verified).</sys:String>
+    <sys:String x:Key="wf.term.zkSdkFailed">ZKTeco SDK not installed: administrator approval refused, no internet, or a file failed verification.</sys:String>
 </ResourceDictionary>

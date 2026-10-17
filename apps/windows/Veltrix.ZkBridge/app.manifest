@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Registration-free COM: the official ZKTeco SDK (zkemkeeper.dll, next to this exe) is activated from here, no regsvr32 needed.
+     CLSID / LIBID / version are those of the type library embedded in zkemkeeper.dll 6.2.4.11. -->
+<assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">
+  <assemblyIdentity version="1.0.0.0" name="Veltrix.ZkBridge" type="win32" processorArchitecture="x86"/>
+  <file name="zkemkeeper.dll">
+    <comClass clsid="{00853A19-BD51-419B-9269-2DABE57EB61F}" threadingModel="Apartment" tlbid="{FE9DED34-E159-408E-8490-B720A5E632C7}"/>
+    <typelib tlbid="{FE9DED34-E159-408E-8490-B720A5E632C7}" version="1.0" helpdir=""/>
+  </file>
+  <trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">
+    <security><requestedPrivileges xmlns="urn:schemas-microsoft-com:asm.v3"><requestedExecutionLevel level="asInvoker" uiAccess="false"/></requestedPrivileges></security>
+  </trustInfo>
+</assembly>

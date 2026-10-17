@@ -23,6 +23,7 @@ public static class Program
     public static readonly Guid ZkemClsid = new("00853A19-BD51-419B-9269-2DABE57EB61F");
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
+    [STAThread] // the SDK's COM class is apartment-threaded
     public static int Main()
     {
         BridgeReply reply;
@@ -45,7 +46,7 @@ public static class Program
         try { zk = type is null ? null : Activator.CreateInstance(type); }
         catch (Exception) { zk = null; }
         if (zk is null)
-            return new(false, "Unsupported", "ZKTeco SDK not installed: zkemkeeper.dll (32-bit) is not registered. Run tools\\zkteco\\Install-ZktecoSdk.ps1 as administrator.");
+            return new(false, "Unsupported", "ZKTeco SDK not installed: use \"Download ZKTeco SDK\" in Attendance terminals (or reinstall VELTRIX OS while online).");
         var m = r.MachineNumber;
         try
         {

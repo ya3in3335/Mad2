@@ -38,18 +38,18 @@ It never imports fingerprint or face images, or biometric templates. The Android
 No vendor or model is claimed compatible until it is verified on a real device.
 
 ## ZKTeco setup
-1. Get the SDK from ZKTeco at https://github.com/ZKTeco/Standalone-SDK (folder `Communication Protocol SDK(32Bit Ver6.2.4.11)\sdk`). It is not bundled because the repository carries no license.
-2. As administrator, run `"C:\Program Files\VELTRIX OS\ZkBridge\Install-ZktecoSdk.ps1" -SdkDir <sdk folder>`.
-   The script registers the 32-bit DLL in SysWOW64 with the 32-bit regsvr32.
-3. Add the terminal in VELTRIX:
+1. **Automatic:** setup downloads the official SDK 6.2.4.11 (13 DLLs) from ZKTeco's GitHub repository (https://github.com/ZKTeco/Standalone-SDK).
+   - Every file is checked against a pinned SHA-256.
+   - Files go to `C:\Program Files\VELTRIX OS\ZkBridge`, which only an administrator can write. This matters because the service runs as LocalSystem.
+   - The SDK is not bundled, because ZKTeco's repository carries no license.
+2. **Offline setup:** the "Download ZKTeco SDK" button on the Attendance terminals screen does the same through an elevated helper (`VeltrixOS.exe --install-zk-sdk`, UAC prompt).
+3. **No regsvr32:** the bridge uses registration-free COM through its manifest (CLSID and LIBID taken from the SDK type library). Nothing is registered system-wide.
+4. **Add the terminal:**
    - Manufacturer: ZKTeco.
    - IP address and port (4370 by default).
    - Password: the terminal's numeric Comm Key.
    - The machine number is 1.
-4. How the integration behaves:
-   - The bridge calls only the methods listed in the SDK type library: Connect_Net, SetCommPassword, GetSerialNumber, GetFirmwareVersion, GetProductCode, GetDeviceTime, EnableDevice, ReadGeneralLogData, SSR_GetGeneralLogData and Disconnect.
-   - It is read-only: the terminal log is never cleared.
-   - In/out keys are kept only as raw data; the attendance engine derives the direction.
+5. **Behavior:** the bridge calls only the methods listed in the SDK type library. It is read-only: the log is never cleared. In/out keys are kept only as raw data.
 
 ## Pending work
 - ZKTeco: verify on a real terminal (verify-mode codes other than 0, 1, 2 and 15 are shown as "unknown", with the raw code kept).

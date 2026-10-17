@@ -12,6 +12,7 @@
     <VeltrixVersion Condition="'$(VeltrixVersion)' == ''">0.1.0</VeltrixVersion>
     <Version>$(VeltrixVersion)</Version>
     <InvariantGlobalization>true</InvariantGlobalization>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
   </PropertyGroup>
 </Project>

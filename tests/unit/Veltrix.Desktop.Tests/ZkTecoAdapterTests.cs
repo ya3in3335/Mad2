@@ -94,3 +94,35 @@ public sealed class ZkTecoAdapterTests : IAsyncLifetime
         Assert.Equal(VerifyMethods.Unknown, ZkTecoSdkAdapter.Method(99));
     }
 }
+
+/// <summary>SDK download: every file is hash-checked before anything is written.</summary>
+public sealed class ZkTecoSdkFilesTests : IDisposable
+{
+    private readonly string _dir = Path.Combine(Path.GetTempPath(), "veltrix-zk-" + Guid.NewGuid().ToString("N"));
+
+    public void Dispose()
+    {
+        if (Directory.Exists(_dir)) Directory.Delete(_dir, true);
+    }
+
+    private sealed class Handler(Func<string, byte[]> body) : HttpMessageHandler
+    {
+        public List<string> Urls { get; } = [];
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+        {
+            Urls.Add(request.RequestUri!.ToString());
+            return Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new ByteArrayContent(body(request.RequestUri.ToString())) });
+        }
+    }
+
+    [Fact]
+    public async Task Tampered_download_is_refused_and_nothing_is_written()
+    {
+        var h = new Handler(_ => "not the real dll"u8.ToArray());
+        await Assert.ThrowsAsync<InvalidDataException>(() => ZkTecoSdkFiles.DownloadAsync(new HttpClient(h), _dir));
+        Assert.False(Directory.Exists(_dir) && Directory.EnumerateFiles(_dir).Any());
+        Assert.False(ZkTecoSdkFiles.IsInstalled(_dir));
+        Assert.StartsWith("https://raw.githubusercontent.com/ZKTeco/Standalone-SDK/", h.Urls[0]);
+        Assert.Equal(13, ZkTecoSdkFiles.Files.Select(f => f.Name).Distinct().Count());
+    }
+}
