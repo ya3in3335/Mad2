@@ -352,4 +352,15 @@
     <sys:String x:Key="link.err.isHub">هذا الحاسوب هو المركز.</sys:String>
     <sys:String x:Key="link.hubOnDone">تم تشغيل المركز. يمكن للحواسيب الأخرى الانضمام الآن.</sys:String>
     <sys:String x:Key="dk.rep.savedTo">تم الحفظ: {0}</sys:String>
+    <sys:String x:Key="dk.rcpt.template">شكل الفاتورة</sys:String>
+    <sys:String x:Key="dk.rcpt.tpl.shop">محل</sys:String>
+    <sys:String x:Key="dk.rcpt.tpl.company">شركة (A4)</sys:String>
+    <sys:String x:Key="dk.rcpt.tpl.classic">وصل كلاسيكي</sys:String>
+    <sys:String x:Key="dk.rcpt.tpl.compact">وصل مختصر (يوفّر الورق)</sys:String>
+    <sys:String x:Key="dk.rcpt.tpl.detailed">وصل مفصّل (الرموز، الرسم، المبلغ بالحروف)</sys:String>
+    <sys:String x:Key="dk.rcpt.tpl.modern">وصل عصري (جدول، مجموع مؤطّر)</sys:String>
+    <sys:String x:Key="dk.rcpt.tpl.boxed">وصل مزخرف (إطارات *)</sys:String>
+    <sys:String x:Key="dk.rcpt.tpl.invoice">فاتورة</sys:String>
+    <sys:String x:Key="dk.rcpt.tpl.proforma">فاتورة شكلية</sys:String>
+    <sys:String x:Key="dk.rcpt.tpl.delivery">وصل تسليم (بدون أسعار)</sys:String>
 </ResourceDictionary>

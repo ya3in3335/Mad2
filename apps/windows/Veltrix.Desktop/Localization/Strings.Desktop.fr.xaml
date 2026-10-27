@@ -352,4 +352,15 @@
     <sys:String x:Key="link.err.isHub">Ce PC est le hub.</sys:String>
     <sys:String x:Key="link.hubOnDone">Hub activé. Les autres PC peuvent rejoindre.</sys:String>
     <sys:String x:Key="dk.rep.savedTo">Enregistré : {0}</sys:String>
+    <sys:String x:Key="dk.rcpt.template">Modèle</sys:String>
+    <sys:String x:Key="dk.rcpt.tpl.shop">Magasin</sys:String>
+    <sys:String x:Key="dk.rcpt.tpl.company">Entreprise (A4)</sys:String>
+    <sys:String x:Key="dk.rcpt.tpl.classic">Ticket classique</sys:String>
+    <sys:String x:Key="dk.rcpt.tpl.compact">Ticket compact (économise le papier)</sys:String>
+    <sys:String x:Key="dk.rcpt.tpl.detailed">Ticket détaillé (codes, TVA, montant en lettres)</sys:String>
+    <sys:String x:Key="dk.rcpt.tpl.modern">Ticket moderne (tableau, total encadré)</sys:String>
+    <sys:String x:Key="dk.rcpt.tpl.boxed">Ticket décoré (cadres *)</sys:String>
+    <sys:String x:Key="dk.rcpt.tpl.invoice">Facture</sys:String>
+    <sys:String x:Key="dk.rcpt.tpl.proforma">Facture proforma</sys:String>
+    <sys:String x:Key="dk.rcpt.tpl.delivery">Bon de livraison (sans prix)</sys:String>
 </ResourceDictionary>

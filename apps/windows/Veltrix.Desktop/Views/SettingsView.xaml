@@ -199,6 +199,8 @@
                         <TextBlock Text="{DynamicResource dk.rcpt.title}" Style="{StaticResource Text.Section}"/>
                         <TextBlock Text="{DynamicResource dk.rcpt.hint}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap"/>
 
+                        <TextBlock Text="{DynamicResource dk.rcpt.template}" Style="{StaticResource Text.Label}" Margin="0,12,0,6"/>
+                        <ComboBox ItemsSource="{Binding TemplateOptions}" DisplayMemberPath="Name" SelectedValuePath="Code" SelectedValue="{Binding Template}" MaxWidth="420" HorizontalAlignment="Left" MinWidth="300"/>
                         <TextBlock Text="{DynamicResource dk.rcpt.paper}" Style="{StaticResource Text.Label}" Margin="0,12,0,6"/>
                         <StackPanel Orientation="Horizontal">
                             <RadioButton Content="58 mm" GroupName="paper" IsChecked="{Binding PaperMm, Converter={StaticResource Equals}, ConverterParameter=58}" Margin="0,0,12,0"/>

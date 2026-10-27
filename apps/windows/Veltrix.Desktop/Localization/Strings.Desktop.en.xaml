@@ -352,4 +352,15 @@
     <sys:String x:Key="link.err.isHub">This PC is the hub.</sys:String>
     <sys:String x:Key="link.hubOnDone">Hub on. The other PCs can now join.</sys:String>
     <sys:String x:Key="dk.rep.savedTo">Saved: {0}</sys:String>
+    <sys:String x:Key="dk.rcpt.template">Design</sys:String>
+    <sys:String x:Key="dk.rcpt.tpl.shop">Shop</sys:String>
+    <sys:String x:Key="dk.rcpt.tpl.company">Company (A4)</sys:String>
+    <sys:String x:Key="dk.rcpt.tpl.classic">Classic ticket</sys:String>
+    <sys:String x:Key="dk.rcpt.tpl.compact">Compact ticket (saves paper)</sys:String>
+    <sys:String x:Key="dk.rcpt.tpl.detailed">Detailed ticket (codes, tax, amount in words)</sys:String>
+    <sys:String x:Key="dk.rcpt.tpl.modern">Modern ticket (table, framed total)</sys:String>
+    <sys:String x:Key="dk.rcpt.tpl.boxed">Decorated ticket (* frames)</sys:String>
+    <sys:String x:Key="dk.rcpt.tpl.invoice">Invoice (facture)</sys:String>
+    <sys:String x:Key="dk.rcpt.tpl.proforma">Proforma invoice</sys:String>
+    <sys:String x:Key="dk.rcpt.tpl.delivery">Delivery note (no prices)</sys:String>
 </ResourceDictionary>

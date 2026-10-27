@@ -26,6 +26,8 @@ public sealed partial class ReceiptSettingsViewModel : ObservableObject
     [ObservableProperty] private IReadOnlyList<LanguageOption> _fontSizeOptions = [];
     [ObservableProperty] private IReadOnlyList<LanguageOption> _languageOptions = [];
     [ObservableProperty] private IReadOnlyList<LanguageOption> _dateFormatOptions = [];
+    /// <summary>Designs grouped: shop tickets first, then company documents (A4).</summary>
+    [ObservableProperty] private IReadOnlyList<LanguageOption> _templateOptions = [];
     [ObservableProperty] private ReceiptDocument? _preview;
 
     /// <summary>The interface language changed: localized option names and a receipt that follows the app language.</summary>
@@ -42,6 +44,9 @@ public sealed partial class ReceiptSettingsViewModel : ObservableObject
         LanguageOptions = [new("app", loc.Get("dk.rcpt.langApp")), .. Core.Settings.Languages.Supported.Select(l => new LanguageOption(l.Code, l.NativeName))];
         var sample = new DateTime(2026, 3, 21, 14, 35, 9);
         DateFormatOptions = ReceiptDateFormats.All.Select(f => new LanguageOption(f, sample.ToString(f, System.Globalization.CultureInfo.InvariantCulture))).ToList();
+        TemplateOptions = ReceiptTemplates.All.Select(t => new LanguageOption(t,
+            loc.Get(ReceiptTemplates.IsCompany(t) ? "dk.rcpt.tpl.company" : "dk.rcpt.tpl.shop") + " — " + loc.Get("dk.rcpt.tpl." + t))).ToList();
+        OnPropertyChanged(nameof(Template));
         // Rebinding the ComboBoxes to new lists: re-announce the selections.
         OnPropertyChanged(nameof(FontSize));
         OnPropertyChanged(nameof(Language));
@@ -97,6 +102,19 @@ public sealed partial class ReceiptSettingsViewModel : ObservableObject
     public string? FooterLines { get => R.FooterLines; set => Set(() => R.FooterLines = Clean(value)); }
     public bool ShowSaleBarcode { get => R.ShowSaleBarcode; set => Set(() => R.ShowSaleBarcode = value); }
     public string Language { get => R.Language; set => Set(() => R.Language = value); }
+
+    /// <summary>Choosing a company document switches the paper to A4 (and a shop ticket back to 80 mm when the paper was A4).</summary>
+    public string Template
+    {
+        get => R.Template;
+        set => Set(() =>
+        {
+            R.Template = ReceiptTemplates.Normalize(value);
+            if (ReceiptTemplates.IsCompany(R.Template)) _s.Settings.ReceiptPaperMm = ReceiptPaper.A4;
+            else if (_s.Settings.ReceiptPaperMm == ReceiptPaper.A4) _s.Settings.ReceiptPaperMm = ReceiptPaper.Mm80;
+            OnPropertyChanged(nameof(PaperMm));
+        });
+    }
 
     private static string? Clean(string? v) => string.IsNullOrWhiteSpace(v) ? null : v;
 

@@ -49,6 +49,8 @@ public sealed class ReceiptSettings
 
     /// <summary>"app" (follow the interface language) or a fixed language code (ar, fr, en).</summary>
     public string Language { get; set; } = "en";
+    /// <summary><see cref="ReceiptTemplates"/> code: shop tickets (thermal) or company documents (A4).</summary>
+    public string Template { get; set; } = ReceiptTemplates.Classic;
 
     public ReceiptSettings Clone() => (ReceiptSettings)MemberwiseClone();
 
@@ -61,6 +63,7 @@ public sealed class ReceiptSettings
         LogoMaxWidthMm = double.IsFinite(LogoMaxWidthMm) ? Math.Clamp(LogoMaxWidthMm, 10, 150) : 40;
         if (!ReceiptDateFormats.All.Contains(DateFormat)) DateFormat = ReceiptDateFormats.Default;
         Language = Language is "app" or "ar" or "fr" or "en" ? Language : "en";
+        Template = ReceiptTemplates.Normalize(Template);
     }
 }
 
@@ -106,14 +109,38 @@ public static class ReceiptDateFormats
     public static readonly IReadOnlyList<string> All = [Default, "dd/MM/yyyy HH:mm", "dd/MM/yyyy", "dd-MM-yyyy HH:mm:ss", "MM/dd/yyyy HH:mm"];
 }
 
-public enum ReceiptRowKind { Text, Pair, Separator, Logo, Barcode }
+/// <summary>Receipt / invoice designs. Shop tickets suit 58 / 80 mm thermal printers; company documents are laid out for A4.</summary>
+public static class ReceiptTemplates
+{
+    public const string Classic = "classic";
+    public const string Compact = "compact";
+    public const string Detailed = "detailed";
+    public const string Modern = "modern";
+    public const string Boxed = "boxed";
+    public const string Invoice = "invoice";
+    public const string Proforma = "proforma";
+    public const string Delivery = "delivery";
+
+    public static readonly IReadOnlyList<string> Shop = [Classic, Compact, Detailed, Modern, Boxed];
+    public static readonly IReadOnlyList<string> Company = [Invoice, Proforma, Delivery];
+    public static readonly IReadOnlyList<string> All = [.. Shop, .. Company];
+
+    public static bool IsCompany(string code) => Company.Contains(code);
+    public static string Normalize(string? code) => code is not null && All.Contains(code) ? code : Classic;
+}
+
+public enum ReceiptRowKind { Text, Pair, Separator, Logo, Barcode, Columns }
+
+/// <summary>One table cell: relative width, right alignment (amounts) and LTR (numbers, codes).</summary>
+public sealed record ReceiptCell(string Text, double Weight, bool Right = false, bool Ltr = false);
 
 /// <summary>
 /// One row of the receipt. Text rows are already wrapped to the column count. <paramref name="Ltr"/> marks text that must stay
 /// left-to-right inside an Arabic receipt (amounts, quantities, codes); <see cref="Right"/> values of pairs are always LTR.
 /// </summary>
+/// <remarks>Separator rows may carry their character in <see cref="Text"/> ("=", "*"); Columns rows carry <see cref="Cells"/>.</remarks>
 public sealed record ReceiptRow(ReceiptRowKind Kind, string Text = "", string? Right = null, bool Center = false, bool Bold = false,
-    int Indent = 0, bool Ltr = false);
+    int Indent = 0, bool Ltr = false, IReadOnlyList<ReceiptCell>? Cells = null);
 
 /// <summary>Physical page description shared by the preview and the printer.</summary>
 public sealed record ReceiptPage(int PaperMm, double PrintableWidthMm, double MarginMm, int Columns, double CharWidthMm, string Language,
@@ -134,7 +161,18 @@ public sealed record ReceiptDocument(ReceiptPage Page, IReadOnlyList<ReceiptRow>
             switch (row.Kind)
             {
                 case ReceiptRowKind.Separator:
-                    lines.Add(new string('-', w));
+                    lines.Add(new string(row.Text is { Length: 1 } ch ? ch[0] : '-', w));
+                    break;
+                case ReceiptRowKind.Columns when row.Cells is { Count: > 0 } cells:
+                    var total = cells.Sum(c => c.Weight);
+                    var line = new StringBuilder();
+                    foreach (var c in cells)
+                    {
+                        var cw = Math.Max(1, (int)Math.Floor(w * c.Weight / total) - 1);
+                        var text = c.Text.Length > cw ? c.Text[..cw] : c.Text;
+                        line.Append(c.Right ? text.PadLeft(cw) : text.PadRight(cw)).Append(' ');
+                    }
+                    lines.Add(line.ToString().TrimEnd());
                     break;
                 case ReceiptRowKind.Text:
                     var t = new string(' ', row.Indent) + row.Text;
@@ -195,7 +233,14 @@ public static class ReceiptLayout
     public static ReceiptDocument Build(ReceiptModel r, ReceiptSettings s, int paperMm, string appLanguage, bool reprint = false) =>
         Build(r, s, Page(paperMm, s, appLanguage), reprint);
 
-    public static ReceiptDocument Build(ReceiptModel r, ReceiptSettings s, ReceiptPage page, bool reprint = false)
+    public static ReceiptDocument Build(ReceiptModel r, ReceiptSettings s, ReceiptPage page, bool reprint = false) =>
+        ReceiptTemplates.Normalize(s.Template) switch
+        {
+            ReceiptTemplates.Classic => BuildClassic(r, s, page, reprint),
+            var t => ReceiptDesigns.Build(t, r, s, page, reprint),
+        };
+
+    private static ReceiptDocument BuildClassic(ReceiptModel r, ReceiptSettings s, ReceiptPage page, bool reprint)
     {
         var w = page.Columns;
         var L = ReceiptLabels.For(page.Language);

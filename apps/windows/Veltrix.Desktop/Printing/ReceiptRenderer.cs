@@ -54,7 +54,24 @@ public static class ReceiptRenderer
         switch (row.Kind)
         {
             case ReceiptRowKind.Separator:
-                return Para(new string('-', page.Columns), false, false, false, new Thickness(0));
+                return Para(new string(row.Text is { Length: 1 } ch ? ch[0] : '-', page.Columns), false, false, false, new Thickness(0));
+            case ReceiptRowKind.Columns when row.Cells is { Count: > 0 } cells:
+                var table = new Grid();
+                for (var i = 0; i < cells.Count; i++)
+                {
+                    table.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(cells[i].Weight, GridUnitType.Star) });
+                    var cell = Cell(cells[i].Text, row.Bold, fontSize);
+                    cell.TextWrapping = TextWrapping.Wrap;
+                    cell.Margin = new Thickness(0, 0, fontSize * CharAdvanceEm, 0);
+                    if (cells[i].Ltr) cell.FlowDirection = FlowDirection.LeftToRight;
+                    // Amounts align to the cell end; in an LTR cell inside an RTL receipt "Right" is still the visual right.
+                    cell.TextAlignment = cells[i].Right ? (cells[i].Ltr || !page.RightToLeft ? TextAlignment.Right : TextAlignment.Left) : TextAlignment.Left;
+                    Grid.SetColumn(cell, i);
+                    table.Children.Add(cell);
+                }
+                // Header rows get an underline.
+                return new BlockUIContainer(row.Bold ? new Border { Child = table, BorderBrush = Brushes.Black, BorderThickness = new Thickness(0, 0, 0, 1) } : table)
+                { Margin = new Thickness(0, 0, 0, fontSize * 0.15) };
             case ReceiptRowKind.Text:
                 return Para(row.Text, row.Center, row.Bold, row.Ltr, indent);
             case ReceiptRowKind.Pair:
