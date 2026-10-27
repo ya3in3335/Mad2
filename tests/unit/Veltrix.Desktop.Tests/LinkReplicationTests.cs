@@ -166,3 +166,27 @@ public sealed class LinkReplicationTests : IAsyncLifetime
         Assert.Equal("JE-000001", await Veltrix.Desktop.Core.Erp.Ledger.NextNumberAsync(h, "JE", default));
     }
 }
+
+public sealed class LinkEditionTests
+{
+    [Fact]
+    public void Employee_edition_hides_hr_workforce_cameras_and_books()
+    {
+        foreach (var key in new[] { "wf.employees", "wf.terminals", "erp.hr", "cameras", "erp.accounting", "erp.purchases", "erp.suppliers", "erp.expenses", "erp.receivables" })
+            Assert.True(Veltrix.Desktop.Presentation.ViewModels.ShellViewModel.BranchHidden(key), key);
+        foreach (var key in new[] { "pos", "products", "customers", "sales", "inventory", "erp.cash", "reports", "settings", "link" })
+            Assert.False(Veltrix.Desktop.Presentation.ViewModels.ShellViewModel.BranchHidden(key), key);
+    }
+
+    [Fact]
+    public void Pairing_code_is_ten_symbols_and_proofs_depend_on_code_and_certificate()
+    {
+        var code = LinkProtocol.NewPairingCode();
+        Assert.Matches("^[A-HJ-NP-Z2-9]{5}-[A-HJ-NP-Z2-9]{5}$", code);
+        var h = LinkProtocol.Sha256Hex(LinkProtocol.NormalizeCode(code));
+        var p = LinkProtocol.Proof(h, "hub", "a", "b", "cert1");
+        Assert.Equal(p, LinkProtocol.Proof(LinkProtocol.Sha256Hex(LinkProtocol.NormalizeCode(code.ToLowerInvariant())), "hub", "a", "b", "CERT1"));
+        Assert.NotEqual(p, LinkProtocol.Proof(h, "hub", "a", "b", "cert2"));
+        Assert.NotEqual(p, LinkProtocol.Proof(h, "node", "a", "b", "cert1"));
+    }
+}

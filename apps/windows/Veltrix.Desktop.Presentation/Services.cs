@@ -74,6 +74,10 @@ public sealed class DesktopServices
     public Core.Workforce.Terminals.IIngestionLock IngestionLock { get; init; } = new Core.Workforce.Terminals.InProcessIngestionLock();
     /// <summary>Downloads the official ZKTeco SDK into the program folder through an elevated helper (UAC). Null where unsupported.</summary>
     public Func<Task<bool>>? InstallZkTecoSdk { get; init; }
+    /// <summary>VELTRIX Link: standalone, company hub or branch PC.</summary>
+    public Core.Replication.LinkRuntime? Link { get; init; }
+    /// <summary>Employee edition: a branch PC of the company network (no HR, workforce, cameras or company books on this PC).</summary>
+    public bool IsBranchPc => Link?.IsBranch == true;
     public string? ZkTecoSdkDirectory { get; init; }
 
     /// <summary>Owner of the shop: local owner account, or an online profile with full permissions.</summary>

@@ -73,6 +73,11 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
         // CCTV (owner only): live view of the shop cameras over the LAN.
         if (s.Cameras is not null && s.IsOwner)
             all.Insert(all.FindIndex(a => a.Key == "settings"), ("cameras", "cam.nav", "Icon.Settings", null, () => new CamerasViewModel(s)));
+        // Company network page: the owner configures the hub; on a branch PC everyone sees the connection status.
+        if (s.IsStandalone && s.Link is not null && (s.IsOwner || s.IsBranchPc))
+            all.Insert(all.FindIndex(a => a.Key == "settings"), ("link", "link.nav", "Icon.Settings", null, () => new LinkViewModel(s)));
+        // Employee edition (branch PC): HR, workforce, cameras and the company's books stay on the hub.
+        if (s.IsBranchPc) all.RemoveAll(a => BranchHidden(a.Key));
         var firstWf = all.FirstOrDefault(a => a.Key.StartsWith(WorkforceNav.KeyPrefix, StringComparison.Ordinal)).Key;
         NavItems = new ObservableCollection<NavItem>(all.Where(a => a.Permission is null || s.Session.HasPermission(a.Permission))
             .Select(a => new NavItem(a.Key, a.Title, a.Icon, a.Make) { GroupTitleKey = a.Key == firstWf ? WorkforceNav.GroupTitleKey : null }));
@@ -87,6 +92,10 @@ public sealed partial class ShellViewModel : ObservableObject, IDisposable
         if (s.IsStandalone) SyncStatus = s.Loc.Get("dk.sa.localMode");
         else _ = SyncLoopAsync(_life.Token);
     }
+
+    /// <summary>Pages never shown on a branch PC (their data is not replicated there, and the hub refuses their writes).</summary>
+    public static bool BranchHidden(string key) =>
+        Core.Standalone.SectionLockService.IsProtected(key) || key is "erp.accounting" or "erp.purchases" or "erp.suppliers" or "erp.expenses" or "erp.receivables" or "purchasing";
 
     public ObservableCollection<NavItem> NavItems { get; }
     public string UserName => _s.Session.User?.FullName ?? "";

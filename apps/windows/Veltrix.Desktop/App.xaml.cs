@@ -1,3 +1,4 @@
+using Veltrix.Desktop.Core.Replication;
 using Veltrix.Desktop.Core.Workforce.Terminals;
 using System.IO;
 using System.Net.Http;
@@ -73,7 +74,8 @@ public partial class App : Application
             var init = app.InitializeAsync(CancellationToken.None);
             await splash.PlayAsync(init);
             route = await init;
-            StartTerminalConnector(services);
+            await StartLinkAsync(services);
+            if (!services.IsBranchPc) StartTerminalConnector(services);
             // Sale-photo retention (default 30 days): off the UI thread, never blocks startup.
             if (services.Cameras is { } cams)
                 _ = Task.Run(async () =>
@@ -97,6 +99,22 @@ public partial class App : Application
     }
 
     private CancellationTokenSource? _connectorCts;
+    private System.Threading.Timer? _usersTimer;
+
+    /// <summary>
+    /// Company network: a branch PC starts syncing with the hub; the hub publishes the sign-in accounts for its branch PCs every minute
+    /// (the HTTPS endpoints themselves run in the connector service).
+    /// </summary>
+    private async Task StartLinkAsync(DesktopServices services)
+    {
+        if (services.Link is not { } link || !services.Binding.IsBound) return;
+        await link.LoadAsync(services.Db);
+        var options = LocalDb.OptionsFor($"Data Source={AppPaths.Database}");
+        if (link.IsBranch) link.Start(c => new LocalDb(options) { Link = c }, services.Standalone.Auth, m => _log?.Warn(m));
+        else if (link.IsHub)
+            _usersTimer = new System.Threading.Timer(_ => _ = LinkRuntime.PublishUsersAsync(services.Db, services.Standalone.Auth).ContinueWith(
+                t => _log?.Warn("Publishing accounts to branch PCs failed", t.Exception), TaskContinuationOptions.OnlyOnFaulted), null, TimeSpan.Zero, TimeSpan.FromMinutes(1));
+    }
 
     /// <summary>
     /// Attendance terminals: tells the connector service where the database is, then polls terminals in-process as a fallback. While the
@@ -136,7 +154,9 @@ public partial class App : Application
 
         Directory.CreateDirectory(AppPaths.Data);
         var dbOptions = LocalDb.OptionsFor($"Data Source={AppPaths.Database}");
-        Func<LocalDb> db = () => new LocalDb(dbOptions);
+        // VELTRIX Link: every unit of work is captured for replication when this PC is the company hub or a branch PC (decided after start-up).
+        var link = new LinkRuntime(secrets, time);
+        Func<LocalDb> db = () => new LocalDb(dbOptions) { Link = link.Capture };
 
         var pinned = Assembly.GetExecutingAssembly().GetCustomAttributes<AssemblyMetadataAttribute>()
             .FirstOrDefault(a => a.Key == "VeltrixVendorPublicKey")?.Value;
@@ -155,6 +175,7 @@ public partial class App : Application
             Session = new SessionService(api, tokens, secrets), Db = db, Sync = new SyncEngine(db, new ApiSyncTransport(api), time),
             Pos = new PosService(api, db, time, () => binding.IsBound), Loc = localizer, Ui = new WpfPlatformUi(localizer), Time = time, Log = log, Version = version,
             Standalone = standalone,
+            Link = link,
             IngestionLock = new NamedMutexIngestionLock(),
             InstallZkTecoSdk = InstallZkSdkElevatedAsync,
             ZkTecoSdkDirectory = ZkTecoSdkFiles.BridgeDirectory(AppContext.BaseDirectory),
@@ -243,6 +264,8 @@ public partial class App : Application
     {
         _log?.Info("Exit");
         _connectorCts?.Cancel();
+        _usersTimer?.Dispose();
+        _services?.Link?.Stop();
         _singleInstance?.Dispose();
         base.OnExit(e);
     }

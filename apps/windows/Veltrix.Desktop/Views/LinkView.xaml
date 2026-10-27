@@ -1,0 +1,95 @@
+<UserControl x:Class="Veltrix.Desktop.Views.LinkView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <DockPanel>
+        <HeaderedContentControl DockPanel.Dock="Top" Header="{DynamicResource link.nav}" Style="{StaticResource PageHeader}">
+            <Button Content="{DynamicResource action.refresh}" Command="{Binding RefreshCommand}"/>
+        </HeaderedContentControl>
+        <TextBlock DockPanel.Dock="Bottom" Text="{Binding StatusMessage}" Style="{StaticResource Text.Status}" Margin="0,8,0,0" TextWrapping="Wrap"/>
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel MaxWidth="900" HorizontalAlignment="Left">
+                <TextBlock Text="{DynamicResource link.intro}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,0,0,12"/>
+                <TextBlock Text="{Binding FormError}" Style="{StaticResource Text.Error}" TextWrapping="Wrap" Visibility="{Binding FormError, Converter={StaticResource NotNullToVis}}"/>
+
+                <!-- Branch PC -->
+                <Border Style="{StaticResource Card}" Margin="0,0,0,12" Visibility="{Binding IsBranch, Converter={StaticResource BoolToVis}}">
+                    <StackPanel>
+                        <TextBlock Text="{DynamicResource link.branchTitle}" Style="{StaticResource Text.Section}"/>
+                        <TextBlock Text="{Binding StatusText}" TextWrapping="Wrap" FlowDirection="LeftToRight" HorizontalAlignment="Left"/>
+                        <Button Content="{DynamicResource link.leave}" Command="{Binding LeaveCommand}" Style="{StaticResource Button.Ghost}" HorizontalAlignment="Left" Margin="0,10,0,0"
+                                Visibility="{Binding CanManage, Converter={StaticResource BoolToVis}}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Company hub -->
+                <Border Style="{StaticResource Card}" Margin="0,0,0,12" Visibility="{Binding IsHub, Converter={StaticResource BoolToVis}}">
+                    <StackPanel>
+                        <TextBlock Text="{DynamicResource link.hubTitle}" Style="{StaticResource Text.Section}"/>
+                        <TextBlock Text="{DynamicResource link.hubOnHint}" TextWrapping="Wrap"/>
+                        <TextBlock Text="{DynamicResource link.branch}" Style="{StaticResource Text.Label}"/>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBox Text="{Binding Branch}" Width="240"/>
+                            <Button Content="{DynamicResource link.newCode}" Command="{Binding NewCodeCommand}" Style="{StaticResource Button.Primary}" Margin="8,0,0,0"/>
+                        </StackPanel>
+                        <StackPanel Visibility="{Binding PairingCode, Converter={StaticResource NotNullToVis}}" Margin="0,10,0,0">
+                            <TextBlock Text="{Binding PairingCode}" FontSize="34" FontWeight="Bold" FontFamily="{StaticResource Font.Mono}" FlowDirection="LeftToRight" HorizontalAlignment="Left"/>
+                            <TextBlock Text="{Binding PairingExpires}" Style="{StaticResource Text.Caption}"/>
+                        </StackPanel>
+                        <TextBlock Text="{DynamicResource link.pcs}" Style="{StaticResource Text.Section}" Margin="0,14,0,4"/>
+                        <DataGrid ItemsSource="{Binding Nodes}" IsReadOnly="True" AutoGenerateColumns="False" MaxHeight="320">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="{DynamicResource link.code}" Binding="{Binding Code}" Width="60"/>
+                                <DataGridTextColumn Header="{DynamicResource link.pcName}" Binding="{Binding Name}" Width="*"/>
+                                <DataGridTextColumn Header="{DynamicResource link.branch}" Binding="{Binding Branch}" Width="120"/>
+                                <DataGridTextColumn Header="{DynamicResource link.address}" Binding="{Binding Address}" Width="120"/>
+                                <DataGridTextColumn Header="{DynamicResource link.lastSeen}" Binding="{Binding LastSeen}" Width="130"/>
+                                <DataGridTextColumn Header="{DynamicResource link.state}" Binding="{Binding State}" Width="90"/>
+                                <DataGridTemplateColumn Width="90">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Button Content="{DynamicResource link.revoke}" Style="{StaticResource Button.Ghost}"
+                                                    Command="{Binding DataContext.RevokeCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" CommandParameter="{Binding}"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                        <Button Content="{DynamicResource link.hubOff}" Command="{Binding DisableHubCommand}" Style="{StaticResource Button.Ghost}" HorizontalAlignment="Left" Margin="0,10,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Standalone PC: become the hub, or join one -->
+                <StackPanel Visibility="{Binding IsStandaloneMode, Converter={StaticResource BoolToVis}}">
+                    <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+                        <StackPanel>
+                            <TextBlock Text="{DynamicResource link.makeHubTitle}" Style="{StaticResource Text.Section}"/>
+                            <TextBlock Text="{DynamicResource link.makeHubHint}" TextWrapping="Wrap"/>
+                            <TextBlock Text="{DynamicResource link.hubName}" Style="{StaticResource Text.Label}"/>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBox Text="{Binding HubName}" Width="240"/>
+                                <Button Content="{DynamicResource link.hubOn}" Command="{Binding EnableHubCommand}" Style="{StaticResource Button.Primary}" Margin="8,0,0,0"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Text="{DynamicResource link.joinTitle}" Style="{StaticResource Text.Section}"/>
+                            <TextBlock Text="{DynamicResource link.joinHint}" TextWrapping="Wrap"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                <Button Content="{DynamicResource link.discover}" Command="{Binding DiscoverCommand}"/>
+                                <ComboBox ItemsSource="{Binding Hubs}" SelectedItem="{Binding SelectedHub}" DisplayMemberPath="Name" Width="240" Margin="8,0,0,0"/>
+                            </StackPanel>
+                            <TextBlock Text="{DynamicResource link.hubAddress}" Style="{StaticResource Text.Label}"/>
+                            <TextBox Text="{Binding Host}" FlowDirection="LeftToRight" Width="240" HorizontalAlignment="Left"/>
+                            <TextBlock Text="{DynamicResource link.pcName}" Style="{StaticResource Text.Label}"/>
+                            <TextBox Text="{Binding PcName}" Width="240" HorizontalAlignment="Left"/>
+                            <TextBlock Text="{DynamicResource link.code}" Style="{StaticResource Text.Label}"/>
+                            <TextBox Text="{Binding Code}" FlowDirection="LeftToRight" FontFamily="{StaticResource Font.Mono}" Width="240" HorizontalAlignment="Left" CharacterCasing="Upper"/>
+                            <Button Content="{DynamicResource link.join}" Command="{Binding JoinCommand}" Style="{StaticResource Button.Primary}" HorizontalAlignment="Left" Margin="0,12,0,0"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>

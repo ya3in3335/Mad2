@@ -210,14 +210,15 @@ public sealed class LocalAuthService(SecureStore store, TimeProvider time, int i
     /// <summary>The raw (encrypted at rest) users document, included in backups.</summary>
     public string ExportUsers() => store.Get(UsersKey) ?? "[]";
 
-    public void ImportUsers(string json)
+    /// <param name="resetLockout">False for the periodic copy from the company hub (VELTRIX Link): sign-in lockouts must survive it.</param>
+    public void ImportUsers(string json, bool resetLockout = true)
     {
         var users = JsonSerializer.Deserialize<List<LocalUser>>(json, Json) ?? throw new InvalidOperationException("Invalid users document.");
         if (!users.Any(u => u.IsOwner)) throw new InvalidOperationException("The backup contains no owner account.");
         lock (_gate)
         {
             Save(users);
-            store.Set(LockoutKey, null);
+            if (resetLockout) store.Set(LockoutKey, null);
         }
     }
 
