@@ -70,6 +70,10 @@ Filename: "{sys}\sc.exe"; Parameters: "create VeltrixConnector binPath= ""{app}\
 Filename: "{sys}\sc.exe"; Parameters: "config VeltrixConnector binPath= ""{app}\Connector\VeltrixConnector.exe"" start= delayed-auto"; Flags: runhidden waituntilterminated
 Filename: "{sys}\sc.exe"; Parameters: "description VeltrixConnector ""VELTRIX OS: imports attendance-terminal events into the local database."""; Flags: runhidden waituntilterminated
 Filename: "{sys}\sc.exe"; Parameters: "failure VeltrixConnector reset= 86400 actions= restart/60000/restart/60000/restart/300000"; Flags: runhidden waituntilterminated
+; VELTRIX Link (company network): HTTPS 47800 and discovery 47801, private / domain networks only (never public Wi-Fi).
+Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall delete rule name=""VELTRIX Link"""; Flags: runhidden waituntilterminated
+Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall add rule name=""VELTRIX Link"" dir=in action=allow protocol=TCP localport=47800 profile=private,domain program=""{app}\Connector\VeltrixConnector.exe"""; Flags: runhidden waituntilterminated
+Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall add rule name=""VELTRIX Link"" dir=in action=allow protocol=UDP localport=47801 profile=private,domain program=""{app}\Connector\VeltrixConnector.exe"""; Flags: runhidden waituntilterminated
 Filename: "{sys}\sc.exe"; Parameters: "start VeltrixConnector"; Flags: runhidden waituntilterminated
 Filename: "{app}\VeltrixOS.exe"; Description: "{cm:LaunchProgram,VELTRIX OS}"; Flags: nowait postinstall skipifsilent
 
@@ -81,6 +85,7 @@ Type: filesandordirs; Name: "{app}\ZkBridge"
 Filename: "{sys}\sc.exe"; Parameters: "stop VeltrixConnector"; Flags: runhidden waituntilterminated; RunOnceId: "StopConnector"
 Filename: "{sys}\timeout.exe"; Parameters: "/t 3 /nobreak"; Flags: runhidden waituntilterminated; RunOnceId: "WaitConnector"
 Filename: "{sys}\sc.exe"; Parameters: "delete VeltrixConnector"; Flags: runhidden waituntilterminated; RunOnceId: "DeleteConnector"
+Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall delete rule name=""VELTRIX Link"""; Flags: runhidden waituntilterminated; RunOnceId: "DeleteLinkRule"
 
 [Code]
 // ZKTeco Standalone SDK 13 files: downloaded from ZKTeco's official GitHub repository with pinned SHA-256 (same list as

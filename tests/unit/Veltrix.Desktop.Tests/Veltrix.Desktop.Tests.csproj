@@ -14,6 +14,7 @@
     <ProjectReference Include="../../../apps/windows/Veltrix.Desktop.Core/Veltrix.Desktop.Core.csproj" />
     <ProjectReference Include="../../../apps/windows/Veltrix.Desktop.Presentation/Veltrix.Desktop.Presentation.csproj" />
     <ProjectReference Include="../../../tools/license-issuer/Veltrix.LicenseIssuer.csproj" />
+    <ProjectReference Include="../../../apps/windows/Veltrix.LinkServer/Veltrix.LinkServer.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Using Include="Xunit" />

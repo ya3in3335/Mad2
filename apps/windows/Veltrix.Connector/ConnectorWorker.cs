@@ -3,6 +3,10 @@ using Veltrix.Desktop.Core.Data;
 using Veltrix.Desktop.Core.Standalone;
 using Veltrix.Desktop.Core.Workforce;
 using Veltrix.Desktop.Core.Workforce.Terminals;
+using Veltrix.Desktop.Core.Replication;
+using Veltrix.LinkServer;
+using System.Net;
+using Microsoft.EntityFrameworkCore;
 
 namespace Veltrix.Connector;
 
@@ -68,7 +72,8 @@ public sealed class ConnectorWorker(TimeProvider time, ILogger<ConnectorWorker> 
         string full;
         try { full = Path.GetFullPath(path); }
         catch (Exception e) when (e is ArgumentException or NotSupportedException or PathTooLongException) { return "invalid database path"; }
-        var usersRoot = Path.GetDirectoryName(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)) ?? "";
+        // The service runs as LocalSystem, whose own profile is under Windows\System32: derive the Users folder from the public profile.
+        var usersRoot = Path.GetDirectoryName(Path.GetDirectoryName(Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments)) ?? "") ?? "";
         var expectedTail = Path.Combine("AppData", "Local", "VELTRIX OS", "Data", "veltrix.db");
         if (usersRoot.Length == 0 || !full.StartsWith(usersRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
             || !full.EndsWith(Path.DirectorySeparatorChar + expectedTail, StringComparison.OrdinalIgnoreCase)
@@ -91,7 +96,68 @@ public sealed class ConnectorWorker(TimeProvider time, ILogger<ConnectorWorker> 
         var loop = new TerminalConnectorLoop(new TerminalSyncCoordinator(wf, new NamedMutexIngestionLock(), ConnectorOrigins.Service), time,
             new ConnectorOptions { Origin = ConnectorOrigins.Service, Version = version }, Log);
         logger.LogInformation("Polling terminals of {Path}", databasePath);
-        await loop.RunAsync(ct);
+        await Task.WhenAll(loop.RunAsync(ct), HubAsync(options, ct));
+    }
+
+    /// <summary>
+    /// VELTRIX Link hub (company PC): while "This PC is the company hub" is on in the app, serves the branch PCs over HTTPS on the LAN
+    /// (TCP 47800, certificate kept encrypted in ProgramData) and answers discovery broadcasts (UDP 47801).
+    /// </summary>
+    private async Task HubAsync(DbContextOptions<LocalDb> options, CancellationToken ct)
+    {
+        LocalDb Db(LinkCapture? c) => new(options) { Link = c };
+        LinkHubServer? server = null;
+        CancellationTokenSource? discovery = null;
+        try
+        {
+            while (!ct.IsCancellationRequested)
+            {
+                bool enabled;
+                await using (var db = Db(null)) enabled = await db.GetValueAsync(LinkProtocol.HubFlagKey, ct) == "1";
+                if (enabled && server is null && OperatingSystem.IsWindows())
+                {
+                    try
+                    {
+                        var cert = LinkCertificate.LoadOrCreate(Path.Combine(LinkDirectory, "hub.pfx"), new MachineDataProtector(), "VELTRIX Hub " + Environment.MachineName);
+                        server = await LinkHubServer.StartAsync(Db, cert, time, IPAddress.Any, LinkProtocol.TcpPort, m => logger.LogInformation("{Message}", m), ct);
+                        discovery = CancellationTokenSource.CreateLinkedTokenSource(ct);
+                        var token = discovery.Token;
+                        _ = Task.Run(() => LinkDiscoveryResponder.RunAsync(() => HubName(Db), LinkProtocol.TcpPort, LinkProtocol.DiscoveryPort, token), CancellationToken.None);
+                        logger.LogInformation("VELTRIX Link hub listening on TCP {Port}", LinkProtocol.TcpPort);
+                    }
+                    catch (Exception ex) when (ex is not OperationCanceledException)
+                    {
+                        logger.LogError(ex, "VELTRIX Link hub could not start");
+                        server = null;
+                    }
+                }
+                else if (!enabled && server is not null)
+                {
+                    await StopHubAsync(server, discovery);
+                    (server, discovery) = (null, null);
+                    logger.LogInformation("VELTRIX Link hub stopped");
+                }
+                if (!await DelayAsync(TimeSpan.FromSeconds(15), ct)) break;
+            }
+        }
+        finally
+        {
+            if (server is not null) await StopHubAsync(server, discovery);
+        }
+    }
+
+    private static string LinkDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "VELTRIX", "Link");
+
+    private static string HubName(Func<LinkCapture?, LocalDb> db)
+    {
+        using var ctx = db(null);
+        return ctx.Values.Find(LinkProtocol.HubNameKey)?.Value ?? Environment.MachineName;
+    }
+
+    private static async Task StopHubAsync(LinkHubServer server, CancellationTokenSource? discovery)
+    {
+        if (discovery is not null) { await discovery.CancelAsync(); discovery.Dispose(); }
+        await server.DisposeAsync();
     }
 
     private void Log(string level, string message)
