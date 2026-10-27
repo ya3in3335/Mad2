@@ -155,6 +155,35 @@ public sealed class WpfPlatformUi(WpfLocalizer localizer) : IPlatformUi
         return true;
     }
 
+    public void ExportPdf(string title, System.Data.DataTable table, string path)
+    {
+        const double width = 793.7, height = 1122.5, scale = 2; // A4 at 96 DIP per inch, rendered at 192 DPI
+        var doc = Printing.TableRenderer.Render(title, table, Application.Current.MainWindow?.FlowDirection ?? FlowDirection.LeftToRight);
+        (doc.PageWidth, doc.PageHeight, doc.ColumnWidth, doc.PagePadding) = (width, height, width, new Thickness(40));
+        var paginator = ((IDocumentPaginatorSource)doc).DocumentPaginator;
+        paginator.ComputePageCount();
+        var pages = new List<(byte[], int, int)>();
+        for (var i = 0; i < paginator.PageCount; i++)
+        {
+            using var page = paginator.GetPage(i);
+            var bmp = new System.Windows.Media.Imaging.RenderTargetBitmap((int)(width * scale), (int)(height * scale), 96 * scale, 96 * scale,
+                System.Windows.Media.PixelFormats.Pbgra32);
+            bmp.Render(page.Visual);
+            var stride = bmp.PixelWidth * 4;
+            var bgra = new byte[stride * bmp.PixelHeight];
+            bmp.CopyPixels(bgra, stride, 0);
+            var rgb = new byte[bmp.PixelWidth * bmp.PixelHeight * 3];
+            for (int s = 0, d = 0; s < bgra.Length; s += 4, d += 3)
+            {
+                var inv = 255 - bgra[s + 3]; // premultiplied alpha over a white page
+                (rgb[d], rgb[d + 1], rgb[d + 2]) = ((byte)(bgra[s + 2] + inv), (byte)(bgra[s + 1] + inv), (byte)(bgra[s] + inv));
+            }
+            pages.Add((rgb, bmp.PixelWidth, bmp.PixelHeight));
+        }
+        using var file = File.Create(path);
+        Core.Reporting.ReportExport.WritePdf(pages, 595.28, 841.89, file, title);
+    }
+
     public string? PickSaveFile(string suggestedName, string filter)
     {
         var dlg = new SaveFileDialog { FileName = suggestedName, Filter = filter, AddExtension = true, OverwritePrompt = true };

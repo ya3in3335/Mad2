@@ -387,6 +387,8 @@ public sealed class WorkforceUiTests : IAsyncLifetime
     {
         public bool ConfirmResult { get; set; } = true;
         public void ApplyLanguage(string code) { }
+        public List<string> Pdfs { get; } = [];
+        public void ExportPdf(string title, System.Data.DataTable table, string path) => Pdfs.Add(path);
         public void ApplyTheme(string theme) { }
         public void ApplyAccent(string accent) { }
         public bool PrintReceipt(string title, Core.Pos.ReceiptDocument receipt) => false;

@@ -125,13 +125,12 @@ public abstract partial class WorkforcePageViewModel(DesktopServices s) : PageVi
         foreach (var i in items) target.Add(i);
     }
 
-    /// <summary>Asks for a destination and writes the rows as CSV (UTF-8 with BOM for spreadsheet apps). Returns false when cancelled.</summary>
-    protected async Task<bool> ExportCsvAsync<T>(string fileStem, IEnumerable<T> rows, string? title = null)
+    /// <summary>Exports the rows as Excel, PDF or CSV (chosen in the save dialog); column titles are localized. Returns false when cancelled.</summary>
+    protected Task<bool> ExportCsvAsync<T>(string fileStem, IEnumerable<T> rows, string? title = null)
     {
-        var path = S.Ui.PickSaveFile($"{fileStem}-{LocalNow:yyyyMMdd-HHmm}.csv", "CSV (*.csv)|*.csv");
-        if (path is null) return false;
-        await File.WriteAllTextAsync(path, WorkforceReports.ToCsv(rows, fileStem, title), new UTF8Encoding(true));
-        return true;
+        var t = Core.Reporting.ReportExport.FromRows(rows, fileStem, title ?? Loc.Get(TitleKey));
+        t = t with { Columns = t.Columns.Select(c => c with { Title = WfText.Label(Loc, "col", c.Key) }).ToList() };
+        return ExportReportAsync(t, fileStem);
     }
 
     protected static decimal ParseDecimal(string? text, string errorKey)

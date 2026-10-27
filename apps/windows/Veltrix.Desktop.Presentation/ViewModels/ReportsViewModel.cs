@@ -69,11 +69,9 @@ public sealed partial class ReportsViewModel(DesktopServices s) : PageViewModel(
         if (SelectedReport is null || format is not ("csv" or "xlsx" or "pdf")) return;
         if (S.IsStandalone)
         {
-            // Excel/PDF rendering lives on the server; standalone exports CSV.
-            var csvPath = S.Ui.PickSaveFile($"{SelectedReport.Key}-{From:yyyyMMdd}-{To:yyyyMMdd}.csv", "CSV (*.csv)|*.csv");
-            if (csvPath is null) return;
+            // Standalone: Excel / PDF / CSV rendered on this PC.
             var table = await S.Standalone.Store.RunReportAsync(SelectedReport.Key, DateOnly.FromDateTime(From), DateOnly.FromDateTime(To));
-            await File.WriteAllTextAsync(csvPath, Core.Standalone.StandaloneStore.ToCsv(table), new System.Text.UTF8Encoding(true));
+            await ExportReportAsync(table, $"{SelectedReport.Key}-{From:yyyyMMdd}-{To:yyyyMMdd}");
             return;
         }
         var name = $"{SelectedReport.Key}-{From:yyyyMMdd}-{To:yyyyMMdd}.{format}";

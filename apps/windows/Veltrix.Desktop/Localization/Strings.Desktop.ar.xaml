@@ -351,4 +351,5 @@
     <sys:String x:Key="link.err.isBranch">هذا الحاسوب حاسوب موظف.</sys:String>
     <sys:String x:Key="link.err.isHub">هذا الحاسوب هو المركز.</sys:String>
     <sys:String x:Key="link.hubOnDone">تم تشغيل المركز. يمكن للحواسيب الأخرى الانضمام الآن.</sys:String>
+    <sys:String x:Key="dk.rep.savedTo">تم الحفظ: {0}</sys:String>
 </ResourceDictionary>

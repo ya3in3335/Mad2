@@ -351,4 +351,5 @@
     <sys:String x:Key="link.err.isBranch">Ce PC est un poste employé.</sys:String>
     <sys:String x:Key="link.err.isHub">Ce PC est le hub.</sys:String>
     <sys:String x:Key="link.hubOnDone">Hub activé. Les autres PC peuvent rejoindre.</sys:String>
+    <sys:String x:Key="dk.rep.savedTo">Enregistré : {0}</sys:String>
 </ResourceDictionary>

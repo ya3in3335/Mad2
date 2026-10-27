@@ -139,18 +139,6 @@ public sealed class WorkforceReports(WorkforceService service, Func<LocalDb> dbF
     }
 
     /// <summary>CSV of any row model (public properties in declaration order), with spreadsheet-formula protection.</summary>
-    public static string ToCsv<T>(IEnumerable<T> rows, string key = "workforce", string? title = null)
-    {
-        var props = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => p.GetIndexParameters().Length == 0).ToArray();
-        var table = new ReportTable(key, title ?? typeof(T).Name, props.Select(p => new ReportColumn(p.Name, p.Name, p.PropertyType.Name)).ToList(),
-            rows.Select(r => (IReadOnlyList<object?>)props.Select(p => p.GetValue(r) switch
-            {
-                DateTime dt => dt.ToString("yyyy-MM-dd HH:mm", System.Globalization.CultureInfo.InvariantCulture),
-                DateTimeOffset dto => dto.ToString("yyyy-MM-dd HH:mm:ss zzz", System.Globalization.CultureInfo.InvariantCulture),
-                DateOnly d => d.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture),
-                var v => v,
-            }).ToList()).ToList(),
-            new Dictionary<string, object?>(), DateTimeOffset.UtcNow, new Dictionary<string, string?>());
-        return StandaloneStore.ToCsv(table);
-    }
+    public static string ToCsv<T>(IEnumerable<T> rows, string key = "workforce", string? title = null) =>
+        StandaloneStore.ToCsv(Reporting.ReportExport.FromRows(rows, key, title));
 }

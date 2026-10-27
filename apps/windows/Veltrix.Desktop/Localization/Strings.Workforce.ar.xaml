@@ -3,7 +3,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
     <sys:String x:Key="sc.wf.compute">حساب الأجور</sys:String>
     <sys:String x:Key="sc.wf.exitKiosk">الخروج من وضع الجهاز</sys:String>
-    <sys:String x:Key="sc.wf.export">تصدير CSV</sys:String>
+    <sys:String x:Key="sc.wf.export">تصدير (Excel / PDF / CSV)</sys:String>
     <sys:String x:Key="sc.wf.fullScreen">وضع الجهاز بملء الشاشة</sys:String>
     <sys:String x:Key="sc.wf.import">استيراد CSV</sys:String>
     <sys:String x:Key="sc.wf.nextPeriod">الفترة التالية</sys:String>

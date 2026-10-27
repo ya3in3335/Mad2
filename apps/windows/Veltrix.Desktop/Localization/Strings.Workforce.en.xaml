@@ -3,7 +3,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
     <sys:String x:Key="sc.wf.compute">Compute payroll</sys:String>
     <sys:String x:Key="sc.wf.exitKiosk">Leave kiosk mode</sys:String>
-    <sys:String x:Key="sc.wf.export">Export CSV</sys:String>
+    <sys:String x:Key="sc.wf.export">Export (Excel / PDF / CSV)</sys:String>
     <sys:String x:Key="sc.wf.fullScreen">Kiosk full screen</sys:String>
     <sys:String x:Key="sc.wf.import">Import CSV</sys:String>
     <sys:String x:Key="sc.wf.nextPeriod">Next period</sys:String>

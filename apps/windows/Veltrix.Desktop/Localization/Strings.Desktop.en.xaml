@@ -351,4 +351,5 @@
     <sys:String x:Key="link.err.isBranch">This PC is an employee PC.</sys:String>
     <sys:String x:Key="link.err.isHub">This PC is the hub.</sys:String>
     <sys:String x:Key="link.hubOnDone">Hub on. The other PCs can now join.</sys:String>
+    <sys:String x:Key="dk.rep.savedTo">Saved: {0}</sys:String>
 </ResourceDictionary>

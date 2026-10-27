@@ -100,6 +100,27 @@ public abstract partial class PageViewModel : ObservableObject
     public string Describe(Exception e) => ErrorText.Describe(Loc, e);
 
     protected bool Can(string permission) => S.Session.HasPermission(permission);
+
+    /// <summary>Asks for a destination (Excel, PDF or CSV — chosen in the dialog) and exports the table. Returns false when cancelled.</summary>
+    protected async Task<bool> ExportReportAsync(Contracts.Reporting.ReportTable table, string fileStem)
+    {
+        var path = S.Ui.PickSaveFile($"{fileStem}-{DateTime.Now:yyyyMMdd-HHmm}.xlsx", Core.Reporting.ReportExport.SaveFilter);
+        if (path is null) return false;
+        switch (Path.GetExtension(path).ToLowerInvariant())
+        {
+            case ".pdf":
+                S.Ui.ExportPdf(table.Title, ReportsViewModel.ToDataTable(table, Loc.Culture), path);
+                break;
+            case ".csv":
+                await File.WriteAllTextAsync(path, Core.Standalone.StandaloneStore.ToCsv(table), new System.Text.UTF8Encoding(true));
+                break;
+            default:
+                await using (var f = File.Create(path)) Core.Reporting.ReportExport.WriteXlsx(table, f);
+                break;
+        }
+        StatusMessage = Loc.Format("dk.rep.savedTo", path);
+        return true;
+    }
 }
 
 public static class ErrorText
