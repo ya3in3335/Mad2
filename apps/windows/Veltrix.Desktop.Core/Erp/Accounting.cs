@@ -255,8 +255,14 @@ public static class Ledger
         if (kv is null) db.Values.Add(kv = new KeyValue { Key = key, Value = "0" });
         var next = (long.TryParse(kv.Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var v) ? v : 0) + 1;
         kv.Value = next.ToString(CultureInfo.InvariantCulture);
-        return $"{prefix}-{next.ToString("000000", CultureInfo.InvariantCulture)}";
+        // Branch PCs (VELTRIX Link) number with their own code so documents from several PCs never collide: JE-B1-000001.
+        var node = await NodeCodeAsync(db, ct);
+        return node is null ? $"{prefix}-{next.ToString("000000", CultureInfo.InvariantCulture)}" : $"{prefix}-{node}-{next.ToString("000000", CultureInfo.InvariantCulture)}";
     }
+
+    /// <summary>Code of this PC when it is a VELTRIX Link branch PC (null on the company PC or a standalone PC).</summary>
+    public static async Task<string?> NodeCodeAsync(LocalDb db, CancellationToken ct) =>
+        (await db.Values.FindAsync([LocalDb.Keys.LinkNodeCode], ct))?.Value is { Length: > 0 } c ? c : null;
 
     /// <summary>Adds a cash-book line (cash account movements outside POS sales), linked to the open shift if any.</summary>
     public static async Task<LocalCashMovement> RecordCashAsync(LocalDb db, DateOnly date, DateTimeOffset now, decimal amount, string reason, string source,

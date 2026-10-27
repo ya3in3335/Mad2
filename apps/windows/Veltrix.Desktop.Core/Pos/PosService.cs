@@ -323,6 +323,7 @@ public sealed class PosService(ApiClient api, Func<LocalDb> dbFactory, TimeProvi
         var next = (long.TryParse(current, NumberStyles.Integer, CultureInfo.InvariantCulture, out var n) ? n : 0) + 1;
         await db.SetValueAsync(LocalDb.Keys.ReceiptCounter, next.ToString(CultureInfo.InvariantCulture), ct);
         var code = string.IsNullOrWhiteSpace(registerCode) ? "POS" : registerCode.Trim().ToUpperInvariant();
+        if (await Erp.Ledger.NodeCodeAsync(db, ct) is { } node && !code.StartsWith(node + "-", StringComparison.Ordinal)) code = node + "-" + code;
         return $"{code}-{now.ToLocalTime():yyMMdd}-{next.ToString("00000", CultureInfo.InvariantCulture)}";
     }
 
@@ -333,6 +334,7 @@ public sealed class PosService(ApiClient api, Func<LocalDb> dbFactory, TimeProvi
         var next = (long.TryParse(current, NumberStyles.Integer, CultureInfo.InvariantCulture, out var n) ? n : 0) + 1;
         await db.SetValueAsync(LocalDb.Keys.ReceiptCounter, next.ToString(CultureInfo.InvariantCulture), ct);
         var code = string.IsNullOrWhiteSpace(registerCode) ? "POS" : registerCode.Trim().ToUpperInvariant();
+        if (await Erp.Ledger.NodeCodeAsync(db, ct) is { } node && !code.StartsWith(node + "-", StringComparison.Ordinal)) code = node + "-" + code;
         return $"{code}-OFF-{now.ToLocalTime():yyMMdd}-{next.ToString("00000", CultureInfo.InvariantCulture)}";
     }
 }

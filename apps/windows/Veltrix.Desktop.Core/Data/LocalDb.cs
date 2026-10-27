@@ -189,7 +189,13 @@ public sealed class KeyValue
 
 public sealed class LocalDb(DbContextOptions<LocalDb> options) : DbContext(options)
 {
-    public const int SchemaVersion = 6;
+    public const int SchemaVersion = 7;
+
+    /// <summary>VELTRIX Link change capture for this unit of work (null = not captured: standalone PC, or applying replicated changes on a node).</summary>
+    public Replication.LinkCapture? Link { get; init; }
+
+    public DbSet<Replication.LinkChange> LinkChanges => Set<Replication.LinkChange>();
+    public DbSet<Replication.LinkNode> LinkNodes => Set<Replication.LinkNode>();
 
     public DbSet<LocalProduct> Products => Set<LocalProduct>();
     public DbSet<LocalCustomer> Customers => Set<LocalCustomer>();
@@ -285,6 +291,9 @@ public sealed class LocalDb(DbContextOptions<LocalDb> options) : DbContext(optio
         ("Employees", "PayBasis", "TEXT NOT NULL DEFAULT 'Monthly'"), ("Employees", "HourlyRate", "TEXT NOT NULL DEFAULT '0.0'"),
         ("Payslips", "Deductions", "TEXT NOT NULL DEFAULT '0.0'"), ("PayrollRuns", "TotalDeductions", "TEXT NOT NULL DEFAULT '0.0'"),
     ];
+
+    /// <summary>Tables added by schema v7 (VELTRIX Link: replication log and paired PCs).</summary>
+    public static readonly IReadOnlyList<string> V7Tables = ["LinkChanges", "LinkNodes"];
 
     /// <summary>Tables added by schema v6 (terminal import batches and device logs).</summary>
     public static readonly IReadOnlyList<string> V6Tables = ["WfImportBatches", "WfDeviceLogs"];
@@ -386,6 +395,15 @@ public sealed class LocalDb(DbContextOptions<LocalDb> options) : DbContext(optio
         });
         b.Entity<WfImportBatch>(e => { e.HasKey(x => x.Id); e.HasIndex(x => x.DeviceId); });
         b.Entity<WfDeviceLog>(e => { e.HasKey(x => x.Seq); e.Property(x => x.Seq).ValueGeneratedOnAdd(); e.HasIndex(x => x.DeviceId); });
+        b.Entity<Replication.LinkChange>(e =>
+        {
+            e.HasKey(x => x.Seq);
+            e.Property(x => x.Seq).ValueGeneratedOnAdd();
+            e.HasIndex(x => new { x.Origin, x.OriginSeq });
+            e.HasIndex(x => new { x.Status, x.Seq });
+            e.HasIndex(x => new { x.Table, x.Key });
+        });
+        b.Entity<Replication.LinkNode>(e => { e.HasKey(x => x.Id); e.HasIndex(x => x.Code).IsUnique(); });
         b.Entity<WfZone>().HasKey(x => x.Id);
         b.Entity<WfDoor>().HasKey(x => x.Id);
         b.Entity<WfAccessGroup>().HasKey(x => x.Id);
@@ -413,6 +431,7 @@ public sealed class LocalDb(DbContextOptions<LocalDb> options) : DbContext(optio
         if (version < 4) await CreateModelTablesAsync(V4Tables, ct);
         if (version < 5) await MigrateToV5Async(ct);
         if (version < 6) await MigrateColumnsAndTablesAsync(V6Columns, V6Tables, ct);
+        if (version < 7) await CreateModelTablesAsync(V7Tables, ct);
         await Erp.DefaultChart.EnsureSeededAsync(this, ct);
         if (stored is null) Values.Add(new KeyValue { Key = Keys.SchemaVersion, Value = SchemaVersion.ToString(System.Globalization.CultureInfo.InvariantCulture) });
         else stored.Value = SchemaVersion.ToString(System.Globalization.CultureInfo.InvariantCulture);
@@ -516,6 +535,18 @@ public sealed class LocalDb(DbContextOptions<LocalDb> options) : DbContext(optio
         }
     }
 
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    {
+        Link?.Capture(this);
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
+
+    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    {
+        Link?.Capture(this);
+        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    }
+
     public async Task<string?> GetValueAsync(string key, CancellationToken ct = default) => (await Values.FindAsync([key], ct))?.Value;
 
     public async Task SetValueAsync(string key, string value, CancellationToken ct = default)
@@ -528,6 +559,8 @@ public sealed class LocalDb(DbContextOptions<LocalDb> options) : DbContext(optio
 
     public static class Keys
     {
+        /// <summary>VELTRIX Link: this PC's branch code (absent on the company PC).</summary>
+        public const string LinkNodeCode = "link.nodeCode";
         public const string SchemaVersion = "schema.version";
         public const string SyncCursor = "sync.cursor";
         public const string LastSyncAt = "sync.lastAt";

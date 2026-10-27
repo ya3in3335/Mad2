@@ -120,7 +120,7 @@ public sealed class StandaloneStore(Func<LocalDb> dbFactory, TimeProvider time)
         if (c is null)
         {
             var n = await db.Customers.CountAsync(ct) + 1;
-            db.Customers.Add(c = new LocalCustomer { Id = id ?? Guid.NewGuid(), Code = "C" + n.ToString("00000", CultureInfo.InvariantCulture) });
+            db.Customers.Add(c = new LocalCustomer { Id = id ?? Guid.NewGuid(), Code = "C" + (await Erp.Ledger.NodeCodeAsync(db, ct) is { } node ? node + "-" : "") + n.ToString("00000", CultureInfo.InvariantCulture) });
         }
         c.Type = req.Type;
         c.Name = req.Name.Trim();
